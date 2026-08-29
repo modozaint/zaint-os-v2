@@ -1,0 +1,58 @@
+﻿# ZAINT OS V2 - .gitignore
+# Regla #3 del sistema: nunca se pierde informacion util.
+# Aqui solo se excluye lo que NO es informacion: artefactos regenerables,
+# caches y binarios pesados. Todo documento del vault se versiona.
+
+# --- Artefactos de Node (regenerables con `npm install`) ---
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+.vercel/
+
+# --- Caches y temporales ---
+.cache/
+*.log
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Secretos (nunca deben entrar al historial) ---
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+service-account*.json
+VERCEL-VARIABLES.txt
+*.env.respaldo
+.env.local.respaldo
+
+# --- Los EJEMPLOS sanitizados SI se versionan (corregido 2026-08-28) ---
+# El patron `.env.*` de arriba se estaba comiendo `.env.local.example`, que es
+# justo lo que debe viajar: las llaves vacias para que otro pueda arrancar la app.
+!.env.example
+!.env.*.example
+!*.env.example
+
+# --- Obsidian: se versiona la config, no el estado volatil de la ventana ---
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+
+# --- Medios pesados (viven en Drive / el equipo, no en el historial) ---
+*.mp4
+*.mov
+*.avi
+*.zip
+*.psd
+*.ai
+
+# --- Temporales de Python ---
+__pycache__/
+*.pyc
