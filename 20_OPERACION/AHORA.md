@@ -1,6 +1,6 @@
 ---
 tags: [modozaint-v2, estado, agentes]
-updated: 2026-08-30
+updated: 2026-08-31
 tipo: estado-vivo
 ---
 
