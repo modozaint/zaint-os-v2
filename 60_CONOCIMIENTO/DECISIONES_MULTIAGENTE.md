@@ -1,6 +1,6 @@
 ---
 tags: [modozaint-v2, agentes, arquitectura, eficiencia]
-updated: 2026-08-29
+updated: 2026-08-31
 tipo: criterio-estable
 ---
 
@@ -11,8 +11,8 @@ Estas decisiones incorporan la investigación sin copiarla. La evidencia complet
 - `BUZZ_RESEARCH_ROOT/ARQUITECTURA_MULTIAGENTE_2026_08_29.md` — SHA-256 `78A3C43B699F6D122AF97DC07B89BDB548971E280019B82B96B6592462113DE6`.
 - `BUZZ_RESEARCH_ROOT/EFICIENCIA_COSTO_MULTIAGENTE_2026_08_29.md` — SHA-256 `822BAFF4EECC1A8094F15482D1025FD3C8ED833F41A5897BAD4D76D36776EFC2`.
 
-`BUZZ_RESEARCH_ROOT` se declara en `MIGRATION_MAP.md`. Los informes son evidencia; este archivo es
-el criterio operativo.
+`BUZZ_RESEARCH_ROOT` se declara en `MIGRATION_MAP.md` solo como fuente externa de respaldo. Los
+informes son evidencia; este archivo es el criterio operativo.
 
 ## 1. Entrada única y fuentes canónicas
 
@@ -44,6 +44,6 @@ y aprueba.
 
 La matriz de modelos se versiona. Antes de adoptar una configuración por ahorro, se prueba con 20
 tareas representativas y solo se acepta si la calidad queda a no más de cinco puntos porcentuales de
-la mejor configuración. Caché y Batch se activan únicamente cuando Buzz o el proveedor expongan la
-capacidad y la telemetría; Batch queda reservado para trabajo offline. La medida principal es costo
-por tarea aprobada, no costo bruto por llamada.
+la mejor configuración. Caché y Batch se activan únicamente cuando el entorno o el proveedor
+expongan la capacidad y la telemetría; Batch queda reservado para trabajo offline. La medida
+principal es costo por tarea aprobada, no costo bruto por llamada.

@@ -1,6 +1,6 @@
 ---
 tags: [modozaint-v2, migracion, agentes]
-updated: 2026-08-29
+updated: 2026-08-31
 tipo: mapa
 ---
 
@@ -10,10 +10,12 @@ tipo: mapa
 
 - Workspace nuevo: `C:\DEPARTAMENTO MODOZAINT V2`
 - Fuente V1, solo lectura durante esta migración: `C:\DEPARTAMENTO MODOZAINT`
-- Evidencia Buzz: `C:\Users\Zaint}\.buzz\RESEARCH`, declarada como `BUZZ_RESEARCH_ROOT`.
+- Evidencia externa de investigación: `C:\Users\Zaint}\.buzz\RESEARCH`, usada solo como respaldo.
 - Exportación portable de origen: `_MIGRACION/agentes/`, resuelta desde la raíz V1.
 
 Cambiar de máquina exige actualizar únicamente estas raíces. Los agentes usan rutas relativas.
+La organización operativa del V2 la mandan `CLAUDE.md`, `00_NORTE/` y `70_AGENTES/`; la evidencia
+externa no define la estructura.
 
 ## Correspondencia
 
@@ -27,4 +29,4 @@ Cambiar de máquina exige actualizar únicamente estas raíces. Los agentes usan
 
 Los nueve portables son Xiomara, Juanjo, Contenido, Copy, Video, Hoy, Dermatinta, Kaizen y
 MODOZAINT. Cada uno tiene una subcarpeta y una entrada única: `00_ENTRAR.md`. ORQUESTADOR es la
-capa nueva de coordinación y se estabiliza antes de abrir otro agente en Buzz.
+capa nueva de coordinación y se estabiliza antes de abrir otro agente.

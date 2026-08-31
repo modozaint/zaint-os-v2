@@ -1,6 +1,6 @@
 ---
 tags: [modozaint-v2, agentes, tareas, handoff]
-updated: 2026-08-29
+updated: 2026-08-31
 tipo: sop
 ---
 
@@ -31,7 +31,8 @@ updated: AAAA-MM-DD
 ## Siguiente responsable
 ```
 
-El aviso en Buzz contiene objetivo, responsable y ruta al contrato. El archivo es la fuente durable.
+El aviso de coordinación contiene objetivo, responsable y ruta al contrato. El archivo es la
+fuente durable.
 
 ## Handoff
 

@@ -5,12 +5,12 @@ reviewer: zaint-oficina
 status: in_progress
 class: S2
 created: 2026-08-29
-updated: 2026-08-29
+updated: 2026-08-31
 ---
 
 # Resultado esperado
 
-Workspace V2 ordenado, versionado y utilizable desde Buzz sin cargar todo V1.
+Workspace V2 ordenado, versionado y utilizable con el router local sin cargar todo V1.
 
 ## Fuentes mínimas
 
@@ -33,7 +33,7 @@ Workspace V2 ordenado, versionado y utilizable desde Buzz sin cargar todo V1.
 
 - V1 permanece en solo lectura.
 - Un especialista por frente; paralelismo solo para investigación independiente.
-- No abrir un segundo agente en Buzz hasta estabilizar ORQUESTADOR.
+- No abrir un segundo agente hasta estabilizar ORQUESTADOR.
 
 ## Criterio de terminado
 
@@ -45,7 +45,7 @@ Workspace V2 ordenado, versionado y utilizable desde Buzz sin cargar todo V1.
 
 - Verificación estructural: 10 entradas, 82 rutas existentes, 9 políticas y 2 evidencias verificadas;
   cero rutas antiguas o faltantes.
-- Borrador Buzz actualizado: `82c9643e11b0018c5d6d0b1bac11019b9c0c604f272ab5e6d0fc1b684600f7ca`.
+- Borrador actualizado: `82c9643e11b0018c5d6d0b1bac11019b9c0c604f272ab5e6d0fc1b684600f7ca`.
 
 ## Siguiente responsable
 
