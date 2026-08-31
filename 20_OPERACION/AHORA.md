@@ -14,6 +14,7 @@ tipo: estado-vivo
   cierre versionado pendiente de autoría explícita.
 - Verificación automática de rutas: 10 entradas, 82 rutas declaradas existentes, 9 políticas y
   2 evidencias verificadas; cero rutas antiguas o faltantes.
+- Runbook de evaluación preparado en `70_AGENTES/ORQUESTADOR/PROCESO_EVALS.md`.
 - Los otros nueve oficios ya están ordenados como instrucciones portables, pero no se han abierto
   todavía como agentes operativos del V2.
 - Criterio de cierre: router mínimo, archivos revisables, rutas verificadas, commit atribuible,

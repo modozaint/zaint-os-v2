@@ -15,4 +15,5 @@ tipo: estado-vivo
 - Trabajo actual: esperar autoría explícita para el commit y guardado del borrador actualizado.
 - Quedó a medias: evaluación en vivo; requiere que el propietario guarde primero el borrador.
 - Segundo agente nuevo: no abierto.
+- Runbook listo: `PROCESO_EVALS.md`.
 - Próximo paso: revisar y guardar el borrador; después ejecutar `EVALS.md`.
