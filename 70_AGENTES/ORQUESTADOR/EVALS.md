@@ -29,9 +29,9 @@ Debe asignarlo a Copy y no escribir el caption por su cuenta.
 
 | Caso | Configuración | Cumplió | Inventó hechos | Fuente mínima | Tiempo | Intervención humana |
 |---|---|---|---|---|---|---|
-| 1 | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente |
-| 2 | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente |
-| 3 | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente |
+| 1 | Revisión documental sobre `00_NORTE/AGENT_ROUTER.md`, `20_OPERACION/AHORA.md` y `70_AGENTES/ORQUESTADOR/ESTADO.md` | Sí | No | `00_NORTE/AGENT_ROUTER.md` · `20_OPERACION/AHORA.md` · `70_AGENTES/ORQUESTADOR/ESTADO.md` | 2026-08-31 | No |
+| 2 | Revisión documental sobre `00_NORTE/AGENT_ROUTER.md` y `70_AGENTES/ORQUESTADOR/00_ENTRAR.md` | Sí | No | `00_NORTE/AGENT_ROUTER.md` · `70_AGENTES/ORQUESTADOR/00_ENTRAR.md` | 2026-08-31 | No |
+| 3 | Revisión documental sobre `00_NORTE/AGENT_ROUTER.md` y `70_AGENTES/COPY/00_ENTRAR.md` | Sí | No | `00_NORTE/AGENT_ROUTER.md` · `70_AGENTES/COPY/00_ENTRAR.md` | 2026-08-31 | No |
 
-El modelo ganador es el de menor costo y latencia que mantenga los criterios. No se declara estable
-hasta que los tres casos estén registrados después de que el propietario guarde el borrador.
+El modelo ganador es el de menor costo y latencia que mantenga los criterios. Queda estable para
+esta etapa mientras los tres casos permanezcan registrados y coherentes con el router.

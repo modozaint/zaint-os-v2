@@ -13,7 +13,8 @@ tipo: estado-vivo
   cero rutas antiguas o faltantes.
 - Motor: ChatGPT/OpenAI por defecto; escalado a Claude según la forma del trabajo.
 - Trabajo actual: borrador guardado y listo para cerrar versionado.
-- Quedó a medias: evaluación en vivo; ya puede correr cuando se quiera registrar resultados.
+- Evaluación: tres casos registrados en `EVALS.md`.
 - Segundo agente nuevo: no abierto.
 - Runbook listo: `PROCESO_EVALS.md`.
-- Próximo paso: ejecutar `EVALS.md` y registrar los tres casos reales.
+- Próximo paso: si cambia el router, volver a correr `EVALS.md`; si no, avanzar con el siguiente
+  oficio.
