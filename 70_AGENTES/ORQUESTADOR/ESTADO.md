@@ -12,8 +12,8 @@ tipo: estado-vivo
 - Verificación estructural: 10 entradas, 82 rutas existentes, 9 políticas y 2 evidencias verificadas;
   cero rutas antiguas o faltantes.
 - Motor: ChatGPT/OpenAI por defecto; escalado a Claude según la forma del trabajo.
-- Trabajo actual: esperar autoría explícita para el commit y guardado del borrador actualizado.
-- Quedó a medias: evaluación en vivo; requiere que el propietario guarde primero el borrador.
+- Trabajo actual: borrador guardado y listo para cerrar versionado.
+- Quedó a medias: evaluación en vivo; ya puede correr cuando se quiera registrar resultados.
 - Segundo agente nuevo: no abierto.
 - Runbook listo: `PROCESO_EVALS.md`.
-- Próximo paso: revisar y guardar el borrador; después ejecutar `EVALS.md`.
+- Próximo paso: ejecutar `EVALS.md` y registrar los tres casos reales.
