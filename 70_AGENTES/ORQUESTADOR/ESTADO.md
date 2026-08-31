@@ -1,6 +1,6 @@
 ---
 tags: [modozaint-v2, agentes, orquestador, estado]
-updated: 2026-08-30
+updated: 2026-08-31
 tipo: estado-vivo
 ---
 
@@ -14,5 +14,5 @@ tipo: estado-vivo
 - Motor: ChatGPT/OpenAI por defecto; escalado a Claude según la forma del trabajo.
 - Trabajo actual: esperar autoría explícita para el commit y guardado del borrador actualizado.
 - Quedó a medias: evaluación en vivo; requiere que el propietario guarde primero el borrador.
-- Segundo agente nuevo en Buzz: no abierto.
+- Segundo agente nuevo: no abierto.
 - Próximo paso: revisar y guardar el borrador; después ejecutar `EVALS.md`.

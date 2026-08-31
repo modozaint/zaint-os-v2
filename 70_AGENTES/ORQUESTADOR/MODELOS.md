@@ -1,6 +1,6 @@
 ---
 tags: [modozaint-v2, agentes, orquestador, modelos]
-updated: 2026-08-29
+updated: 2026-08-31
 tipo: enrutamiento
 ---
 
@@ -13,6 +13,7 @@ tipo: enrutamiento
 | Clasificación repetitiva o alto volumen | OpenAI rápido | Modelo equilibrado si baja la calidad |
 | Verificación de archivos, Git o datos vivos | Herramienta directa | Modelo solo para interpretar el resultado |
 
-Modelo inicial propuesto para ORQUESTADOR: `gpt-5.6-sol`, esfuerzo medio, sujeto a disponibilidad en
-Buzz. La documentación oficial no quedó accesible durante esta revisión; el identificador se apoya
-provisionalmente en la guía local incluida con Codex y debe confirmarse en el selector de Buzz.
+Modelo inicial propuesto para ORQUESTADOR: `gpt-5.6-sol`, esfuerzo medio, sujeto a disponibilidad
+del entorno. La documentación oficial no quedó accesible durante esta revisión; el identificador se
+apoya provisionalmente en la guía local incluida con Codex y debe confirmarse en el selector
+disponible.

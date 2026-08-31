@@ -1,14 +1,14 @@
 ---
-tags: [modozaint-v2, agentes, buzz]
+tags: [modozaint-v2, agentes, canal-compartido]
 updated: 2026-08-29
 tipo: guia
 ---
 
-# Cómo usar los agentes en Buzz
+# Cómo usar los agentes portables
 
 ## ORQUESTADOR
 
-1. Abre la actualización del agente existente en Buzz.
+1. Abre la actualización del agente existente en el canal o entorno donde se usará.
 2. Usa `70_AGENTES/ORQUESTADOR/00_ENTRAR.md` como instrucciones.
 3. Configura el modelo inicial indicado en `70_AGENTES/ORQUESTADOR/MODELOS.md` si está disponible
    en la instalación actual.
@@ -18,7 +18,7 @@ tipo: guia
 ## Los nueve agentes portables
 
 Cada subcarpeta tiene una única puerta: `70_AGENTES/<AGENTE>/00_ENTRAR.md`. Ese archivo es una
-instrucción revisable e independiente del proveedor. No abras un segundo agente en Buzz hasta que
+instrucción revisable e independiente del proveedor. No abras un segundo agente hasta que
 ORQUESTADOR haya pasado sus evaluaciones.
 
 Al abrir cada agente después:

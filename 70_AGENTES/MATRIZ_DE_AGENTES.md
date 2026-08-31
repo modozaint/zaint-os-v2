@@ -1,13 +1,13 @@
 ---
 tags: [modozaint-v2, agentes, modelos]
-updated: 2026-08-29
+updated: 2026-08-31
 tipo: enrutamiento
 ---
 
 # Matriz inicial de agentes y modelos
 
 La función permanece estable aunque cambie el motor. Los identificadores concretos se confirman en
-el selector de Buzz antes de guardar; no se inventa disponibilidad.
+el selector disponible antes de guardar; no se inventa disponibilidad.
 
 | Agente | Motor inicial | Tipo de trabajo | Escalado |
 |---|---|---|---|
@@ -23,6 +23,6 @@ el selector de Buzz antes de guardar; no se inventa disponibilidad.
 | MODOZAINT | Claude | Síntesis narrativa y estrategia | ChatGPT para resumen o reescritura breve |
 
 Para las cargas OpenAI, candidatos iniciales: `gpt-5.6-sol` en coordinación difícil y
-`gpt-5.6-terra` en trabajo corto equilibrado. Son candidatos, no una promesa de disponibilidad en
-Buzz. Las cargas Claude se asignan al modelo equilibrado o de máxima capacidad que el selector
+`gpt-5.6-terra` en trabajo corto equilibrado. Son candidatos, no una promesa de disponibilidad
+fija. Las cargas Claude se asignan al modelo equilibrado o de máxima capacidad que el selector
 ofrezca en ese momento.

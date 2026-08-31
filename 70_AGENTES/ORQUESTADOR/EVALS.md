@@ -1,6 +1,6 @@
 ---
 tags: [modozaint-v2, agentes, orquestador, evals]
-updated: 2026-08-29
+updated: 2026-08-31
 tipo: pruebas
 ---
 
@@ -34,4 +34,4 @@ Debe asignarlo a Copy y no escribir el caption por su cuenta.
 | 3 | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente |
 
 El modelo ganador es el de menor costo y latencia que mantenga los criterios. No se declara estable
-en Buzz hasta que los tres casos estén registrados después de que el propietario guarde el borrador.
+hasta que los tres casos estén registrados después de que el propietario guarde el borrador.

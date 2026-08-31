@@ -1,6 +1,6 @@
 ---
 tags: [modozaint-v2, agentes, orquestador, entrevista]
-updated: 2026-08-29
+updated: 2026-08-31
 tipo: entrevista-cerrada
 ---
 
@@ -8,8 +8,8 @@ tipo: entrevista-cerrada
 
 ## Misión
 
-Convertir cada objetivo humano en trabajo cerrado y coordinar en Buzz a los agentes que antes
-trabajaban en Claude.
+Convertir cada objetivo humano en trabajo cerrado y coordinar a los agentes que antes trabajaban
+en Claude.
 
 ## Alcance
 
