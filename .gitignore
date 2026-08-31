@@ -1,9 +1,6 @@
-﻿# ZAINT OS V2 - .gitignore
-# Regla #3 del sistema: nunca se pierde informacion util.
-# Aqui solo se excluye lo que NO es informacion: artefactos regenerables,
-# caches y binarios pesados. Todo documento del vault se versiona.
+# MODOZAINT V2 - gitignore
 
-# --- Artefactos de Node (regenerables con `npm install`) ---
+# Regenerables
 node_modules/
 .next/
 out/
@@ -13,7 +10,7 @@ build/
 .turbo/
 .vercel/
 
-# --- Caches y temporales ---
+# Caches y temporales
 .cache/
 *.log
 npm-debug.log*
@@ -22,7 +19,7 @@ yarn-error.log*
 Thumbs.db
 desktop.ini
 
-# --- Secretos (nunca deben entrar al historial) ---
+# Secretos
 .env
 .env.*
 *.pem
@@ -33,19 +30,18 @@ VERCEL-VARIABLES.txt
 *.env.respaldo
 .env.local.respaldo
 
-# --- Los EJEMPLOS sanitizados SI se versionan (corregido 2026-08-28) ---
-# El patron `.env.*` de arriba se estaba comiendo `.env.local.example`, que es
-# justo lo que debe viajar: las llaves vacias para que otro pueda arrancar la app.
+# Ejemplos sanitizados si se versionan
 !.env.example
 !.env.*.example
 !*.env.example
+_ARCHIVO/**/.env*.example
 
-# --- Obsidian: se versiona la config, no el estado volatil de la ventana ---
+# Obsidian
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/cache
 
-# --- Medios pesados (viven en Drive / el equipo, no en el historial) ---
+# Medios pesados
 *.mp4
 *.mov
 *.avi
@@ -53,6 +49,7 @@ VERCEL-VARIABLES.txt
 *.psd
 *.ai
 
-# --- Temporales de Python ---
+# Python cache
 __pycache__/
 *.pyc
+

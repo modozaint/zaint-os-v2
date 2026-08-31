@@ -1,7 +1,4 @@
-﻿---
-tags: [modozaint-v2, manual-de-carpeta]
-updated: 2026-08-29
-tipo: manual-de-carpeta
----
+# 40_APRENDIZAJE
 
-# 40_APRENDIZAJE - que cambio por lo medido?
+¿Que cambio por lo medido?
+
