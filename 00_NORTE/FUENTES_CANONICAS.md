@@ -11,6 +11,7 @@ Este archivo registra punteros; no repite el contenido de las fuentes.
 | Tema | Ruta canónica | Responsable | Revisión |
 |---|---|---|---|
 | Prioridad y fase actual | `20_OPERACION/AHORA.md` | ORQUESTADOR | Al cambiar el trabajo activo |
+| Estado actual de Santiago | `60_CONOCIMIENTO/CURRENT_TRUTH_SANTIAGO.md` | Santiago / ORQUESTADOR | Cuando Santiago confirme un cambio |
 | Enrutamiento de encargos | `00_NORTE/AGENT_ROUTER.md` | ORQUESTADOR | Al crear o retirar un oficio |
 | Función de cada agente | `70_AGENTES/<NOMBRE>/00_ENTRAR.md` | Agente del oficio | Con revisión de ORQUESTADOR |
 | Modelos y escalado | `70_AGENTES/MODELOS.md` | ORQUESTADOR | Después de una evaluación |
