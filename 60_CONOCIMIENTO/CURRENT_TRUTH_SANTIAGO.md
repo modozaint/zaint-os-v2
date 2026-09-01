@@ -40,7 +40,7 @@ privacy: private
 
 - Horas sostenibles por semana sin afectar salud ni empleo.
 - Primera oferta o proyecto que se convertirá en ingreso.
-- Primera línea de oferta B2B, segmento inicial y posicionamiento público de MODOZAINT.
+- Primera línea de oferta B2B y posicionamiento público de MODOZAINT.
 - Fecha exacta de la primera venta y de la facturación estable de 10 millones.
 - Gastos personales, obligaciones y margen real disponible para inversión.
 

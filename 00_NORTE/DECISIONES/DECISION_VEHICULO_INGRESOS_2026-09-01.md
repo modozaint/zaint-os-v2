@@ -61,7 +61,8 @@ soluciones/agencia de IA, usando los negocios propios como evidencia pública pr
 
 ## Lo que sigue abierto
 
-- Primera línea de oferta B2B, segmento inicial y posicionamiento público de MODOZAINT.
+- Primera línea de oferta B2B y posicionamiento público de MODOZAINT. El ICP inicial de Zagencia es
+  Andrés, confirmado en `DECISION_ICP_ZAGENCIA_2026-09-01.md`.
 - Resultado medible que demostrará que la primera aplicación de IA funciona.
 - Fecha de la primera venta y escalera de ingresos hasta `10.000.000 COP/mes`.
 - Diferencia entre facturación objetivo, utilidad y retiro personal sostenible.
