@@ -22,6 +22,7 @@ indica qué existe, dónde está y cómo debe entrar a V2 cuando se necesite.
 | Flujos de automatización | `C:\DEPARTAMENTO MODOZAINT\SOLUCIONES_IA\_recursos_nexum\` | Workflows/artefactos técnicos | Reutilizar por caso y auditar credenciales antes de ejecutar |
 | Propuesta y mapa comercial | `C:\DEPARTAMENTO MODOZAINT\SOLUCIONES_IA\BANCO_SOLUCIONES\` | Servicios/propuestas | Extraer componentes útiles; no mezclar borradores con una oferta aceptada |
 | Agentes portables | `C:\DEPARTAMENTO MODOZAINT\_MIGRACION\agentes\` | Instrucciones de agentes | Ya migrados a `V2/70_AGENTES/`; V1 queda como respaldo |
+| FounderOS / Mi Vida | `C:\DEPARTAMENTO MODOZAINT\_LABS\videojuego-vida\` | Producto propio en validación | Mantener como app independiente; documentar estado y roadmap antes de escalarlo a videojuego |
 
 ## Puerta de entrada propuesta
 
@@ -42,6 +43,8 @@ hasta verificar:
 - Un workflow técnico no es una promesa comercial.
 - Un borrador de propuesta no es un servicio aprobado.
 - Un caso propio no se presenta como resultado de cliente externo.
+- FounderOS no se mezcla con los datos del negocio: es la app personal de Santiago y su fuente viva
+  para hábitos, turnos y dinero personal.
 
 ## Próximo orden
 
