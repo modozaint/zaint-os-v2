@@ -9,7 +9,7 @@ tipo: estado-vivo
 - Objetivo: dejar el workspace V2 preparado para usar los agentes portables con motor
   intercambiable.
 - Fuente V1: `C:\DEPARTAMENTO MODOZAINT`, en solo lectura durante la integración.
-- V2: repositorio local independiente, sin remoto.
+- V2: repositorio independiente, remoto privado `https://github.com/modozaint/zaint-os-v2`.
 - Fase: estructura, políticas y rutas verificadas; borrador de ORQUESTADOR enviado para revisión y
   cierre versionado completado.
 - ORQUESTADOR: tres casos de `EVALS.md` registrados.
