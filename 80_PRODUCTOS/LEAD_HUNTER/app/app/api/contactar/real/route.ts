@@ -6,6 +6,7 @@ import {
   resolverProviderId,
   unipileConfigurado,
 } from "@/lib/unipile";
+import { recortarNota } from "@/lib/claude";
 
 export const maxDuration = 60;
 
@@ -24,22 +25,23 @@ export async function POST(req: Request) {
   if (!lead.perfilUrl?.trim()) {
     return NextResponse.json({ ok: false, motivo: "lead-sin-perfil" }, { status: 400 });
   }
+  if (!lead.notaInvitacion?.trim()) {
+    return NextResponse.json(
+      { ok: false, motivo: "lead-sin-nota-personalizada" },
+      { status: 400 },
+    );
+  }
 
   try {
     const providerId = await resolverProviderId(identificadorDe(lead.perfilUrl));
-    // Invitación de conexión. Si ya son conexión / ya invitado, Unipile la rechaza:
-    // no es fatal, igual guardamos el providerId y el sync abrirá el chat.
-    try {
-      await enviarInvitacion(providerId);
-    } catch {
-      /* ya conectados o ya invitado */
-    }
+    const nota = recortarNota(lead.notaInvitacion);
+    await enviarInvitacion(providerId, nota);
     const act = actualizarLead(lead.id, {
       estado: "contactados",
       providerId,
       contactadoEn: Date.now(),
     });
-    return NextResponse.json({ ok: true, lead: act });
+    return NextResponse.json({ ok: true, lead: act, notaCaracteres: nota.length });
   } catch (e) {
     return NextResponse.json(
       { ok: false, motivo: e instanceof Error ? e.message : "error" },
