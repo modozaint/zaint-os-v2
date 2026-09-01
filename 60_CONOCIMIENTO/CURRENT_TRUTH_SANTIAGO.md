@@ -23,13 +23,14 @@ privacy: private
 - Su vehículo de ingresos será aplicar IA para construir y operar negocios digitales desde cero,
   usando sus propios proyectos como laboratorios y convirtiendo después la capacidad demostrada en
   una oferta vendible.
-- La priorización económica confirmada es Soluciones IA B2B como vehículo comercial principal;
-  Dermatinta sigue como primer laboratorio, House of Kaizen como segundo laboratorio y MODOZAINT como
-  capa de documentación y distribución.
+- La priorización económica confirmada es MODOZAINT como marca personal y frente público/comercial;
+  Soluciones IA B2B es su línea de servicios y vehículo principal hacia la meta. Dermatinta sigue
+  como primer laboratorio y House of Kaizen como segundo laboratorio.
 - Dermatinta será el laboratorio ecommerce.
 - House of Kaizen cambiará de fabricar alfombras por encargo hacia productos estandarizados,
   infoproductos y materiales para emprender en tufting.
-- MODOZAINT documentará y mostrará el proceso; Soluciones IA será la capacidad empaquetable.
+- MODOZAINT documentará, mostrará y atraerá oportunidades; Soluciones IA será la línea de servicios
+  empaquetable bajo esa marca.
 - Dermatinta es el primer caso operativo: en 12 semanas se busca validar una oferta con 10 ventas
   pagadas, 5 reseñas reales y evidencia de margen.
 - Reporta que puede dedicar más tiempo del que reflejaban los cuadros de turnos históricos y que tiene
@@ -39,7 +40,7 @@ privacy: private
 
 - Horas sostenibles por semana sin afectar salud ni empleo.
 - Primera oferta o proyecto que se convertirá en ingreso.
-- Primera oferta B2B concreta y segmento inicial de Soluciones IA.
+- Primera oferta B2B concreta, segmento inicial y posicionamiento público de MODOZAINT.
 - Fecha exacta de la primera venta y de la facturación estable de 10 millones.
 - Gastos personales, obligaciones y margen real disponible para inversión.
 

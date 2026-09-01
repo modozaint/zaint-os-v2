@@ -14,25 +14,29 @@ El objetivo de los próximos 12 meses es pasar de `0 COP/mes` fuera del salario 
 estable de `10.000.000 COP/mes`, avanzando desde el autoempleo hacia la libertad financiera.
 
 El vehículo no será elegir entre IA y ecommerce. Será construir y operar negocios digitales desde cero
-aplicando IA, documentar el proceso y convertir la capacidad demostrada en una oferta para otros
-negocios digitales.
+aplicando IA, documentar el proceso en MODOZAINT y convertir la capacidad demostrada en una oferta
+para otros negocios digitales.
 
 ## Priorización confirmada después del análisis comparativo
 
 La arquitectura anterior se conserva, pero se aclara el papel económico de cada unidad:
 
-- **Soluciones IA:** vehículo comercial principal hacia los `10.000.000 COP/mes`, con ofertas B2B
-  de alcance cerrado para negocios digitales y ecommerce.
+- **MODOZAINT:** marca personal y frente público/comercial principal. Su contenido construye
+  autoridad, atrae conversaciones y muestra el proceso.
+- **Soluciones IA:** línea de servicios/agencia de MODOZAINT y vehículo comercial principal hacia
+  los `10.000.000 COP/mes`, con ofertas B2B de alcance cerrado para negocios digitales y ecommerce.
 - **Dermatinta:** primer laboratorio operativo y caso propio de ecommerce. El inventario actual se
   vende antes de ampliar compras; la jagua queda como hipótesis prioritaria de validación, no como
   producto aprobado.
 - **House of Kaizen:** segundo laboratorio de contenido, automatización y productos de tufting. La
   producción física no carga por sí sola la meta hasta reconstruir margen, capacidad y oferta fija.
-- **MODOZAINT:** distribución y documentación del proceso; no se cuenta como fuente de facturación
-  independiente en esta fase.
+- **MODOZAINT:** distribución, posicionamiento, autoridad y adquisición para Soluciones IA. Puede
+  facturar como marca paraguas, pero no se confundirá el crecimiento de audiencia con ingresos.
 
 Esta priorización fue aceptada por Santiago después de comparar velocidad de monetización, capital
-requerido, competencia, capacidad operativa y número de clientes o pedidos necesarios.
+requerido, competencia, capacidad operativa y número de clientes o pedidos necesarios. El enfoque
+actual de atención y construcción de marca será MODOZAINT: entrar fuerte con una marca personal de
+soluciones/agencia de IA, usando los negocios propios como evidencia pública progresiva.
 
 ## Sistema de prueba
 
@@ -56,7 +60,7 @@ requerido, competencia, capacidad operativa y número de clientes o pedidos nece
 
 ## Lo que sigue abierto
 
-- Primera oferta B2B concreta de Soluciones IA y su primer segmento objetivo.
+- Primera oferta B2B concreta, segmento inicial y posicionamiento público de MODOZAINT.
 - Resultado medible que demostrará que la primera aplicación de IA funciona.
 - Fecha de la primera venta y escalera de ingresos hasta `10.000.000 COP/mes`.
 - Diferencia entre facturación objetivo, utilidad y retiro personal sostenible.
