@@ -46,3 +46,31 @@ El especialista entrega exactamente:
 
 No copia el historial completo si una referencia corta basta. ORQUESTADOR verifica el criterio de
 terminado, actualiza el contrato y publica un solo cierre humano.
+
+## Cierre visible en Buzz
+
+Una tarea no se considera cerrada solo porque el agente aparezca como `completed`. El ORQUESTADOR
+debe publicar un mensaje final en el canal que originó la misión, mencionando al solicitante cuando
+la interfaz lo requiera.
+
+El mensaje debe contener exactamente:
+
+```text
+# Cierre de la misión
+
+Estado: [completada | parcial | bloqueada | sin cambios]
+Resultado: [qué quedó hecho en una frase]
+Evidencia: [rutas, enlaces, pruebas o fuentes]
+Archivos creados/modificados: [lista o "ninguno"]
+Commit: [hash y mensaje o "ninguno"]
+Push/deploy: [sí/no; indicar destino si aplica]
+Riesgos/bloqueos: [lista o "ninguno"]
+Siguiente responsable: [agente/persona y acción]
+```
+
+Si una subdelegación termina sin respuesta, el ORQUESTADOR debe marcarla como `sin evidencia`, no
+como completada. Debe intentar una única recopilación final; si sigue sin respuesta, informar el
+fallo en el cierre. No debe inventar archivos, commits, pruebas ni resultados.
+
+El cierre visible en Buzz y el contrato durable en V2 son ambos obligatorios: el primero notifica y
+el segundo conserva la trazabilidad.
