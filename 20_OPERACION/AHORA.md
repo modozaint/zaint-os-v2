@@ -13,7 +13,7 @@ tipo: estado-vivo
 - Fase: base local-first, políticas y rutas verificadas; ORQUESTADOR portable listo para iniciar la
   entrevista y coordinar el trabajo.
 - ORQUESTADOR: tres casos de `EVALS.md` registrados.
-- Verificación automática de rutas: 10 entradas, 82 rutas declaradas existentes, 9 políticas y
+- Verificación automática de rutas: 10 entradas, 83 rutas declaradas existentes, 9 políticas y
   2 evidencias verificadas; cero rutas antiguas o faltantes.
 - Runbook de evaluación preparado en `70_AGENTES/ORQUESTADOR/PROCESO_EVALS.md`.
 - Los otros nueve oficios ya están ordenados como instrucciones portables, pero no se han abierto

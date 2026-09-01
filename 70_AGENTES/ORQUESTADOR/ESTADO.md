@@ -9,7 +9,7 @@ tipo: estado-vivo
 - Entrevista: cerrada en seis campos.
 - Entrada única: `00_ENTRAR.md` preparada para revisión.
 - Router y cinco decisiones multiagente: integrados; rutas declaradas verificadas automáticamente.
-- Verificación estructural: 10 entradas, 82 rutas existentes, 9 políticas y 2 evidencias verificadas;
+- Verificación estructural: 10 entradas, 83 rutas existentes, 9 políticas y 2 evidencias verificadas;
   cero rutas antiguas o faltantes.
 - Motor: ChatGPT/OpenAI por defecto; escalado a Claude según la forma del trabajo.
 - Trabajo actual: borrador guardado y listo para cerrar versionado.
