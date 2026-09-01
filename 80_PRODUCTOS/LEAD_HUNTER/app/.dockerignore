@@ -1,0 +1,7 @@
+node_modules
+.next
+.git
+.env*
+_datos.json
+*.tsbuildinfo
+scripts/shot-*.mjs

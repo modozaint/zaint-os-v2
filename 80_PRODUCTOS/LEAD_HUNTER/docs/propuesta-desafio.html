@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafío Nexum · Prospección automática por LinkedIn</title>
+<meta name="description" content="Propuesta completa del desafío de la comunidad Nexum: construir un sistema de prospección 100% automático por LinkedIn.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0912;
+  --bg2:#0e0c1a;
+  --surface:#151226;
+  --surface-2:#1c1834;
+  --line:#2a2447;
+  --line-soft:rgba(139,92,246,.16);
+  --text:#f4f2fc;
+  --body:#cfcadf;
+  --muted:#9a94ba;
+  --violet:#8b5cf6;
+  --violet-soft:#c4b5fd;
+  --magenta:#e44fd0;
+  --grad:linear-gradient(120deg,#8b5cf6 0%,#c34ae0 55%,#e44fd0 100%);
+  --radius:16px;
+  --maxw:920px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+body{
+  background:var(--bg);
+  color:var(--body);
+  font-family:'Figtree',system-ui,sans-serif;
+  font-size:16.5px;
+  line-height:1.72;
+  -webkit-font-smoothing:antialiased;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+::selection{background:rgba(139,92,246,.45);color:#fff}
+a{color:var(--violet-soft);text-decoration:none}
+a:hover{color:#fff}
+:focus-visible{outline:2px solid var(--violet);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+strong{color:var(--text);font-weight:600}
+h1,h2,h3{font-family:'Sora',sans-serif;color:var(--text)}
+
+/* ---------- barra superior ---------- */
+.topbar{border-bottom:1px solid var(--line);background:rgba(10,9,18,.86);backdrop-filter:blur(10px);position:sticky;top:0;z-index:50}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:12px;height:12px;border-radius:3px;background:var(--grad);transform:rotate(45deg);box-shadow:0 0 14px rgba(196,74,224,.55)}
+.brand-name{font-family:'Sora',sans-serif;font-weight:700;letter-spacing:.2em;font-size:.82rem;color:var(--text)}
+.brand-name .ai{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-left:2px}
+.topbar-meta{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:560px){.topbar-meta{display:none}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;padding:84px 0 64px;border-bottom:1px solid var(--line)}
+.hero::before{content:"";position:absolute;top:-220px;left:-140px;width:560px;height:560px;background:radial-gradient(circle,rgba(139,92,246,.22),transparent 62%);pointer-events:none}
+.hero::after{content:"";position:absolute;top:-120px;right:-180px;width:620px;height:620px;background:radial-gradient(circle,rgba(228,79,208,.14),transparent 60%);pointer-events:none}
+.hero .wrap{position:relative;z-index:1}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--violet-soft);display:block;margin-bottom:20px}
+.hero h1{font-size:clamp(2.15rem,5.4vw,3.55rem);font-weight:800;letter-spacing:-.03em;line-height:1.08;max-width:15ch}
+.hero h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{margin-top:24px;font-size:clamp(1.02rem,1.6vw,1.16rem);max-width:62ch;color:var(--body)}
+.hero-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--violet-soft);border:1px solid var(--line);background:rgba(21,18,38,.7);border-radius:999px;padding:7px 14px}
+.hero-anim{opacity:0;transform:translateY(14px);animation:up .7s ease forwards}
+.d1{animation-delay:.05s}.d2{animation-delay:.15s}.d3{animation-delay:.25s}.d4{animation-delay:.35s}.d5{animation-delay:.45s}
+@keyframes up{to{opacity:1;transform:none}}
+
+/* ---------- pipeline (firma visual) ---------- */
+.pipeline{margin-top:44px;display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.step{position:relative;flex:1 1 150px;min-width:148px;border-radius:14px;padding:14px 14px 12px;background:var(--surface)}
+.step .tag{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;display:inline-block;margin-bottom:8px}
+.step .lbl{font-family:'Sora',sans-serif;font-size:.86rem;font-weight:600;color:var(--text);line-height:1.35}
+.step.manual{border:1px dashed #4b4374}
+.step.manual .tag{color:var(--muted)}
+.step.auto{border:1px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,var(--grad) border-box}
+.step.auto .tag{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.step:not(:last-child)::after{content:"";position:absolute;right:-10px;top:50%;width:10px;height:1px;background:#4b4374}
+.pipe-note{margin-top:14px;font-size:.86rem;color:var(--muted)}
+@media (max-width:680px){
+  .pipeline{flex-direction:column}
+  .step{min-width:0}
+  .step:not(:last-child)::after{right:auto;left:24px;top:auto;bottom:-11px;width:1px;height:11px}
+}
+
+/* ---------- botones ---------- */
+.btn-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:'Sora',sans-serif;font-weight:600;font-size:.9rem;border-radius:999px;padding:13px 26px;transition:transform .15s ease,box-shadow .15s ease}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 6px 26px rgba(160,64,214,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(160,64,214,.5);color:#fff}
+.btn-ghost{border:1px solid var(--line);color:var(--text);background:rgba(21,18,38,.6)}
+.btn-ghost:hover{border-color:var(--violet);color:#fff}
+
+/* ---------- índice ---------- */
+.toc{padding:44px 0;border-bottom:1px solid var(--line);background:var(--bg2)}
+.toc h2{font-size:.78rem;font-family:'JetBrains Mono',monospace;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px 28px}
+.toc a{display:flex;gap:12px;align-items:baseline;padding:7px 4px;border-radius:8px;color:var(--body);font-size:.92rem}
+.toc a:hover{color:#fff;background:rgba(139,92,246,.08)}
+.toc .n{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--violet-soft)}
+
+/* ---------- secciones ---------- */
+.sec{padding:72px 0;border-bottom:1px solid var(--line)}
+.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:26px}
+.sec-num{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--violet);letter-spacing:.1em}
+.sec h2{font-size:clamp(1.5rem,3vw,2.05rem);font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.sec p{margin-bottom:18px;max-width:70ch}
+.sec p:last-child{margin-bottom:0}
+.sec ul{margin:0 0 18px 0;padding-left:0;list-style:none;max-width:70ch}
+.sec ul li{position:relative;padding-left:24px;margin-bottom:10px}
+.sec ul li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:7px;border-radius:2px;background:var(--grad);transform:rotate(45deg)}
+
+/* ---------- cajas ---------- */
+.aside{border:1px solid var(--line);border-left:3px solid;border-image:var(--grad) 1;background:var(--surface);border-radius:0 var(--radius) var(--radius) 0;padding:22px 26px;margin:26px 0;max-width:70ch}
+.aside h4{font-family:'Sora',sans-serif;font-size:.95rem;color:var(--text);margin-bottom:8px}
+.aside p{font-size:.94rem;margin-bottom:0}
+.card{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:26px 28px;margin:26px 0}
+.card h3{font-size:1.05rem;margin-bottom:14px}
+.card ul{margin-bottom:0}
+.dl-cta{margin-top:22px}
+
+/* ---------- módulos ---------- */
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:28px 0}
+.mod{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:24px 26px;display:flex;flex-direction:column}
+.mod .m-tag{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.16em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:10px}
+.mod h3{font-size:1.06rem;margin-bottom:10px}
+.mod p{font-size:.94rem;margin-bottom:14px}
+.mod .dec{margin-top:auto;border-top:1px solid var(--line);padding-top:12px;font-size:.85rem;color:var(--muted)}
+.mod .dec b{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--violet-soft);display:block;margin-bottom:4px}
+.extras{border:1px dashed #4b4374;border-radius:var(--radius);padding:20px 24px;font-size:.93rem;color:var(--muted);max-width:none}
+.extras span{color:var(--violet-soft);font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;display:block;margin-bottom:6px}
+
+/* ---------- rutas ---------- */
+.routes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:28px 0}
+.route{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:22px 24px}
+.route .r-tag{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.14em;color:var(--violet-soft);display:block;margin-bottom:8px}
+.route h3{font-size:.99rem;margin-bottom:8px}
+.route p{font-size:.9rem;margin-bottom:0}
+
+/* ---------- chats ---------- */
+.chat{border:1px solid var(--line);background:var(--bg2);border-radius:var(--radius);margin:26px 0;overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--surface)}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0}
+.chat-head .who{font-family:'Sora',sans-serif;font-size:.88rem;font-weight:600;color:var(--text);line-height:1.3}
+.chat-head .sub{font-size:.76rem;color:var(--muted)}
+.chat-title{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:right}
+.chat-body{padding:20px;display:flex;flex-direction:column;gap:10px}
+.day{align-self:center;font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:8px 0 2px}
+.msg{max-width:82%;padding:11px 15px;border-radius:14px;font-size:.93rem;line-height:1.55}
+.msg.out{align-self:flex-end;background:rgba(139,92,246,.16);border:1px solid rgba(139,92,246,.4);border-bottom-right-radius:4px;color:var(--text)}
+.msg.in{align-self:flex-start;background:var(--surface-2);border:1px solid var(--line);border-bottom-left-radius:4px}
+.sys{align-self:center;font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(139,92,246,.4);border-radius:999px;padding:6px 14px;margin-top:4px;background:rgba(139,92,246,.08)}
+.sys b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600}
+@media (max-width:560px){.msg{max-width:94%}.chat-title{display:none}}
+
+/* ---------- plan / timeline ---------- */
+.tl{margin:30px 0;border-left:1px solid var(--line);padding-left:0}
+.tl-row{position:relative;display:grid;grid-template-columns:130px 1fr;gap:20px;padding:0 0 30px 28px}
+.tl-row::before{content:"";position:absolute;left:-5px;top:8px;width:9px;height:9px;border-radius:50%;background:var(--grad);box-shadow:0 0 10px rgba(196,74,224,.6)}
+.tl-row:last-child{padding-bottom:6px}
+.tl-when{font-family:'JetBrains Mono',monospace;font-size:.74rem;letter-spacing:.08em;color:var(--violet-soft);padding-top:2px}
+.tl-row h3{font-size:1rem;margin-bottom:6px}
+.tl-row p{font-size:.93rem;margin-bottom:0;max-width:60ch}
+@media (max-width:640px){.tl-row{grid-template-columns:1fr;gap:4px}}
+
+/* ---------- reglas ---------- */
+.rules{margin:28px 0;border-top:1px solid var(--line)}
+.rule{display:grid;grid-template-columns:190px 1fr;gap:24px;padding:20px 0;border-bottom:1px solid var(--line)}
+.rule dt{font-family:'Sora',sans-serif;font-weight:600;font-size:.92rem;color:var(--text)}
+.rule dd{font-size:.94rem;margin:0}
+@media (max-width:640px){.rule{grid-template-columns:1fr;gap:6px}}
+
+/* ---------- checklist ---------- */
+.check-list{counter-reset:chk;margin:28px 0;display:flex;flex-direction:column;gap:10px;max-width:none}
+.check{counter-increment:chk;display:flex;gap:16px;align-items:flex-start;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px 20px;font-size:.95rem}
+.check::before{content:counter(chk,decimal-leading-zero);font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#fff;background:var(--grad);border-radius:8px;padding:4px 8px;flex-shrink:0;margin-top:2px}
+.check b{color:var(--text);font-weight:600}
+
+/* ---------- gana / cierre ---------- */
+.win-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:28px 0}
+.win{border:1px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(140deg,rgba(139,92,246,.55),rgba(228,79,208,.2)) border-box;border-radius:var(--radius);padding:22px 24px}
+.win h3{font-size:.98rem;margin-bottom:8px}
+.win p{font-size:.9rem;margin-bottom:0}
+.quote{margin:0;padding:56px 0;text-align:center}
+.quote blockquote{font-family:'Sora',sans-serif;font-size:clamp(1.25rem,2.6vw,1.7rem);font-weight:600;line-height:1.45;color:var(--text);max-width:26ch;margin:0 auto}
+.quote blockquote .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.quote cite{display:block;margin-top:18px;font-style:normal;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.close-sec{padding:64px 0 72px}
+.sign{margin-top:30px}
+.sign .name{font-family:'Sora',sans-serif;font-weight:700;color:var(--text)}
+.sign .role{font-size:.85rem;color:var(--muted)}
+
+/* ---------- recursos / footer ---------- */
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:26px}
+.res{display:block;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:18px 20px}
+.res:hover{border-color:var(--violet)}
+.res .r-k{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.res .r-v{font-family:'Sora',sans-serif;font-size:.92rem;font-weight:600;color:var(--text)}
+footer{padding:36px 0;background:var(--bg2)}
+footer .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+footer .fine{font-size:.78rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="brand-mark"></span><span class="brand-name">NEXUM<span class="ai">AI</span></span></div>
+    <div class="topbar-meta">Desafío de la comunidad · Julio 2026</div>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow hero-anim d1">Propuesta técnica y alcance completo</span>
+    <h1 class="hero-anim d2">Prospección <span class="g">automática</span> por LinkedIn</h1>
+    <p class="lede hero-anim d3">Ya tenemos el sistema que busca leads y escribe el mensaje. Ahora falta lo que vale de verdad: que los contacte, converse como un setter y agende llamadas sin que nadie toque nada. Eso es lo que vamos a construir en las próximas dos semanas.</p>
+    <div class="hero-chips hero-anim d4">
+      <span class="chip">Plazo · Miércoles 5 de agosto</span>
+      <span class="chip">Solo o en grupo</span>
+      <span class="chip">Nexum compra la mejor solución</span>
+    </div>
+    <div class="pipeline hero-anim d5">
+      <div class="step manual"><span class="tag">Manual permitido</span><div class="lbl">Búsqueda de leads (Apify)</div></div>
+      <div class="step auto"><span class="tag">Automático</span><div class="lbl">Primer mensaje</div></div>
+      <div class="step auto"><span class="tag">Automático</span><div class="lbl">Conversación (setter IA)</div></div>
+      <div class="step auto"><span class="tag">Automático</span><div class="lbl">Seguimientos</div></div>
+      <div class="step auto"><span class="tag">Automático</span><div class="lbl">Reunión agendada + recordatorio</div></div>
+    </div>
+    <p class="pipe-note">El único paso manual que se permite es lanzar la búsqueda (y revisar los primeros mensajes, si querés). Todo lo demás corre solo.</p>
+    <div class="btn-row hero-anim d5">
+      <a class="btn btn-primary" href="https://drive.google.com/file/d/1dkmCf6RBcXghT05UudtrnwXxap3rjS_Y/view?usp=sharing" target="_blank" rel="noopener">Descargar el código base</a>
+      <a class="btn btn-ghost" href="#checklist">Ver el checklist final</a>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <h2>En esta propuesta</h2>
+    <div class="toc-grid">
+      <a href="#s01"><span class="n">01</span> De dónde sale esto</a>
+      <a href="#s02"><span class="n">02</span> El objetivo</a>
+      <a href="#s03"><span class="n">03</span> La base que recibís</a>
+      <a href="#s04"><span class="n">04</span> Lo que hay que construir</a>
+      <a href="#s05"><span class="n">05</span> El nudo técnico: LinkedIn</a>
+      <a href="#s06"><span class="n">06</span> Stack y herramientas</a>
+      <a href="#s07"><span class="n">07</span> El setter y sus mensajes</a>
+      <a href="#s08"><span class="n">08</span> Plan sugerido de 14 días</a>
+      <a href="#s09"><span class="n">09</span> Reglas del desafío</a>
+      <a href="#s10"><span class="n">10</span> La instancia final</a>
+      <a href="#checklist"><span class="n">11</span> Checklist: cuándo está logrado</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<section class="sec" id="s01">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">01</span><h2>De dónde sale esto</h2></div>
+    <p>La semana pasada un referido de un cliente nos pidió un sistema de scraping con cierta urgencia. Lo armamos con Claude Code y Apify, casi gratis entre amigos, y terminó siendo un CRM completo que busca negocios en Google Maps y otras fuentes, los ordena en tablas y les da seguimiento. Es el sistema de Camel Export Cars que vimos en la clase, con su panel, su ruta de llamadas, su historial y hasta su manual de usuario.</p>
+    <p>De ese trabajo salió la plataforma de leads de LinkedIn que les mostré después: buscás por rubro, cargo y ubicación, y te devuelve personas reales con un análisis de su perfil, su último post y un mensaje personalizado listo para mandar.</p>
+    <p>¿Por qué LinkedIn y no otra red? Porque ahí viven los peces gordos. Es la plataforma donde se mueven las empresas y donde un mensaje de negocio se recibe como algo normal: la gente entra sabiendo que se interactúa así. Nosotros ya cerramos clientes por LinkedIn con tickets de más de 12.000 dólares, y hace dos semanas cerramos uno grande acá en Uruguay. El canal funciona. Lo que falta es el sistema.</p>
+    <div class="aside">
+      <h4>¿E Instagram?</h4>
+      <p>Queda para después. El mismo motor se puede escalar a Instagram y WhatsApp más adelante, y la API de Meta lo hace incluso más fácil de implementar. El problema es el público: la gente entra a Instagram a distraerse con historias y reels, y una propuesta de negocio ahí muchas veces ni se lee. Primero LinkedIn, que es donde está el retorno.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s02">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">02</span><h2>El objetivo</h2></div>
+    <p>La plataforma actual tiene un límite que Sofía definió perfecto en la clase: es semiautomática. Te busca los leads y te escribe el mensaje, pero después tenés que copiarlo, ir a LinkedIn, pegarlo, volver y cambiar el estado a mano. Y si la persona responde, ya quedaste vos manejando el chat. Ese es el muro que hay que cruzar.</p>
+    <p>El sistema terminado tiene que hacer todo esto solo:</p>
+    <ul>
+      <li>Contactar a cada lead encontrado, con una cadencia que vos definís.</li>
+      <li>Sostener la conversación después del primer mensaje, con contexto del perfil y de la empresa de la persona.</li>
+      <li>Hacer seguimiento a los que no responden.</li>
+      <li>Agendar la llamada cuando el lead acepta, y mandarle un recordatorio antes de la reunión.</li>
+      <li>Mover los estados del kanban sin que nadie los toque: contactado, respondió, reunión agendada.</li>
+    </ul>
+    <p>Manual se permiten exactamente dos cosas. Una, lanzar la búsqueda (que también podría automatizarse, pero no hace falta). Dos, si querés, revisar los primeros mensajes antes de que salgan: si chequeás los primeros cinco y están bien, un botón de mandar el resto sin revisar y listo. Nada más que eso.</p>
+  </div>
+</section>
+
+<section class="sec" id="s03">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">03</span><h2>La base que recibís</h2></div>
+    <p>No arrancás de cero. Junto con esta propuesta va un archivo con todo el código de la plataforma de LinkedIn que vimos en la clase. Es copiar, pegar en Claude Code y pedirle que la implemente en tu entorno.</p>
+    <div class="card">
+      <h3>Lo que la base ya hace</h3>
+      <ul>
+        <li>Búsqueda por rubro o palabra clave, cargos y ubicación, con límite de leads por búsqueda y costo estimado en tiempo real.</li>
+        <li>Scraping vía Apify: trae personas reales con foto, cargo y empresa.</li>
+        <li>Análisis con IA de cada perfil: quién es, qué hace su empresa y de qué habló en su última publicación.</li>
+        <li>Mensaje personalizado generado para cada lead, firmado con tu nombre y alineado a tu oferta.</li>
+        <li>Tablero kanban para mover leads entre estados, y pestaña de ajustes: tu nombre, tu empresa, tu oferta y el idioma de los mensajes.</li>
+      </ul>
+      <div class="dl-cta"><a class="btn btn-primary" href="https://drive.google.com/file/d/1dkmCf6RBcXghT05UudtrnwXxap3rjS_Y/view?usp=sharing" target="_blank" rel="noopener">Descargar el código base</a></div>
+    </div>
+    <p>Un punto importante: esta base es el punto de partida mínimo. Podés agregarle columnas, cambiarle la estructura, rediseñarla entera o directamente arrancar de cero si tenés una idea mejor. Libertad total. Lo que se evalúa es que el sistema final funcione, no que respetes la base.</p>
+  </div>
+</section>
+
+<section class="sec" id="s04">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Lo que hay que construir</h2></div>
+    <p>Lo divido en cuatro módulos para que sea más fácil de encarar, y de repartir si trabajan en grupo. El orden importa: cada módulo se apoya en el anterior.</p>
+    <div class="mod-grid">
+      <div class="mod">
+        <span class="m-tag">Módulo 1</span>
+        <h3>Contacto automático</h3>
+        <p>Después de la búsqueda, un botón de empezar a contactar. El sistema envía el primer mensaje a cada lead con una cadencia configurable (cada cuántos minutos sale uno) para no parecer una ametralladora. Antes de arrancar podés revisar los mensajes generados y, si los primeros están bien, liberar el resto de una.</p>
+        <div class="dec"><b>Decisiones tuyas</b>Cadencia por defecto, tope diario de contactos, y si el envío va como mensaje directo o como solicitud de conexión con nota.</div>
+      </div>
+      <div class="mod">
+        <span class="m-tag">Módulo 2</span>
+        <h3>El setter de IA</h3>
+        <p>El corazón del sistema. Cuando el lead responde, un agente toma la conversación y la lleva hasta agendar una llamada. Conoce al lead (el análisis del perfil ya te lo da la base), conoce tu oferta, escribe como una persona y no suelta la meta. Responde dudas cortas, maneja objeciones simples y propone horarios.</p>
+        <div class="dec"><b>Decisiones tuyas</b>El prompt del agente, cuánta memoria de conversación guarda y cuándo escala a un humano si el lead se sale del guion.</div>
+      </div>
+      <div class="mod">
+        <span class="m-tag">Módulo 3</span>
+        <h3>Seguimientos</h3>
+        <p>La mayoría no responde al primer mensaje, y ahí es donde se pierde o se gana la plata. Si un lead no contesta, el sistema manda un seguimiento a los pocos días y uno más de cierre después. Agotados los intentos, el lead queda marcado como frío, disponible para re-prospectar más adelante referenciando una publicación nueva.</p>
+        <div class="dec"><b>Decisiones tuyas</b>Días entre seguimientos, cuántos intentos y qué aporta cada mensaje.</div>
+      </div>
+      <div class="mod">
+        <span class="m-tag">Módulo 4</span>
+        <h3>Agenda, estados y recordatorios</h3>
+        <p>Cuando el lead dice que sí, el sistema propone horarios o manda el link de agenda (Cal.com, Calendly, el que uses), registra la reunión y mueve el lead a reunión agendada. Antes de la llamada le manda un recordatorio para bajar el ausentismo. Nadie arrastra tarjetas a mano: todos los movimientos del kanban salen de acá.</p>
+        <div class="dec"><b>Decisiones tuyas</b>Link de agenda o propuesta de horarios, cuánto antes va el recordatorio y qué estados tiene tu tablero.</div>
+      </div>
+    </div>
+    <div class="extras"><span>Si te sobra tiempo (o ambición)</span>Métricas de respuesta y de reuniones por búsqueda, panel para ver las conversaciones en vivo, detección de leads calientes, re-prospección automática de los fríos, y la versión Instagram o WhatsApp del mismo motor.</div>
+  </div>
+</section>
+
+<section class="sec" id="s05">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">05</span><h2>El nudo técnico: los mensajes en LinkedIn</h2></div>
+    <p>Acá está la parte difícil del desafío, y justamente por eso vale lo que vale. LinkedIn no tiene una API pública de mensajería como la de Meta: nadie te va a dar un endpoint oficial de enviar mensaje. Hay tres caminos posibles, y parte del trabajo es investigar cuál te funciona mejor.</p>
+    <div class="routes">
+      <div class="route">
+        <span class="r-tag">Ruta A</span>
+        <h3>Proveedores con API que operan tu cuenta</h3>
+        <p>Servicios como Unipile, PhantomBuster o HeyReach conectan tu cuenta de LinkedIn y te exponen una API para enviar mensajes, leer respuestas y mandar solicitudes de conexión. Es el camino más directo para integrar con tu sistema o con N8N. Son pagos, pero acá aplica la regla del presupuesto infinito.</p>
+      </div>
+      <div class="route">
+        <span class="r-tag">Ruta B</span>
+        <h3>Actores de Apify</h3>
+        <p>En Apify también hay actores de mensajería y de conexión para LinkedIn, además de los de scraping. Es el mismo ecosistema que ya usás para la búsqueda, así que la integración sale natural. Revisá reseñas y probá en chico antes de confiarle la operación.</p>
+      </div>
+      <div class="route">
+        <span class="r-tag">Ruta C</span>
+        <h3>Automatización de navegador propia</h3>
+        <p>Un script con Playwright o similar que usa tu sesión logueada y opera LinkedIn como lo haría una persona. Control total y costo casi cero, pero es lo más frágil: cualquier cambio de interfaz te rompe el flujo, y es lo más fácil de detectar si te pasás de volumen.</p>
+      </div>
+    </div>
+    <p>Mi recomendación para arrancar: Ruta A. Resolvés el envío en un día y te concentrás en el agente, que es donde está el valor de verdad. Después optimizás lo que quieras.</p>
+    <div class="card">
+      <h3>Límites y cuidados (esto va en serio)</h3>
+      <ul>
+        <li><strong>Probá siempre con una cuenta de prueba o secundaria.</strong> Tu perfil principal no se toca hasta que el sistema esté estable y sepas que no dice pavadas.</li>
+        <li><strong>Volúmenes humanos.</strong> LinkedIn limita conexiones y mensajes diarios. Arrancá con poco, unos 15 o 20 contactos por día, calentá las cuentas nuevas de a poco y subí gradual.</li>
+        <li><strong>Cadencia con variación.</strong> Mensajes espaciados y con tiempos irregulares. Nada de ráfagas exactas cada 60 segundos.</li>
+        <li><strong>¿Cuenta de pago?</strong> No es obligatoria. Con la gratuita mandás la nota junto con la solicitud de conexión. Premium o Sales Navigator suman (mensajes a no contactos, mejores filtros) y existe el mes de prueba, como contaba Marisol en la clase. Si podés, mejor; si no, se puede igual.</li>
+        <li><strong>El perfil importa.</strong> Es tu tarjeta de presentación: foto decente, titular claro y algo de actividad reciente hacen que te respondan más. Nosotros prospectamos desde el perfil de Marta por eso mismo. No es requisito para el desafío, pero el que prospecta con buen perfil corre con ventaja.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s06">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Stack y herramientas</h2></div>
+    <p><strong>Apify, el motor de la búsqueda.</strong> Los actores son mini agentes con una función específica: uno scrapea perfiles y trae el email, otro los datos de la empresa, otro las publicaciones. Combinás varios y con una sola búsqueda disparás todo en paralelo. Por eso Apify le ganó a las demás plataformas que investigamos, Apollo incluida: las otras hacen una búsqueda plana, esta te deja armar un escuadrón. Los planes son baratos y la cuenta nueva trae 5 dólares de regalo; yo hice un montón de búsquedas y gasté 0,85. Y en el peor de los casos, cuenta nueva y cambiás el token de la API.</p>
+    <p><strong>Configuración cero a mano.</strong> Yo no configuré ni un actor. Entré a Apify, fui a Integrations, le saqué una captura a la API key, se la pasé a Claude Code y le dije: encargate de configurar los actores, instalá lo que tengas que instalar en mi cuenta, pero que funcione bien. Y listo. Hacé exactamente lo mismo.</p>
+    <p><strong>N8N para lo que corre solo.</strong> Los flujos que quedan andando en producción (envíos, seguimientos, webhooks de respuestas) armalos en N8N. La visualización nodo por nodo te deja ver exactamente dónde se rompe algo, cosa que un script suelto no te da, y eso lo vimos en vivo en la clase con Bárbara. Si ya armaste el flujo en Claude Code, pedile el JSON para N8N y los prompts de cada nodo: te queda conectar credenciales.</p>
+    <p><strong>CRM y conexiones.</strong> Todo se conecta por API. Si mañana querés volcar los leads a un Salesforce, un Airtable o el CRM que sea, es pasarle el token a Claude Code y pedirle la integración, como preguntaba Facu. Diseñá el sistema pensando en eso: datos limpios y bien estructurados desde el día uno.</p>
+    <p><strong>Costo de operación.</strong> Andando, esto sale unos 2 o 3 dólares por semana entre tokens de IA y búsquedas. Para el desafío, pensá con presupuesto infinito: si una cuenta premium o una plataforma paga te destraba el sistema, va. El retorno lo justifica de sobra.</p>
+  </div>
+</section>
+
+<section class="sec" id="s07">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">07</span><h2>El setter: cómo tiene que sonar</h2></div>
+    <p>Sobre el enfoque, simple: todos estamos acá por lo mismo, crear y escalar una agencia de IA. El agente vende eso. Identificamos procesos en tu empresa y los resolvemos con inteligencia artificial: diagnóstico, auditoría y desarrollo a medida. Con ese posicionamiento alcanza, no te mates buscando la oferta perfecta antes de que el sistema funcione.</p>
+    <p>Les prometí ejemplos en la clase, acá van. Son orientativos: el tono exacto lo define cada uno, pero la vara es esta. Si un mensaje se siente escrito por un bot, está mal. Los datos entre corchetes se completan con información real de tu oferta; nada de inventar casos ni números.</p>
+
+    <div class="chat">
+      <div class="chat-head">
+        <div class="avatar">M</div>
+        <div><div class="who">Martín G.</div><div class="sub">Dueño · Inmobiliaria [nombre] · Madrid</div></div>
+        <div class="chat-title">Ejemplo A<br>Responde interesado</div>
+      </div>
+      <div class="chat-body">
+        <div class="day">Día 1</div>
+        <div class="msg out">Hola Martín, vi tu post sobre el seguimiento de las consultas que entran por el portal y me pareció muy acertado el planteo. En [tu empresa] ayudamos a inmobiliarias a resolver justo eso con IA: calificación y seguimiento automático de cada consulta. ¿Te interesa una llamada corta esta semana para ver cómo aplicaría en tu caso?</div>
+        <div class="msg in">Hola! Puede ser, ¿de qué se trata puntualmente?</div>
+        <div class="msg out">En 15 minutos te muestro dos o tres procesos de tu operación donde la IA suele dar retorno rápido, y ahí ves si tiene sentido avanzar. ¿Te queda bien el jueves a las 10:00 o el viernes a las 15:00, hora de Madrid?</div>
+        <div class="msg in">El viernes a las 15 me va</div>
+        <div class="msg out">Listo, agendado para el viernes a las 15:00. Te acaba de llegar la invitación con el link. Cualquier cosa me escribís por acá. ¡Nos vemos!</div>
+        <div class="sys">Estado del lead → <b>Reunión agendada</b> (automático)</div>
+        <div class="day">Viernes · 14:00</div>
+        <div class="msg out">Martín, te recuerdo que en una hora tenemos la llamada. Te dejo el link de nuevo por las dudas: [link]. ¡Ahí nos vemos!</div>
+      </div>
+    </div>
+
+    <div class="chat">
+      <div class="chat-head">
+        <div class="avatar">C</div>
+        <div><div class="who">Carolina P.</div><div class="sub">Gerente comercial · Automotora [nombre]</div></div>
+        <div class="chat-title">Ejemplo B<br>Pide info por chat</div>
+      </div>
+      <div class="chat-body">
+        <div class="msg in">Ahora estoy a full, mandame info por acá y lo veo</div>
+        <div class="msg out">De una, te resumo. Primero auditamos tus procesos y detectamos dónde la IA da más retorno; después construimos la solución: agentes de atención, calificación de leads, automatizaciones internas. Igual en 15 minutos te lo aterrizo a tu caso concreto mucho mejor que por chat. ¿Te reservo un hueco la semana que viene y si no te sirve lo movemos?</div>
+        <div class="msg in">Dale, el martes puede ser</div>
+        <div class="msg out">Perfecto. ¿Martes a las 11:00 te va? Si preferís otro horario, te paso mi agenda y elegís: [link]</div>
+      </div>
+    </div>
+
+    <div class="chat">
+      <div class="chat-head">
+        <div class="avatar">R</div>
+        <div><div class="who">Rodrigo S.</div><div class="sub">Socio · Estudio contable [nombre]</div></div>
+        <div class="chat-title">Ejemplo C<br>No responde</div>
+      </div>
+      <div class="chat-body">
+        <div class="day">Día 1</div>
+        <div class="msg out">Hola Rodrigo, vi que en el estudio están sumando servicios de asesoramiento y me pareció interesante el movimiento. En [tu empresa] ayudamos a estudios como el tuyo a automatizar la parte operativa con IA para liberar horas del equipo. ¿Te interesa una llamada corta para ver si aplica en tu caso?</div>
+        <div class="day">Día 4 · Seguimiento 1</div>
+        <div class="msg out">Rodrigo, te escribí hace unos días por el tema de automatizar la operación del estudio. Te dejo un dato por si suma: a un cliente del mismo rubro le liberamos [X] horas semanales solo en [proceso]. Si querés verlo aplicado a tu caso, coordinamos una llamada corta cuando puedas.</div>
+        <div class="day">Día 8 · Seguimiento 2 (cierre)</div>
+        <div class="msg out">Te dejo de escribir por acá, Rodrigo. Si más adelante querés revisar cómo aplicar IA en el estudio, mandame un mensaje y lo vemos. ¡Éxitos con todo!</div>
+        <div class="sys">Estado del lead → <b>Frío · Re-prospección</b> (automático)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Reglas de tono para el agente</h3>
+      <ul>
+        <li>Mensajes cortos: el primero no pasa de cuatro líneas, y siempre referencia algo real del perfil o del último post.</li>
+        <li>Una sola pregunta por mensaje, y cada mensaje empuja hacia la llamada. El servicio no se explica entero por chat.</li>
+        <li>Cero errores de ortografía y cero frases de plantilla. Si suena a vendedor de manual, se reescribe el prompt.</li>
+        <li>Máximo dos seguimientos. El que no respondió después de eso queda frío, no se lo persigue.</li>
+        <li>Firma con nombre real y habla desde una empresa real. Nunca miente ni inventa casos.</li>
+        <li>Si el lead pide algo fuera de guion (precios cerrados, temas técnicos finos), el agente avisa que lo consulta y escala a un humano.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s08">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Plan sugerido: 14 días</h2></div>
+    <p>Así lo encararíamos nosotros si lo tuviéramos que hacer hoy. No es obligatorio seguirlo, pero ordena. La lógica de fondo es la del arbolito de Navidad: primero el árbol, después los chirimbolos. Esqueleto completo funcionando antes de pulir nada.</p>
+    <div class="tl">
+      <div class="tl-row">
+        <div class="tl-when">Días 1 y 2</div>
+        <div><h3>La base andando</h3><p>Importá el código en Claude Code, conectá tu cuenta de Apify (captura de la API key y que se encargue él) y validá que la búsqueda trae leads reales con datos correctos.</p></div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-when">Días 3 a 5</div>
+        <div><h3>Primer mensaje automático</h3><p>Elegí la ruta de envío, conectala y lográ que el primer mensaje salga solo, con cadencia. Probá con una cuenta de prueba y volúmenes chicos desde el minuto uno.</p></div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-when">Días 6 a 9</div>
+        <div><h3>El setter</h3><p>Prompt del agente, lectura de respuestas (webhooks o polling), memoria de conversación y orquestación en N8N. Acá se va la mayor parte del tiempo, y está bien que así sea.</p></div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-when">Días 10 y 11</div>
+        <div><h3>Seguimientos y agenda</h3><p>Follow-ups con tiempos configurables, integración con tu link de agenda, recordatorio previo a la llamada y estados del kanban moviéndose solos.</p></div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-when">Días 12 a 14</div>
+        <div><h3>Prueba real y pulido</h3><p>Corré el sistema de punta a punta con leads reales, ajustá el tono del agente, cazá errores y prepará la demo y tu propuesta comercial para la llamada final.</p></div>
+      </div>
+    </div>
+    <div class="aside">
+      <h4>No te quedes trancado</h4>
+      <p>Si a los días 6 o 7 seguís peleando con el envío, avisá en el grupo. La regla de siempre: no más de un par de horas trabado con el mismo problema. Escribí y lo destrabamos, ya pasamos por casi todos.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s09">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">09</span><h2>Reglas del desafío</h2></div>
+    <dl class="rules">
+      <div class="rule"><dt>Plazo</dt><dd>Dos semanas, hasta el miércoles 5 de agosto. Si vemos que hace falta, lo estiramos una semana más. Nosotros tenemos apuro, pero preferimos que llegue bien hecho.</dd></div>
+      <div class="rule"><dt>Solo o en grupo</dt><dd>Como quieras, y en grupo mejor. Repartan por fortalezas: uno con el scraping, otro con el agente, otro con los flujos. Más cabezas llegan más lejos, eso es obvio.</dd></div>
+      <div class="rule"><dt>Branding libre</dt><dd>Hacelo con tu marca, con la nuestra o con la que quieras. Lo que se evalúa es que funcione, no el logo. Después cambiar el branding es un detalle.</dd></div>
+      <div class="rule"><dt>Nicho y geografía</dt><dd>El que elijas: agencias, inmobiliarias, automotoras, estudios. Idealmente países de habla hispana; si vas a Estados Unidos, Florida y Miami concentran el público hispanohablante. Y acordate del frasco de caramelos: búsquedas chicas y enfocadas traen mejores leads que barrer un país entero.</dd></div>
+      <div class="rule"><dt>Diseñalo versátil</dt><dd>La búsqueda es apenas un 10 o 15% del sistema. Si mañana se lo vendés a una inmobiliaria o a una automotora, cambiar el rubro tiene que ser tocar un ajuste, no reescribir el código. El agente sí va enfocado a la oferta, eso es lo único que se adapta en serio por cliente.</dd></div>
+      <div class="rule"><dt>Probá en tus cuentas</dt><dd>Perfil propio o de prueba, como prefieras. La idea es que seas dueño de tu solución de punta a punta y la valides vos primero.</dd></div>
+      <div class="rule"><dt>Presupuesto mental</dt><dd>Infinito. Si implementarlo bien requiere pagar cuentas de LinkedIn, plataformas o APIs, asumí que se puede. Un sistema que funciona lo paga de sobra.</dd></div>
+      <div class="rule"><dt>Dudas</dt><dd>Por el grupo o directo a mí, estoy disponible estas dos semanas. Y ojo: nosotros tampoco lo hicimos todavía; si lo hubiéramos hecho no estaríamos queriendo comprarlo. Así que vamos a destrabar cosas juntos.</dd></div>
+      <div class="rule"><dt>Si recién entrás</dt><dd>Si esto te queda grande porque llegaste hace poco, no pasa nada. Seguí con los módulos, sumate a las llamadas y agarrá el próximo desafío. La cosa es no detenerse: un 1% mejor cada día.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="sec" id="s10">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">10</span><h2>La instancia final: nos lo venden</h2></div>
+    <p>Cerrado el plazo, agendamos llamadas conmigo y con Agus, individuales o por grupo, con todos los que hayan llegado al objetivo. El formato es simple: nos tratan como a un dueño de negocio y nos venden el sistema. Demo en vivo de punta a punta y propuesta comercial arriba de la mesa: precio de implementación, modelo de comisión, contrato.</p>
+    <p>Esto va en serio. Queremos comprar esta automatización lo antes posible y usarla para prospectar de verdad. Lo intentamos tercerizar en octubre del año pasado con un proveedor a pura comisión y funcionó mal, no agendaba. Por eso lo traemos acá: sabemos que alguno de ustedes lo puede hacer veinte veces mejor de lo que lo haríamos nosotros ahora.</p>
+    <h3 style="margin:34px 0 4px;font-size:1.1rem">Qué gana el que lo logre</h3>
+    <div class="win-grid">
+      <div class="win"><h3>Nexum le compra la automatización</h3><p>La ponemos a andar con nuestra oferta, nuestro perfil de LinkedIn y nuestros recursos. Vos cobrás por el sistema.</p></div>
+      <div class="win"><h3>Un rol dentro de Nexum</h3><p>Puerta abierta a encargarse del área de prospección y a seguir vendiendo el producto juntos: setup y mantenimiento para clientes, con Nexum empujando la venta.</p></div>
+      <div class="win"><h3>Un producto propio para vender</h3><p>Modelo sugerido: ticket de implementación más una comisión del 5 al 10% por cada cliente cerrado, con contrato firmado. Casi sin mantenimiento una vez instalado. Para el que compra es un no-brainer: no arriesga nada y paga solo si cierra clientes.</p></div>
+      <div class="win"><h3>Y aunque no lo vendas</h3><p>Te queda un sistema prospectando por vos las 24 horas mientras hacés otra cosa. Nuestra referencia de meta: un cliente nuevo por semana, con tickets de 5.000 a 8.000 dólares. Con eso los números cierran solos.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="checklist">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">11</span><h2>Checklist: cuándo está logrado</h2></div>
+    <p>Antes de pedir la llamada final, pasá el sistema por esta lista. Si marcás todo, estás listo para vendérnoslo.</p>
+    <div class="check-list">
+      <div class="check"><div>La búsqueda trae <b>leads reales con datos correctos</b> desde Apify.</div></div>
+      <div class="check"><div>El primer mensaje <b>sale solo</b>, con cadencia configurable y revisión opcional antes del envío.</div></div>
+      <div class="check"><div>El agente <b>sostiene la conversación</b> con contexto del lead y tono humano, sin intervención de nadie.</div></div>
+      <div class="check"><div>Los <b>seguimientos</b> a quienes no responden salen automáticos, con tiempos configurables.</div></div>
+      <div class="check"><div>Cuando el lead acepta, la llamada queda <b>agendada y registrada</b> en el sistema.</div></div>
+      <div class="check"><div>Los <b>estados del kanban se mueven solos</b> en cada etapa del proceso.</div></div>
+      <div class="check"><div>El <b>recordatorio previo a la reunión</b> sale sin que nadie lo dispare.</div></div>
+      <div class="check"><div>La <b>oferta, el nicho y el idioma</b> se cambian desde ajustes, sin tocar código.</div></div>
+      <div class="check"><div>Podés mostrar en vivo <b>una conversación real de punta a punta</b>, del scraping a la reunión agendada.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="quote">
+  <div class="wrap">
+    <blockquote>«El valor se encuentra en <span class="g">lo difícil</span>. Si esto fuese fácil, estaría plagado de gente haciéndolo, y ahí el precio baja.»</blockquote>
+    <cite>De la clase del desafío · Nexum Academy</cite>
+  </div>
+</section>
+
+<section class="close-sec">
+  <div class="wrap">
+    <p>La clase quedó grabada por si necesitás volver a verla, y cualquier duda va por el grupo o directo a mí. Nos vemos en dos semanas con sistemas funcionando.</p>
+    <p><strong>Vamos arriba.</strong></p>
+    <div class="sign">
+      <div class="name">Juan Pablo Rosso</div>
+      <div class="role">Director Comercial y Co-Fundador · Nexum AI</div>
+    </div>
+    <div class="res-grid">
+      <a class="res" href="https://drive.google.com/file/d/1dkmCf6RBcXghT05UudtrnwXxap3rjS_Y/view?usp=sharing" target="_blank" rel="noopener"><span class="r-k">Recurso principal</span><span class="r-v">Código base de la plataforma →</span></a>
+      <a class="res" href="https://apify.com" target="_blank" rel="noopener"><span class="r-k">Motor de scraping</span><span class="r-v">Apify (5 USD gratis al crear cuenta) →</span></a>
+      <div class="res"><span class="r-k">Grabación de la clase</span><span class="r-v">Disponible en la comunidad</span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><span class="brand-mark"></span><span class="brand-name">NEXUM<span class="ai">AI</span></span></div>
+    <div class="fine">© 2026 Nexum AI · nexumai.online · Documento del desafío de la comunidad</div>
+  </div>
+</footer>
+
+</body>
+</html>

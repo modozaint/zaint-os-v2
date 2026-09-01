@@ -1,0 +1,136 @@
+{
+  "name": "LeadHunter · Contacto (cadencia)",
+  "id": "leadhunterContacto1",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 20
+            }
+          ]
+        }
+      },
+      "id": "c1b2c3d4-0001-4000-8000-000000000011",
+      "name": "Cada 20 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-60, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/contactar",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "c1b2c3d4-0002-4000-8000-000000000012",
+      "name": "¿Toca contactar a alguien?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [180, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "hay-fallidos",
+              "leftValue": "={{ $json.fallidos ? $json.fallidos.length : 0 }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c1b2c3d4-0003-4000-8000-000000000013",
+      "name": "¿Falló alguna invitación?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [420, 0]
+    },
+    {
+      "parameters": {
+        "message": "=LeadHunter: {{ $json.fallidos.length }} invitación(es) fallaron. Revisar la cuenta de LinkedIn en Unipile.\nDetalle: {{ JSON.stringify($json.fallidos) }}",
+        "options": {}
+      },
+      "id": "c1b2c3d4-0004-4000-8000-000000000014",
+      "name": "Avisar del problema",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [660, -80]
+    }
+  ],
+  "connections": {
+    "Cada 20 minutos": {
+      "main": [
+        [
+          {
+            "node": "¿Toca contactar a alguien?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Toca contactar a alguien?": {
+      "main": [
+        [
+          {
+            "node": "¿Falló alguna invitación?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Falló alguna invitación?": {
+      "main": [
+        [
+          {
+            "node": "Avisar del problema",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "leadhunter"
+  }
+}

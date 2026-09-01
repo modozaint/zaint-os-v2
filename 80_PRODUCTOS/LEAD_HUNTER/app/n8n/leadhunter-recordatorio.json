@@ -1,0 +1,176 @@
+{
+  "name": "LeadHunter · Recordatorio (antes de la reunión)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "reloj-recordatorio",
+      "name": "Reloj · cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-220, 0],
+      "notes": "Cada 15 min porque la ventana del recordatorio son 2 horas: con un reloj más lento, una reunión agendada en caliente se quedaría sin aviso."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/recordatorio",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 280000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "llamar-recordatorio",
+      "name": "1 · Recordar la reunión por LinkedIn",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 0],
+      "notes": "La app decide a quién le toca: solo leads en estado reunión, con cita futura dentro de 2 h y sin recordatorio previo."
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "resultados",
+        "options": {}
+      },
+      "id": "split-recordatorio",
+      "name": "2 · Un renglón por lead",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "r-enviado",
+                    "leftValue": "={{ $json.enviado }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "enviado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "r-ya-recordado",
+                    "leftValue": "={{ $json.motivo }}",
+                    "rightValue": "Ya se le había recordado.",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ya recordado"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "switch-recordatorio",
+      "name": "3 · ¿Qué pasó con cada uno?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {},
+      "id": "ok-recordatorio",
+      "name": "Recordatorio enviado",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [680, -120]
+    },
+    {
+      "parameters": {},
+      "id": "ya-recordado",
+      "name": "Ya se le había recordado",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [680, 20]
+    },
+    {
+      "parameters": {},
+      "id": "no-salio",
+      "name": "No salió · ver motivo",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [680, 160],
+      "notes": "Freno de mano puesto, reunión ya empezada, lead sin LinkedIn o rechazo de Unipile. El motivo viene en el campo `motivo`."
+    }
+  ],
+  "connections": {
+    "Reloj · cada 15 minutos": {
+      "main": [[{ "node": "1 · Recordar la reunión por LinkedIn", "type": "main", "index": 0 }]]
+    },
+    "1 · Recordar la reunión por LinkedIn": {
+      "main": [[{ "node": "2 · Un renglón por lead", "type": "main", "index": 0 }]]
+    },
+    "2 · Un renglón por lead": {
+      "main": [[{ "node": "3 · ¿Qué pasó con cada uno?", "type": "main", "index": 0 }]]
+    },
+    "3 · ¿Qué pasó con cada uno?": {
+      "main": [
+        [{ "node": "Recordatorio enviado", "type": "main", "index": 0 }],
+        [{ "node": "Ya se le había recordado", "type": "main", "index": 0 }],
+        [{ "node": "No salió · ver motivo", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": {
+    "instanceId": "leadhunter"
+  }
+}

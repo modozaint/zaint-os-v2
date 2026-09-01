@@ -1,0 +1,202 @@
+Desafío Nexum · Prospección automática por LinkedIn
+NEXUM AI
+Desafío de la comunidad · Julio 2026
+Propuesta técnica y alcance completo
+Prospección automática por LinkedIn
+Ya tenemos el sistema que busca leads y escribe el mensaje. Ahora falta lo que vale de verdad: que los contacte, converse como un setter y agende llamadas sin que nadie toque nada. Eso es lo que vamos a construir en las próximas dos semanas.
+Plazo · Miércoles 5 de agosto
+Solo o en grupo
+Nexum compra la mejor solución
+Manual permitido Búsqueda de leads (Apify)
+Automático Primer mensaje
+Automático Conversación (setter IA)
+Automático Seguimientos
+Automático Reunión agendada + recordatorio
+El único paso manual que se permite es lanzar la búsqueda (y revisar los primeros mensajes, si querés). Todo lo demás corre solo.
+Descargar el código base
+Ver el checklist final
+En esta propuesta
+01 De dónde sale esto
+02 El objetivo
+03 La base que recibís
+04 Lo que hay que construir
+05 El nudo técnico: LinkedIn
+06 Stack y herramientas
+07 El setter y sus mensajes
+08 Plan sugerido de 14 días
+09 Reglas del desafío
+10 La instancia final
+11 Checklist: cuándo está logrado
+01 De dónde sale esto
+La semana pasada un referido de un cliente nos pidió un sistema de scraping con cierta urgencia. Lo armamos con Claude Code y Apify, casi gratis entre amigos, y terminó siendo un CRM completo que busca negocios en Google Maps y otras fuentes, los ordena en tablas y les da seguimiento. Es el sistema de Camel Export Cars que vimos en la clase, con su panel, su ruta de llamadas, su historial y hasta su manual de usuario.
+De ese trabajo salió la plataforma de leads de LinkedIn que les mostré después: buscás por rubro, cargo y ubicación, y te devuelve personas reales con un análisis de su perfil, su último post y un mensaje personalizado listo para mandar.
+¿Por qué LinkedIn y no otra red? Porque ahí viven los peces gordos. Es la plataforma donde se mueven las empresas y donde un mensaje de negocio se recibe como algo normal: la gente entra sabiendo que se interactúa así. Nosotros ya cerramos clientes por LinkedIn con tickets de más de 12.000 dólares, y hace dos semanas cerramos uno grande acá en Uruguay. El canal funciona. Lo que falta es el sistema.
+¿E Instagram?
+Queda para después. El mismo motor se puede escalar a Instagram y WhatsApp más adelante, y la API de Meta lo hace incluso más fácil de implementar. El problema es el público: la gente entra a Instagram a distraerse con historias y reels, y una propuesta de negocio ahí muchas veces ni se lee. Primero LinkedIn, que es donde está el retorno.
+02 El objetivo
+La plataforma actual tiene un límite que Sofía definió perfecto en la clase: es semiautomática. Te busca los leads y te escribe el mensaje, pero después tenés que copiarlo, ir a LinkedIn, pegarlo, volver y cambiar el estado a mano. Y si la persona responde, ya quedaste vos manejando el chat. Ese es el muro que hay que cruzar.
+El sistema terminado tiene que hacer todo esto solo:
+- Contactar a cada lead encontrado, con una cadencia que vos definís.
+- Sostener la conversación después del primer mensaje, con contexto del perfil y de la empresa de la persona.
+- Hacer seguimiento a los que no responden.
+- Agendar la llamada cuando el lead acepta, y mandarle un recordatorio antes de la reunión.
+- Mover los estados del kanban sin que nadie los toque: contactado, respondió, reunión agendada.
+Manual se permiten exactamente dos cosas. Una, lanzar la búsqueda (que también podría automatizarse, pero no hace falta). Dos, si querés, revisar los primeros mensajes antes de que salgan: si chequeás los primeros cinco y están bien, un botón de mandar el resto sin revisar y listo. Nada más que eso.
+03 La base que recibís
+No arrancás de cero. Junto con esta propuesta va un archivo con todo el código de la plataforma de LinkedIn que vimos en la clase. Es copiar, pegar en Claude Code y pedirle que la implemente en tu entorno.
+Lo que la base ya hace
+- Búsqueda por rubro o palabra clave, cargos y ubicación, con límite de leads por búsqueda y costo estimado en tiempo real.
+- Scraping vía Apify: trae personas reales con foto, cargo y empresa.
+- Análisis con IA de cada perfil: quién es, qué hace su empresa y de qué habló en su última publicación.
+- Mensaje personalizado generado para cada lead, firmado con tu nombre y alineado a tu oferta.
+- Tablero kanban para mover leads entre estados, y pestaña de ajustes: tu nombre, tu empresa, tu oferta y el idioma de los mensajes.
+Descargar el código base
+Un punto importante: esta base es el punto de partida mínimo. Podés agregarle columnas, cambiarle la estructura, rediseñarla entera o directamente arrancar de cero si tenés una idea mejor. Libertad total. Lo que se evalúa es que el sistema final funcione, no que respetes la base.
+04 Lo que hay que construir
+Lo divido en cuatro módulos para que sea más fácil de encarar, y de repartir si trabajan en grupo. El orden importa: cada módulo se apoya en el anterior.
+Módulo 1
+Contacto automático
+Después de la búsqueda, un botón de empezar a contactar. El sistema envía el primer mensaje a cada lead con una cadencia configurable (cada cuántos minutos sale uno) para no parecer una ametralladora. Antes de arrancar podés revisar los mensajes generados y, si los primeros están bien, liberar el resto de una.
+Decisiones tuyas Cadencia por defecto, tope diario de contactos, y si el envío va como mensaje directo o como solicitud de conexión con nota.
+Módulo 2
+El setter de IA
+El corazón del sistema. Cuando el lead responde, un agente toma la conversación y la lleva hasta agendar una llamada. Conoce al lead (el análisis del perfil ya te lo da la base), conoce tu oferta, escribe como una persona y no suelta la meta. Responde dudas cortas, maneja objeciones simples y propone horarios.
+Decisiones tuyas El prompt del agente, cuánta memoria de conversación guarda y cuándo escala a un humano si el lead se sale del guion.
+Módulo 3
+Seguimientos
+La mayoría no responde al primer mensaje, y ahí es donde se pierde o se gana la plata. Si un lead no contesta, el sistema manda un seguimiento a los pocos días y uno más de cierre después. Agotados los intentos, el lead queda marcado como frío, disponible para re-prospectar más adelante referenciando una publicación nueva.
+Decisiones tuyas Días entre seguimientos, cuántos intentos y qué aporta cada mensaje.
+Módulo 4
+Agenda, estados y recordatorios
+Cuando el lead dice que sí, el sistema propone horarios o manda el link de agenda (Cal.com, Calendly, el que uses), registra la reunión y mueve el lead a reunión agendada. Antes de la llamada le manda un recordatorio para bajar el ausentismo. Nadie arrastra tarjetas a mano: todos los movimientos del kanban salen de acá.
+Decisiones tuyas Link de agenda o propuesta de horarios, cuánto antes va el recordatorio y qué estados tiene tu tablero.
+Si te sobra tiempo (o ambición) Métricas de respuesta y de reuniones por búsqueda, panel para ver las conversaciones en vivo, detección de leads calientes, re-prospección automática de los fríos, y la versión Instagram o WhatsApp del mismo motor.
+05 El nudo técnico: los mensajes en LinkedIn
+Acá está la parte difícil del desafío, y justamente por eso vale lo que vale. LinkedIn no tiene una API pública de mensajería como la de Meta: nadie te va a dar un endpoint oficial de enviar mensaje. Hay tres caminos posibles, y parte del trabajo es investigar cuál te funciona mejor.
+Ruta A
+Proveedores con API que operan tu cuenta
+Servicios como Unipile, PhantomBuster o HeyReach conectan tu cuenta de LinkedIn y te exponen una API para enviar mensajes, leer respuestas y mandar solicitudes de conexión. Es el camino más directo para integrar con tu sistema o con N8N. Son pagos, pero acá aplica la regla del presupuesto infinito.
+Ruta B
+Actores de Apify
+En Apify también hay actores de mensajería y de conexión para LinkedIn, además de los de scraping. Es el mismo ecosistema que ya usás para la búsqueda, así que la integración sale natural. Revisá reseñas y probá en chico antes de confiarle la operación.
+Ruta C
+Automatización de navegador propia
+Un script con Playwright o similar que usa tu sesión logueada y opera LinkedIn como lo haría una persona. Control total y costo casi cero, pero es lo más frágil: cualquier cambio de interfaz te rompe el flujo, y es lo más fácil de detectar si te pasás de volumen.
+Mi recomendación para arrancar: Ruta A. Resolvés el envío en un día y te concentrás en el agente, que es donde está el valor de verdad. Después optimizás lo que quieras.
+Límites y cuidados (esto va en serio)
+- Probá siempre con una cuenta de prueba o secundaria. Tu perfil principal no se toca hasta que el sistema esté estable y sepas que no dice pavadas.
+- Volúmenes humanos. LinkedIn limita conexiones y mensajes diarios. Arrancá con poco, unos 15 o 20 contactos por día, calentá las cuentas nuevas de a poco y subí gradual.
+- Cadencia con variación. Mensajes espaciados y con tiempos irregulares. Nada de ráfagas exactas cada 60 segundos.
+- ¿Cuenta de pago? No es obligatoria. Con la gratuita mandás la nota junto con la solicitud de conexión. Premium o Sales Navigator suman (mensajes a no contactos, mejores filtros) y existe el mes de prueba, como contaba Marisol en la clase. Si podés, mejor; si no, se puede igual.
+- El perfil importa. Es tu tarjeta de presentación: foto decente, titular claro y algo de actividad reciente hacen que te respondan más. Nosotros prospectamos desde el perfil de Marta por eso mismo. No es requisito para el desafío, pero el que prospecta con buen perfil corre con ventaja.
+06 Stack y herramientas
+Apify, el motor de la búsqueda. Los actores son mini agentes con una función específica: uno scrapea perfiles y trae el email, otro los datos de la empresa, otro las publicaciones. Combinás varios y con una sola búsqueda disparás todo en paralelo. Por eso Apify le ganó a las demás plataformas que investigamos, Apollo incluida: las otras hacen una búsqueda plana, esta te deja armar un escuadrón. Los planes son baratos y la cuenta nueva trae 5 dólares de regalo; yo hice un montón de búsquedas y gasté 0,85. Y en el peor de los casos, cuenta nueva y cambiás el token de la API.
+Configuración cero a mano. Yo no configuré ni un actor. Entré a Apify, fui a Integrations, le saqué una captura a la API key, se la pasé a Claude Code y le dije: encargate de configurar los actores, instalá lo que tengas que instalar en mi cuenta, pero que funcione bien. Y listo. Hacé exactamente lo mismo.
+N8N para lo que corre solo. Los flujos que quedan andando en producción (envíos, seguimientos, webhooks de respuestas) armalos en N8N. La visualización nodo por nodo te deja ver exactamente dónde se rompe algo, cosa que un script suelto no te da, y eso lo vimos en vivo en la clase con Bárbara. Si ya armaste el flujo en Claude Code, pedile el JSON para N8N y los prompts de cada nodo: te queda conectar credenciales.
+CRM y conexiones. Todo se conecta por API. Si mañana querés volcar los leads a un Salesforce, un Airtable o el CRM que sea, es pasarle el token a Claude Code y pedirle la integración, como preguntaba Facu. Diseñá el sistema pensando en eso: datos limpios y bien estructurados desde el día uno.
+Costo de operación. Andando, esto sale unos 2 o 3 dólares por semana entre tokens de IA y búsquedas. Para el desafío, pensá con presupuesto infinito: si una cuenta premium o una plataforma paga te destraba el sistema, va. El retorno lo justifica de sobra.
+07 El setter: cómo tiene que sonar
+Sobre el enfoque, simple: todos estamos acá por lo mismo, crear y escalar una agencia de IA. El agente vende eso. Identificamos procesos en tu empresa y los resolvemos con inteligencia artificial: diagnóstico, auditoría y desarrollo a medida. Con ese posicionamiento alcanza, no te mates buscando la oferta perfecta antes de que el sistema funcione.
+Les prometí ejemplos en la clase, acá van. Son orientativos: el tono exacto lo define cada uno, pero la vara es esta. Si un mensaje se siente escrito por un bot, está mal. Los datos entre corchetes se completan con información real de tu oferta; nada de inventar casos ni números.
+Martín G.
+Dueño · Inmobiliaria [nombre] · Madrid
+Ejemplo A
+Responde interesado
+Día 1
+Hola Martín, vi tu post sobre el seguimiento de las consultas que entran por el portal y me pareció muy acertado el planteo. En [tu empresa] ayudamos a inmobiliarias a resolver justo eso con IA: calificación y seguimiento automático de cada consulta. ¿Te interesa una llamada corta esta semana para ver cómo aplicaría en tu caso?
+Hola! Puede ser, ¿de qué se trata puntualmente?
+En 15 minutos te muestro dos o tres procesos de tu operación donde la IA suele dar retorno rápido, y ahí ves si tiene sentido avanzar. ¿Te queda bien el jueves a las 10:00 o el viernes a las 15:00, hora de Madrid?
+El viernes a las 15 me va
+Listo, agendado para el viernes a las 15:00. Te acaba de llegar la invitación con el link. Cualquier cosa me escribís por acá. ¡Nos vemos!
+Estado del lead → Reunión agendada (automático)
+Viernes · 14:00
+Martín, te recuerdo que en una hora tenemos la llamada. Te dejo el link de nuevo por las dudas: [link]. ¡Ahí nos vemos!
+Carolina P.
+Gerente comercial · Automotora [nombre]
+Ejemplo B
+Pide info por chat
+Ahora estoy a full, mandame info por acá y lo veo
+De una, te resumo. Primero auditamos tus procesos y detectamos dónde la IA da más retorno; después construimos la solución: agentes de atención, calificación de leads, automatizaciones internas. Igual en 15 minutos te lo aterrizo a tu caso concreto mucho mejor que por chat. ¿Te reservo un hueco la semana que viene y si no te sirve lo movemos?
+Dale, el martes puede ser
+Perfecto. ¿Martes a las 11:00 te va? Si preferís otro horario, te paso mi agenda y elegís: [link]
+Rodrigo S.
+Socio · Estudio contable [nombre]
+Ejemplo C
+No responde
+Día 1
+Hola Rodrigo, vi que en el estudio están sumando servicios de asesoramiento y me pareció interesante el movimiento. En [tu empresa] ayudamos a estudios como el tuyo a automatizar la parte operativa con IA para liberar horas del equipo. ¿Te interesa una llamada corta para ver si aplica en tu caso?
+Día 4 · Seguimiento 1
+Rodrigo, te escribí hace unos días por el tema de automatizar la operación del estudio. Te dejo un dato por si suma: a un cliente del mismo rubro le liberamos [X] horas semanales solo en [proceso]. Si querés verlo aplicado a tu caso, coordinamos una llamada corta cuando puedas.
+Día 8 · Seguimiento 2 (cierre)
+Te dejo de escribir por acá, Rodrigo. Si más adelante querés revisar cómo aplicar IA en el estudio, mandame un mensaje y lo vemos. ¡Éxitos con todo!
+Estado del lead → Frío · Re-prospección (automático)
+Reglas de tono para el agente
+- Mensajes cortos: el primero no pasa de cuatro líneas, y siempre referencia algo real del perfil o del último post.
+- Una sola pregunta por mensaje, y cada mensaje empuja hacia la llamada. El servicio no se explica entero por chat.
+- Cero errores de ortografía y cero frases de plantilla. Si suena a vendedor de manual, se reescribe el prompt.
+- Máximo dos seguimientos. El que no respondió después de eso queda frío, no se lo persigue.
+- Firma con nombre real y habla desde una empresa real. Nunca miente ni inventa casos.
+- Si el lead pide algo fuera de guion (precios cerrados, temas técnicos finos), el agente avisa que lo consulta y escala a un humano.
+08 Plan sugerido: 14 días
+Así lo encararíamos nosotros si lo tuviéramos que hacer hoy. No es obligatorio seguirlo, pero ordena. La lógica de fondo es la del arbolito de Navidad: primero el árbol, después los chirimbolos. Esqueleto completo funcionando antes de pulir nada.
+Días 1 y 2
+La base andando
+Importá el código en Claude Code, conectá tu cuenta de Apify (captura de la API key y que se encargue él) y validá que la búsqueda trae leads reales con datos correctos.
+Días 3 a 5
+Primer mensaje automático
+Elegí la ruta de envío, conectala y lográ que el primer mensaje salga solo, con cadencia. Probá con una cuenta de prueba y volúmenes chicos desde el minuto uno.
+Días 6 a 9
+El setter
+Prompt del agente, lectura de respuestas (webhooks o polling), memoria de conversación y orquestación en N8N. Acá se va la mayor parte del tiempo, y está bien que así sea.
+Días 10 y 11
+Seguimientos y agenda
+Follow-ups con tiempos configurables, integración con tu link de agenda, recordatorio previo a la llamada y estados del kanban moviéndose solos.
+Días 12 a 14
+Prueba real y pulido
+Corré el sistema de punta a punta con leads reales, ajustá el tono del agente, cazá errores y prepará la demo y tu propuesta comercial para la llamada final.
+No te quedes trancado
+Si a los días 6 o 7 seguís peleando con el envío, avisá en el grupo. La regla de siempre: no más de un par de horas trabado con el mismo problema. Escribí y lo destrabamos, ya pasamos por casi todos.
+09 Reglas del desafío
+Plazo Dos semanas, hasta el miércoles 5 de agosto. Si vemos que hace falta, lo estiramos una semana más. Nosotros tenemos apuro, pero preferimos que llegue bien hecho.
+Solo o en grupo Como quieras, y en grupo mejor. Repartan por fortalezas: uno con el scraping, otro con el agente, otro con los flujos. Más cabezas llegan más lejos, eso es obvio.
+Branding libre Hacelo con tu marca, con la nuestra o con la que quieras. Lo que se evalúa es que funcione, no el logo. Después cambiar el branding es un detalle.
+Nicho y geografía El que elijas: agencias, inmobiliarias, automotoras, estudios. Idealmente países de habla hispana; si vas a Estados Unidos, Florida y Miami concentran el público hispanohablante. Y acordate del frasco de caramelos: búsquedas chicas y enfocadas traen mejores leads que barrer un país entero.
+Diseñalo versátil La búsqueda es apenas un 10 o 15% del sistema. Si mañana se lo vendés a una inmobiliaria o a una automotora, cambiar el rubro tiene que ser tocar un ajuste, no reescribir el código. El agente sí va enfocado a la oferta, eso es lo único que se adapta en serio por cliente.
+Probá en tus cuentas Perfil propio o de prueba, como prefieras. La idea es que seas dueño de tu solución de punta a punta y la valides vos primero.
+Presupuesto mental Infinito. Si implementarlo bien requiere pagar cuentas de LinkedIn, plataformas o APIs, asumí que se puede. Un sistema que funciona lo paga de sobra.
+Dudas Por el grupo o directo a mí, estoy disponible estas dos semanas. Y ojo: nosotros tampoco lo hicimos todavía; si lo hubiéramos hecho no estaríamos queriendo comprarlo. Así que vamos a destrabar cosas juntos.
+Si recién entrás Si esto te queda grande porque llegaste hace poco, no pasa nada. Seguí con los módulos, sumate a las llamadas y agarrá el próximo desafío. La cosa es no detenerse: un 1% mejor cada día.
+10 La instancia final: nos lo venden
+Cerrado el plazo, agendamos llamadas conmigo y con Agus, individuales o por grupo, con todos los que hayan llegado al objetivo. El formato es simple: nos tratan como a un dueño de negocio y nos venden el sistema. Demo en vivo de punta a punta y propuesta comercial arriba de la mesa: precio de implementación, modelo de comisión, contrato.
+Esto va en serio. Queremos comprar esta automatización lo antes posible y usarla para prospectar de verdad. Lo intentamos tercerizar en octubre del año pasado con un proveedor a pura comisión y funcionó mal, no agendaba. Por eso lo traemos acá: sabemos que alguno de ustedes lo puede hacer veinte veces mejor de lo que lo haríamos nosotros ahora.
+Qué gana el que lo logre
+Nexum le compra la automatización
+La ponemos a andar con nuestra oferta, nuestro perfil de LinkedIn y nuestros recursos. Vos cobrás por el sistema.
+Un rol dentro de Nexum
+Puerta abierta a encargarse del área de prospección y a seguir vendiendo el producto juntos: setup y mantenimiento para clientes, con Nexum empujando la venta.
+Un producto propio para vender
+Modelo sugerido: ticket de implementación más una comisión del 5 al 10% por cada cliente cerrado, con contrato firmado. Casi sin mantenimiento una vez instalado. Para el que compra es un no-brainer: no arriesga nada y paga solo si cierra clientes.
+Y aunque no lo vendas
+Te queda un sistema prospectando por vos las 24 horas mientras hacés otra cosa. Nuestra referencia de meta: un cliente nuevo por semana, con tickets de 5.000 a 8.000 dólares. Con eso los números cierran solos.
+11 Checklist: cuándo está logrado
+Antes de pedir la llamada final, pasá el sistema por esta lista. Si marcás todo, estás listo para vendérnoslo.
+La búsqueda trae leads reales con datos correctos desde Apify.
+El primer mensaje sale solo , con cadencia configurable y revisión opcional antes del envío.
+El agente sostiene la conversación con contexto del lead y tono humano, sin intervención de nadie.
+Los seguimientos a quienes no responden salen automáticos, con tiempos configurables.
+Cuando el lead acepta, la llamada queda agendada y registrada en el sistema.
+Los estados del kanban se mueven solos en cada etapa del proceso.
+El recordatorio previo a la reunión sale sin que nadie lo dispare.
+La oferta, el nicho y el idioma se cambian desde ajustes, sin tocar código.
+Podés mostrar en vivo una conversación real de punta a punta , del scraping a la reunión agendada.
+«El valor se encuentra en lo difícil . Si esto fuese fácil, estaría plagado de gente haciéndolo, y ahí el precio baja.»
+De la clase del desafío · Nexum Academy
+La clase quedó grabada por si necesitás volver a verla, y cualquier duda va por el grupo o directo a mí. Nos vemos en dos semanas con sistemas funcionando.
+Vamos arriba.
+Juan Pablo Rosso
+Director Comercial y Co-Fundador · Nexum AI
+Recurso principal Código base de la plataforma →
+Motor de scraping Apify (5 USD gratis al crear cuenta) →
+Grabación de la clase Disponible en la comunidad
+NEXUM AI
+© 2026 Nexum AI · nexumai.online · Documento del desafío de la comunidad

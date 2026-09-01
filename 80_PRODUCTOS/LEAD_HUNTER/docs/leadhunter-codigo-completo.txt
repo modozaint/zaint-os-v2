@@ -1,0 +1,3652 @@
+================================================================================
+LEADHUNTER — CÓDIGO FUENTE COMPLETO
+================================================================================
+
+Buscador de profesionales en LinkedIn por rubro y ubicación. Analiza cada perfil
+con IA (Claude) y genera un mensaje de contacto personalizado. Kanban de 4
+columnas para gestionar los leads.
+
+Stack: Next.js 16 (App Router) + TypeScript + Tailwind + Apify + Anthropic SDK.
+
+--------------------------------------------------------------------------------
+IMPORTANTE — ESTE PAQUETE NO CONTIENE NINGUNA CREDENCIAL
+--------------------------------------------------------------------------------
+
+El archivo .env.local (con las claves reales) fue EXCLUIDO a propósito.
+Para que la app funcione necesitás sacar TUS PROPIAS claves:
+
+  1. APIFY_TOKEN      -> https://console.apify.com/account/integrations
+     Apify cobra por uso. Los actores que usa esta app son:
+       - harvestapi/linkedin-profile-search
+       - harvestapi/linkedin-profile-posts
+     El coste estimado se muestra en vivo en la pantalla de Búsqueda.
+
+  2. ANTHROPIC_API_KEY -> https://console.anthropic.com/settings/keys
+     También es de pago por uso.
+
+Ambas se leen SOLO en el servidor (route handlers de app/api/), nunca llegan
+al navegador.
+
+--------------------------------------------------------------------------------
+CÓMO INSTALAR
+--------------------------------------------------------------------------------
+
+  1. Recreá la estructura de carpetas y archivos tal como aparece abajo.
+     Cada bloque empieza con "===== ARCHIVO: ruta/al/archivo =====".
+
+  2. Creá el archivo .env.local en la raíz del proyecto con tus claves:
+
+         APIFY_TOKEN=apify_api_TU_TOKEN_ACA
+         ANTHROPIC_API_KEY=sk-ant-TU_CLAVE_ACA
+
+  3. Instalá y levantá:
+
+         npm install
+         npm run dev
+
+     Abrí http://localhost:3000
+
+NOTA: package-lock.json no está incluido (250 KB de ruido). npm install va a
+resolver las versiones desde package.json sin problema.
+
+NOTA 2: los defaults de la sección Ajustes (nombre y descripción de la empresa)
+están puestos como placeholders genéricos en lib/types.ts — cambialos por los
+tuyos desde la propia UI o editando ese archivo.
+
+--------------------------------------------------------------------------------
+ÍNDICE DE ARCHIVOS (44)
+--------------------------------------------------------------------------------
+
+  .gitignore
+  AGENTS.md
+  CLAUDE.md
+  README.md
+  app/api/ajustes/route.ts
+  app/api/leads/[id]/regenerar/route.ts
+  app/api/leads/[id]/route.ts
+  app/api/leads/route.ts
+  app/api/search/route.ts
+  app/globals.css
+  app/icon.svg
+  app/layout.tsx
+  app/page.tsx
+  components/AjustesView.tsx
+  components/Avatar.tsx
+  components/BusquedaView.tsx
+  components/CargandoBusqueda.tsx
+  components/FondoParticulas.tsx
+  components/LeadCard.tsx
+  components/LeadPanel.tsx
+  components/LeadsView.tsx
+  components/Logo.tsx
+  components/Sidebar.tsx
+  components/Toast.tsx
+  eslint.config.mjs
+  lib/apify.ts
+  lib/claude.ts
+  lib/costo.ts
+  lib/store.ts
+  lib/types.ts
+  lib/us-states.ts
+  next.config.ts
+  package.json
+  postcss.config.mjs
+  public/file.svg
+  public/globe.svg
+  public/next.svg
+  public/vercel.svg
+  public/window.svg
+  scripts/shot-fondo.mjs
+  scripts/shot-secciones.mjs
+  scripts/test-repulsion.mjs
+  scripts/verify.mjs
+  tsconfig.json
+
+================================================================================
+
+
+===== ARCHIVO: .gitignore =====
+
+```
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+```
+
+
+===== ARCHIVO: AGENTS.md =====
+
+```md
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
+```
+
+
+===== ARCHIVO: CLAUDE.md =====
+
+```md
+@AGENTS.md
+```
+
+
+===== ARCHIVO: README.md =====
+
+```md
+# LeadHunter
+
+Busca profesionales en LinkedIn por rubro y ubicación, analiza cada perfil con
+IA y genera un mensaje de contacto personalizado listo para copiar.
+
+Herramienta de demostración para **Nexus Reach** (empresa ficticia, agencia de
+servicios de IA). No es producto de ningún cliente real.
+
+---
+
+## Cómo correr
+
+```bash
+npm install
+npm run dev
+```
+
+Abrí `http://localhost:3000`.
+
+Las credenciales van en `.env.local` (ya creado, fuera del repo — `.gitignore`
+cubre `.env*`):
+
+```
+APIFY_TOKEN=apify_api_...
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Ambas se leen **solo en el servidor**: todo el acceso a Apify y a Claude ocurre
+en los route handlers de `app/api/`, así que las claves nunca llegan al navegador.
+
+---
+
+## Las 3 secciones
+
+| Sección      | Qué hace                                                                            |
+| ------------ | ----------------------------------------------------------------------------------- |
+| **Búsqueda** | Rubro, cargos, estado/ciudad de EE.UU., cantidad. Muestra el coste estimado en vivo. |
+| **Leads**    | Kanban de 4 columnas con drag & drop. Click en una tarjeta abre el panel de detalle. |
+| **Ajustes**  | Tu nombre, tu oferta y el idioma de los mensajes. Alimenta a la IA.                  |
+
+Al buscar, los leads entran automáticamente a **Nuevos** y la app salta a Leads.
+
+---
+
+## Actores de Apify y coste
+
+Precios leídos de `pricingInfos` en la API de Apify el 2026-07-19:
+
+| Actor                                | Evento                            | Precio                 |
+| ------------------------------------ | --------------------------------- | ---------------------- |
+| `harvestapi/linkedin-profile-search` | página de búsqueda (~10 perfiles) | **$0,10**              |
+| `harvestapi/linkedin-profile-search` | perfil completo (modo `Full`)     | **$0,004**             |
+| `harvestapi/linkedin-profile-posts`  | post                              | **$0,002** ($2 / 1.000) |
+
+La fórmula está en `lib/costo.ts` y es la que alimenta la nota bajo el slider.
+Una búsqueda de 20 leads sale ~$0,32.
+
+**Protección de gasto:**
+
+- Tope duro de 50 resultados (`LIMITE_DURO` en `lib/apify.ts`), aplicado también
+  en el servidor por si alguien manda otro valor a la API.
+- `maxItems` va al actor, así que el límite se aplica **antes** de gastar.
+- El scraper de posts corre con `maxPosts: 1` — un post por perfil, nunca más.
+- Si Apify devuelve error de límite de plan, la UI muestra *"Límite del plan
+  gratuito de Apify alcanzado; se renueva el día 1"* en vez de romperse.
+
+> La cuenta actual está en plan **FREE** (~$5 de crédito mensual, se renueva el
+> día 1). Alcanza para unas 15 búsquedas de 20 leads.
+
+### Dónde se verificó el schema
+
+Los nombres de campo **no** salen de la página pública ni de memoria: se leyeron
+del `inputSchema` del último build vía `GET /v2/acts/{actor}/builds`.
+`buildSearchInput()` y `buildPostsInput()` en `lib/apify.ts` llevan el
+comentario con la fecha.
+
+---
+
+## Dónde se cambian nombre / empresa / idioma
+
+Tres lugares, en orden de conveniencia:
+
+1. **En la app** → sección **Ajustes**. Es lo que persiste en el estado del servidor.
+2. **Los valores por defecto** → `AJUSTES_DEFAULT` en `lib/types.ts`.
+3. **Las reglas del mensaje** (tono, prohibiciones, estructura, largo) →
+   `systemPrompt()` en `lib/claude.ts`.
+
+El modelo se cambia en una línea: `MODELO` en `lib/claude.ts`
+(hoy `claude-sonnet-5`).
+
+---
+
+## Reglas del mensaje
+
+Se aplican **dos veces**, a propósito: el prompt las pide y un sanitizador
+determinístico (`sanitizarMensaje`) las fuerza después. El mensaje es lo que se
+ve en cámara, así que no queda librado al modelo.
+
+- Idioma según Ajustes (inglés por defecto).
+- Tono de fundador, humano y directo.
+- Sin emojis, sin guiones largos (`—`), sin `¿` ni `¡`.
+- Sin fórmulas vacías tipo *"I hope this message finds you well"*.
+- Estructura: saludo por nombre → línea específica del perfil (idealmente
+  referenciando su último post) → cómo ayuda Nexus Reach → cierre con pregunta
+  abierta.
+- Firmado con tu nombre. Máximo ~90 palabras.
+
+---
+
+## Arquitectura
+
+```
+app/
+  page.tsx                     shell cliente con las 3 secciones
+  api/search/route.ts          Apify búsqueda -> posts -> IA
+  api/leads/route.ts           GET del tablero
+  api/leads/[id]/route.ts      PATCH estado / nota
+  api/leads/[id]/regenerar/    POST regenera solo el mensaje
+  api/ajustes/route.ts         GET / PATCH
+lib/
+  apify.ts     buildSearchInput(), mapeo de perfiles, posts
+  claude.ts    análisis IA, mensaje, sanitizador
+  store.ts     Map en memoria del servidor (sin base de datos)
+  costo.ts     precios reales y estimación
+  us-states.ts los 50 estados
+scripts/
+  verify.mjs   verificación E2E headless
+```
+
+**Sin persistencia, a propósito.** El tablero vive en un `Map` colgado de
+`globalThis` (para sobrevivir al hot-reload). Reiniciar el server lo vacía: es
+una demo y así el video no se complica.
+
+---
+
+## Fondo de partículas (solo en Búsqueda)
+
+`components/FondoParticulas.tsx`. Canvas propio, sin librería ni CDN.
+
+**Para subir o bajar la presencia hay una sola perilla:** la constante
+`INTENSIDAD` arriba del archivo.
+
+| Valor | Cómo se ve |
+| ----- | ---------- |
+| `0.6` | Discreto. Se pierde al comprimir para video. |
+| `1.0` | **Actual.** Calibrado para YouTube. |
+| `1.3` | Agresivo, empieza a competir con el formulario. |
+
+Está calibrado para video a propósito: VP9/H.264 arrasan con las líneas finas
+de bajo contraste sobre fondo plano, así que pesan más el **grosor de línea**
+(piso de 1,4px) y el **contraste** que la cantidad de partículas. Verificado
+re-encodeando una captura a H.264 4,5 Mbps 1080p — la constelación sobrevive.
+
+### Repulsión del cursor
+
+Las partículas se apartan al pasar el mouse y **vuelven solas** con retorno
+elástico. No es el `grab` de particles.js (donde se pegan al cursor con
+líneas): acá el cursor abre un vacío de ~100px de radio que se cierra al
+retirarlo. Las del frente reaccionan más que las del fondo, así que refuerza
+el paralaje en vez de romperlo.
+
+Perillas en `FondoParticulas.tsx`. **Para apagarla: `REPULSION_RADIO = 0`.**
+
+```ts
+const REPULSION_RADIO  = 260;   // alcance alrededor del cursor
+const REPULSION_FUERZA = 9;     // cuánto empuja
+const RETORNO          = 0.05;  // velocidad de vuelta
+const AMORTIGUACION    = 0.85;  // frena el rebote
+```
+
+⚠️ El radio del vacío **no** es `FUERZA / RETORNO`. La fuerza cae con `caida²`
+a medida que la partícula se aleja, así que se auto-limita. Sale de resolver
+`(1 - ox/RADIO)² · FUERZA = ox · RETORNO` — con estos valores, ~83px teóricos
+y ~100px medidos.
+
+No aplica con `prefers-reduced-motion` ni en touch (sin hover). El contenedor
+es `pointer-events-none`, así que el fondo nunca bloquea el formulario: el
+tracking escucha en `window` y convierte a coordenadas del canvas.
+
+Respeta `prefers-reduced-motion` (dibuja un cuadro estático) y se pausa cuando
+la pestaña no está visible. 120 FPS a 1920x1080.
+
+```bash
+node scripts/test-repulsion.mjs   # mide el vacío, el retorno y que no bloquee
+```
+
+---
+
+## Verificación
+
+```bash
+node scripts/verify.mjs   # requiere el server corriendo y al menos 1 lead
+```
+
+Corre headless y deja capturas en `/tmp/lh-shots`. No abre ningún navegador.
+
+---
+
+## Notas de implementación
+
+Tres cosas que costaron y conviene no re-descubrir:
+
+1. **Sonnet 5 corre thinking adaptativo si omitís el campo `thinking`.** El
+   razonamiento consume el mismo presupuesto que `max_tokens`, y eso truncaba el
+   JSON a mitad de camino (`Unterminated string in JSON`). Va explícito en
+   `disabled`: es extracción estructurada, no lo necesita, y bajó la latencia de
+   59s a ~31s por búsqueda de 3.
+2. **En el actor de posts, `linkedinUrl` es la URL del post, no la del perfil.**
+   Cruzar por ahí no matchea nunca. Se cruza por el slug del autor
+   (`slugDePerfil`), que es lo único estable entre los dos actores.
+3. **`location` del perfil es un objeto**, no un string: el texto bueno está en
+   `location.linkedinText`. Y el puesto actual viene en `currentPosition[0]`,
+   no en `experience`.
+
+---
+
+## Stack
+
+Next.js 16 (App Router) · TypeScript · Tailwind v4 · `@anthropic-ai/sdk`
+(Claude Sonnet 5) · lucide-react · motion
+
+> El prompt original pedía Next 15, pero `create-next-app@latest` instala 16
+> (con Tailwind v4, que usa `@theme` en CSS en vez de `tailwind.config.js`).
+> Los tokens de la paleta LinkedIn están en `app/globals.css`.
+```
+
+
+===== ARCHIVO: app/api/ajustes/route.ts =====
+
+```ts
+import { NextResponse } from "next/server";
+import { guardarAjustes, obtenerAjustes } from "@/lib/store";
+import type { Ajustes } from "@/lib/types";
+
+export async function GET() {
+  return NextResponse.json({ ajustes: obtenerAjustes() });
+}
+
+export async function PATCH(req: Request) {
+  const cuerpo = (await req.json()) as Partial<Ajustes>;
+  const cambios: Partial<Ajustes> = {};
+
+  if (typeof cuerpo.nombre === "string") cambios.nombre = cuerpo.nombre;
+  if (typeof cuerpo.empresa === "string") cambios.empresa = cuerpo.empresa;
+  if (cuerpo.idioma === "es" || cuerpo.idioma === "en") cambios.idioma = cuerpo.idioma;
+
+  return NextResponse.json({ ajustes: guardarAjustes(cambios) });
+}
+```
+
+
+===== ARCHIVO: app/api/leads/[id]/regenerar/route.ts =====
+
+```ts
+import { NextResponse } from "next/server";
+import { regenerarMensaje } from "@/lib/claude";
+import { actualizarLead, obtenerAjustes, obtenerLead } from "@/lib/store";
+
+export const maxDuration = 120;
+
+export async function POST(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const lead = obtenerLead(id);
+  if (!lead) {
+    return NextResponse.json({ error: "Lead no encontrado." }, { status: 404 });
+  }
+
+  try {
+    const mensaje = await regenerarMensaje(
+      {
+        perfilUrl: lead.perfilUrl,
+        nombre: lead.nombre,
+        cargo: lead.cargo,
+        empresa: lead.empresa,
+        ubicacion: lead.ubicacion,
+        fotoUrl: lead.fotoUrl,
+        headline: lead.headline,
+      },
+      lead.ultimoPost,
+      obtenerAjustes(),
+      lead.mensaje,
+    );
+    actualizarLead(id, { mensaje });
+    return NextResponse.json({ mensaje });
+  } catch (e) {
+    console.error("[regenerar]", e);
+    return NextResponse.json(
+      { error: (e as Error).message || "No se pudo regenerar." },
+      { status: 500 },
+    );
+  }
+}
+```
+
+
+===== ARCHIVO: app/api/leads/[id]/route.ts =====
+
+```ts
+import { NextResponse } from "next/server";
+import { actualizarLead } from "@/lib/store";
+import { ESTADOS, type EstadoLead } from "@/lib/types";
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const cuerpo = (await req.json()) as { estado?: string; nota?: string };
+
+  const cambios: { estado?: EstadoLead; nota?: string } = {};
+
+  if (cuerpo.estado !== undefined) {
+    if (!ESTADOS.some((e) => e.id === cuerpo.estado)) {
+      return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
+    }
+    cambios.estado = cuerpo.estado as EstadoLead;
+  }
+  if (cuerpo.nota !== undefined) cambios.nota = String(cuerpo.nota);
+
+  const lead = actualizarLead(id, cambios);
+  if (!lead) {
+    return NextResponse.json({ error: "Lead no encontrado." }, { status: 404 });
+  }
+  return NextResponse.json({ lead });
+}
+```
+
+
+===== ARCHIVO: app/api/leads/route.ts =====
+
+```ts
+import { NextResponse } from "next/server";
+import { listarLeads } from "@/lib/store";
+
+export async function GET() {
+  return NextResponse.json({ leads: listarLeads() });
+}
+```
+
+
+===== ARCHIVO: app/api/search/route.ts =====
+
+```ts
+import { NextResponse } from "next/server";
+import {
+  ApifyLimiteError,
+  buscarPerfiles,
+  slugDePerfil,
+  traerUltimosPosts,
+  LIMITE_DURO,
+} from "@/lib/apify";
+import { analizarEnLote, analizarPerfil } from "@/lib/claude";
+import { guardarLeads, obtenerAjustes } from "@/lib/store";
+import type { Lead, ParametrosBusqueda } from "@/lib/types";
+
+export const maxDuration = 300;
+
+export async function POST(req: Request) {
+  let cuerpo: ParametrosBusqueda;
+  try {
+    cuerpo = (await req.json()) as ParametrosBusqueda;
+  } catch {
+    return NextResponse.json({ error: "Cuerpo inválido." }, { status: 400 });
+  }
+
+  if (!cuerpo.keyword?.trim()) {
+    return NextResponse.json(
+      { error: "Escribí un rubro o palabra clave." },
+      { status: 400 },
+    );
+  }
+
+  const parametros: ParametrosBusqueda = {
+    keyword: cuerpo.keyword,
+    titles: Array.isArray(cuerpo.titles) ? cuerpo.titles : [],
+    state: cuerpo.state ?? "",
+    city: cuerpo.city ?? "",
+    limit: Math.min(Math.max(Number(cuerpo.limit) || 20, 1), LIMITE_DURO),
+  };
+
+  try {
+    // 1. Perfiles
+    const perfiles = await buscarPerfiles(parametros);
+    if (!perfiles.length) {
+      return NextResponse.json({ leads: [] });
+    }
+
+    // 2. Último post de cada uno (1 por perfil, y si falla seguimos igual)
+    const posts = await traerUltimosPosts(
+      perfiles.map((p) => p.perfilUrl).filter(Boolean),
+    );
+
+    // 3. Análisis IA + mensaje, en paralelo con tope
+    const ajustes = obtenerAjustes();
+    const ahora = Date.now();
+    const leads: Lead[] = [];
+
+    await analizarEnLote(perfiles, 5, async (perfil, i) => {
+      const ultimoPost = perfil.perfilUrl
+        ? (posts.get(slugDePerfil(perfil.perfilUrl)) ?? null)
+        : null;
+      try {
+        const analisis = await analizarPerfil(perfil, ultimoPost, ajustes);
+        leads.push({
+          id: `${ahora}-${i}`,
+          nombre: perfil.nombre,
+          cargo: perfil.cargo,
+          empresa: perfil.empresa,
+          ubicacion: perfil.ubicacion,
+          fotoUrl: perfil.fotoUrl,
+          perfilUrl: perfil.perfilUrl,
+          headline: perfil.headline,
+          ultimoPost,
+          resumen: analisis.resumen,
+          porQueBuenLead: analisis.porQueBuenLead,
+          mensaje: analisis.mensaje,
+          estado: "nuevos",
+          nota: "",
+          creadoEn: ahora + i,
+        });
+      } catch (e) {
+        console.warn(`[search] falló el análisis de ${perfil.nombre}:`, (e as Error).message);
+      }
+    });
+
+    leads.sort((a, b) => a.creadoEn - b.creadoEn);
+    guardarLeads(leads);
+    return NextResponse.json({ leads });
+  } catch (e) {
+    if (e instanceof ApifyLimiteError) {
+      return NextResponse.json({ error: e.message, limite: true }, { status: 429 });
+    }
+    console.error("[search]", e);
+    return NextResponse.json(
+      { error: (e as Error).message || "Falló la búsqueda." },
+      { status: 500 },
+    );
+  }
+}
+```
+
+
+===== ARCHIVO: app/globals.css =====
+
+```css
+@import "tailwindcss";
+
+@theme {
+  /* Paleta LinkedIn */
+  --color-li-blue: #0a66c2;
+  --color-li-blue-dark: #004182;
+  --color-li-bg: #f4f2ee;
+  --color-li-surface: #ffffff;
+  --color-li-text: #1d2226;
+  --color-li-text-2: #56687a;
+  --color-li-border: #e0dfdc;
+  --color-li-green: #057642;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-li-bg);
+  color: var(--color-li-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sombra suave estilo LinkedIn: hairline + elevación mínima. */
+.card-li {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.card-li-hover:hover {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.scroll-fino::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-fino::-webkit-scrollbar-thumb {
+  background: #cfd4d9;
+  border-radius: 8px;
+}
+.scroll-fino::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+
+===== ARCHIVO: app/icon.svg =====
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="7" fill="#0A66C2"/>
+  <circle cx="9.4" cy="9.2" r="2.15" fill="#fff"/>
+  <rect x="7.5" y="13" width="3.8" height="11.5" rx="0.6" fill="#fff"/>
+  <path d="M14.2 13h3.6v1.6c.62-1.15 1.85-1.9 3.5-1.9 2.6 0 4.2 1.7 4.2 4.6v7.2h-3.8v-6.5c0-1.5-.72-2.35-2-2.35-1.32 0-2.1.9-2.1 2.4v6.45h-3.4V13Z" fill="#fff"/>
+</svg>
+```
+
+
+===== ARCHIVO: app/layout.tsx =====
+
+```tsx
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "LeadHunter — Nexus Reach",
+  description:
+    "Encontrá profesionales en LinkedIn por rubro y ubicación, analizalos con IA y llevate un mensaje de contacto listo para copiar.",
+  robots: { index: false, follow: false },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="es" className="h-full">
+      <body className="min-h-full">{children}</body>
+    </html>
+  );
+}
+```
+
+
+===== ARCHIVO: app/page.tsx =====
+
+```tsx
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { AlertTriangle } from "lucide-react";
+import { AjustesView } from "@/components/AjustesView";
+import { BusquedaView } from "@/components/BusquedaView";
+import { CargandoBusqueda } from "@/components/CargandoBusqueda";
+import { LeadPanel } from "@/components/LeadPanel";
+import { LeadsView } from "@/components/LeadsView";
+import { Sidebar, type Seccion } from "@/components/Sidebar";
+import { Toast } from "@/components/Toast";
+import {
+  AJUSTES_DEFAULT,
+  type Ajustes,
+  type EstadoLead,
+  type Lead,
+  type ParametrosBusqueda,
+} from "@/lib/types";
+
+export default function Home() {
+  const [seccion, setSeccion] = useState<Seccion>("busqueda");
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [ajustes, setAjustes] = useState<Ajustes>(AJUSTES_DEFAULT);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [abierto, setAbierto] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Hidratar el estado del servidor al montar
+  useEffect(() => {
+    fetch("/api/leads")
+      .then((r) => r.json())
+      .then((d) => setLeads(d.leads ?? []))
+      .catch(() => {});
+    fetch("/api/ajustes")
+      .then((r) => r.json())
+      .then((d) => d.ajustes && setAjustes(d.ajustes))
+      .catch(() => {});
+  }, []);
+
+  const mostrarToast = useCallback((t: string) => {
+    setToast(t);
+    setTimeout(() => setToast(null), 2200);
+  }, []);
+
+  async function buscar(p: ParametrosBusqueda) {
+    setCargando(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/search", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(p),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Falló la búsqueda.");
+
+      const nuevos: Lead[] = data.leads ?? [];
+      if (!nuevos.length) {
+        setError("No se encontraron perfiles con esos filtros. Probá ampliarlos.");
+        return;
+      }
+      // Los leads entran automáticamente a "Nuevos" y saltamos a Leads.
+      setLeads((prev) => [...prev, ...nuevos]);
+      setSeccion("leads");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  async function mover(id: string, estado: EstadoLead) {
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, estado } : l)));
+    await fetch(`/api/leads/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ estado }),
+    }).catch(() => {});
+  }
+
+  async function cambiarNota(id: string, nota: string) {
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, nota } : l)));
+    await fetch(`/api/leads/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ nota }),
+    }).catch(() => {});
+  }
+
+  async function guardarAjustes(a: Ajustes) {
+    setAjustes(a);
+    await fetch("/api/ajustes", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(a),
+    }).catch(() => {});
+  }
+
+  const leadAbierto = leads.find((l) => l.id === abierto) ?? null;
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar seccion={seccion} onCambiar={setSeccion} totalLeads={leads.length} />
+
+      <main className="scroll-fino min-w-0 flex-1 overflow-y-auto">
+        {cargando ? (
+          <CargandoBusqueda />
+        ) : (
+          <>
+            {error && (
+              <div className="mx-auto mt-6 flex max-w-2xl items-start gap-2.5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-[14px] text-amber-900">
+                <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+                <p className="flex-1">{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-[13px] font-semibold underline"
+                >
+                  Cerrar
+                </button>
+              </div>
+            )}
+
+            {seccion === "busqueda" && (
+              <BusquedaView onBuscar={buscar} cargando={cargando} />
+            )}
+            {seccion === "leads" && (
+              <LeadsView
+                leads={leads}
+                onAbrir={(l) => setAbierto(l.id)}
+                onMover={mover}
+                onIrABusqueda={() => setSeccion("busqueda")}
+              />
+            )}
+            {seccion === "ajustes" && (
+              <AjustesView ajustes={ajustes} onGuardar={guardarAjustes} />
+            )}
+          </>
+        )}
+      </main>
+
+      <LeadPanel
+        lead={leadAbierto}
+        onCerrar={() => setAbierto(null)}
+        onCambiarEstado={mover}
+        onCambiarNota={cambiarNota}
+        onMensajeRegenerado={(id, mensaje) =>
+          setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, mensaje } : l)))
+        }
+        onToast={mostrarToast}
+      />
+
+      <Toast texto={toast} />
+    </div>
+  );
+}
+```
+
+
+===== ARCHIVO: components/AjustesView.tsx =====
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { Check, Loader2 } from "lucide-react";
+import type { Ajustes } from "@/lib/types";
+
+export function AjustesView({
+  ajustes,
+  onGuardar,
+}: {
+  ajustes: Ajustes;
+  onGuardar: (a: Ajustes) => Promise<void>;
+}) {
+  const [local, setLocal] = useState<Ajustes>(ajustes);
+  const [estado, setEstado] = useState<"listo" | "guardando" | "guardado">("listo");
+
+  async function guardar() {
+    setEstado("guardando");
+    await onGuardar(local);
+    setEstado("guardado");
+    setTimeout(() => setEstado("listo"), 1800);
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-2xl px-6 py-10">
+      <h1 className="text-[26px] font-semibold tracking-tight">Ajustes</h1>
+      <p className="mt-1 text-[15px] text-li-text-2">
+        Esto alimenta a la IA cuando redacta los mensajes.
+      </p>
+
+      <div className="card-li mt-6 rounded-lg bg-li-surface p-6">
+        <label htmlFor="nombre" className="block text-[14px] font-semibold">
+          Mi nombre
+        </label>
+        <p className="mt-0.5 text-[13px] text-li-text-2">
+          Se usa para firmar los mensajes.
+        </p>
+        <input
+          id="nombre"
+          value={local.nombre}
+          onChange={(e) => setLocal({ ...local, nombre: e.target.value })}
+          className="mt-2 w-full rounded-md border border-li-border bg-white px-3.5 py-2.5 text-[15px] outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+        />
+
+        <label htmlFor="empresa" className="mt-7 block text-[14px] font-semibold">
+          Mi empresa / oferta
+        </label>
+        <p className="mt-0.5 text-[13px] text-li-text-2">
+          Se le pasa a la IA como contexto para redactar.
+        </p>
+        <textarea
+          id="empresa"
+          value={local.empresa}
+          onChange={(e) => setLocal({ ...local, empresa: e.target.value })}
+          rows={3}
+          className="mt-2 w-full resize-y rounded-md border border-li-border bg-white p-3.5 text-[15px] leading-relaxed outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+        />
+
+        <label htmlFor="idioma" className="mt-7 block text-[14px] font-semibold">
+          Idioma de los mensajes
+        </label>
+        <select
+          id="idioma"
+          value={local.idioma}
+          onChange={(e) =>
+            setLocal({ ...local, idioma: e.target.value as Ajustes["idioma"] })
+          }
+          className="mt-2 w-full rounded-md border border-li-border bg-white px-3 py-2.5 text-[15px] outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+        >
+          <option value="en">Inglés</option>
+          <option value="es">Español</option>
+        </select>
+
+        <button
+          onClick={guardar}
+          disabled={estado === "guardando"}
+          className="mt-8 inline-flex items-center gap-2 rounded-full bg-li-blue px-6 py-2.5 text-[15px] font-semibold text-white transition-colors hover:bg-li-blue-dark disabled:opacity-50"
+        >
+          {estado === "guardando" && <Loader2 size={16} className="animate-spin" />}
+          {estado === "guardado" && <Check size={16} strokeWidth={3} />}
+          {estado === "guardado" ? "Guardado" : "Guardar"}
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+
+===== ARCHIVO: components/Avatar.tsx =====
+
+```tsx
+"use client";
+
+import { useState } from "react";
+
+function iniciales(nombre: string): string {
+  const partes = nombre.trim().split(/\s+/).filter(Boolean);
+  if (!partes.length) return "?";
+  return (partes[0][0] + (partes[1]?.[0] ?? "")).toUpperCase();
+}
+
+/**
+ * Foto del perfil con fallback a iniciales sobre azul. Se usa <img> plano a
+ * propósito: las URLs del CDN de LinkedIn firman y expiran, y el optimizador
+ * de next/image devuelve 400 con varias de ellas.
+ */
+export function Avatar({
+  nombre,
+  fotoUrl,
+  size = 48,
+}: {
+  nombre: string;
+  fotoUrl: string | null;
+  size?: number;
+}) {
+  const [falló, setFalló] = useState(false);
+  const mostrarFoto = fotoUrl && !falló;
+
+  return (
+    <div
+      className="shrink-0 overflow-hidden rounded-full bg-li-blue"
+      style={{ width: size, height: size }}
+    >
+      {mostrarFoto ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={fotoUrl}
+          alt=""
+          width={size}
+          height={size}
+          referrerPolicy="no-referrer"
+          onError={() => setFalló(true)}
+          className="size-full object-cover"
+        />
+      ) : (
+        <span
+          className="flex size-full items-center justify-center font-semibold text-white"
+          style={{ fontSize: size * 0.38 }}
+          aria-hidden="true"
+        >
+          {iniciales(nombre)}
+        </span>
+      )}
+    </div>
+  );
+}
+```
+
+
+===== ARCHIVO: components/BusquedaView.tsx =====
+
+```tsx
+"use client";
+
+import { useMemo, useState } from "react";
+import { Plus, Search, X } from "lucide-react";
+import { FondoParticulas } from "@/components/FondoParticulas";
+import { estimarCosto, formatearUsd } from "@/lib/costo";
+import { TODO_EEUU, US_STATES } from "@/lib/us-states";
+import type { ParametrosBusqueda } from "@/lib/types";
+
+const SUGERENCIAS = [
+  "Marketing Agency",
+  "Growth",
+  "Performance Marketing",
+  "Paid Media",
+  "SEO",
+];
+
+const CARGOS_INICIALES = [
+  "Founder",
+  "CEO",
+  "Managing Director",
+  "Head of Growth",
+  "Marketing Director",
+];
+
+export function BusquedaView({
+  onBuscar,
+  cargando,
+}: {
+  onBuscar: (p: ParametrosBusqueda) => void;
+  cargando: boolean;
+}) {
+  const [keyword, setKeyword] = useState("");
+  const [titles, setTitles] = useState<string[]>(CARGOS_INICIALES);
+  const [nuevoCargo, setNuevoCargo] = useState("");
+  const [state, setState] = useState(TODO_EEUU);
+  const [city, setCity] = useState("");
+  const [limit, setLimit] = useState(20);
+
+  const costo = useMemo(() => estimarCosto(limit), [limit]);
+
+  function agregarCargo() {
+    const v = nuevoCargo.trim();
+    if (v && !titles.includes(v)) setTitles([...titles, v]);
+    setNuevoCargo("");
+  }
+
+  return (
+    <div className="relative min-h-full">
+      <FondoParticulas />
+
+      <div className="relative z-10 mx-auto w-full max-w-2xl px-6 py-10">
+        <header className="mb-6">
+          <h1 className="text-[26px] font-semibold tracking-tight">
+            Buscar leads
+          </h1>
+          <p className="mt-1 text-[15px] text-li-text-2">
+            Encontrá profesionales en LinkedIn, analizalos con IA y llevate un
+            mensaje listo para copiar.
+          </p>
+        </header>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onBuscar({ keyword, titles, state, city, limit });
+          }}
+          className="card-li rounded-lg bg-li-surface p-6"
+        >
+          {/* Rubro */}
+          <label className="block text-[14px] font-semibold" htmlFor="keyword">
+            Rubro / palabra clave
+          </label>
+          <input
+            id="keyword"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="Ej: agencia de marketing digital"
+            className="mt-2 w-full rounded-md border border-li-border bg-white px-3.5 py-2.5 text-[15px] outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+          />
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {SUGERENCIAS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setKeyword(s)}
+                className="rounded-full border border-li-border px-3 py-1 text-[13px] text-li-text-2 transition-colors hover:border-li-blue hover:bg-li-blue/5 hover:text-li-blue"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+
+          {/* Cargos */}
+          <div className="mt-7">
+            <label className="block text-[14px] font-semibold">Cargos</label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {titles.map((t) => (
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-li-blue/10 py-1 pl-3 pr-1.5 text-[13px] font-medium text-li-blue"
+                >
+                  {t}
+                  <button
+                    type="button"
+                    onClick={() => setTitles(titles.filter((x) => x !== t))}
+                    aria-label={`Quitar ${t}`}
+                    className="rounded-full p-0.5 transition-colors hover:bg-li-blue/20"
+                  >
+                    <X size={13} />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="mt-2.5 flex gap-2">
+              <input
+                value={nuevoCargo}
+                onChange={(e) => setNuevoCargo(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    agregarCargo();
+                  }
+                }}
+                placeholder="Añadir cargo"
+                className="flex-1 rounded-md border border-li-border bg-white px-3.5 py-2 text-[14px] outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+              />
+              <button
+                type="button"
+                onClick={agregarCargo}
+                className="inline-flex items-center gap-1.5 rounded-md border border-li-border px-3 py-2 text-[14px] font-medium text-li-text-2 transition-colors hover:border-li-blue hover:text-li-blue"
+              >
+                <Plus size={15} /> Añadir
+              </button>
+            </div>
+          </div>
+
+          {/* Ubicación */}
+          <div className="mt-7">
+            <label className="block text-[14px] font-semibold">Ubicación</label>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              <div>
+                <select
+                  disabled
+                  value={TODO_EEUU}
+                  className="w-full cursor-not-allowed rounded-md border border-li-border bg-black/[0.03] px-3.5 py-2.5 text-[15px] text-li-text-2"
+                >
+                  <option>{TODO_EEUU}</option>
+                </select>
+                <p className="mt-1 text-[12px] text-li-text-2">
+                  Otros países próximamente
+                </p>
+              </div>
+              <select
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                className="h-[46px] w-full rounded-md border border-li-border bg-white px-3 text-[15px] outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+              >
+                <option value={TODO_EEUU}>Todo Estados Unidos</option>
+                {US_STATES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Ej: Austin"
+              className="mt-3 w-full rounded-md border border-li-border bg-white px-3.5 py-2.5 text-[15px] outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+            />
+          </div>
+
+          {/* Cantidad */}
+          <div className="mt-7">
+            <div className="flex items-baseline justify-between">
+              <label className="text-[14px] font-semibold" htmlFor="limit">
+                Cantidad
+              </label>
+              <span className="text-[14px] font-semibold tabular-nums text-li-blue">
+                {limit} leads
+              </span>
+            </div>
+            <input
+              id="limit"
+              type="range"
+              min={10}
+              max={50}
+              step={1}
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              className="mt-3 w-full accent-[var(--color-li-blue)]"
+            />
+            <p className="mt-1.5 text-[12px] text-li-text-2">
+              Coste estimado en Apify:{" "}
+              <span className="font-medium tabular-nums">
+                ~{formatearUsd(costo)}
+              </span>
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={cargando || !keyword.trim()}
+            className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-li-blue py-3 text-[16px] font-semibold text-white transition-colors hover:bg-li-blue-dark disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Search size={18} strokeWidth={2.5} />
+            Buscar leads
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+```
+
+
+===== ARCHIVO: components/CargandoBusqueda.tsx =====
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { Check, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
+
+const ETAPAS = [
+  { texto: "Buscando perfiles en LinkedIn…", segs: 0 },
+  { texto: "Analizando cada perfil con IA…", segs: 14 },
+  { texto: "Redactando mensajes…", segs: 26 },
+];
+
+/**
+ * La búsqueda es una sola request larga, así que las etapas avanzan por
+ * tiempo estimado. Los umbrales salen de los tiempos medidos en el smoke
+ * test; si una etapa se pasa, se queda en la última hasta que responde.
+ */
+export function CargandoBusqueda() {
+  const [transcurrido, setTranscurrido] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setTranscurrido((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const actual = ETAPAS.reduce(
+    (acc, e, i) => (transcurrido >= e.segs ? i : acc),
+    0,
+  );
+
+  return (
+    <div className="flex min-h-full items-center justify-center px-6 py-16">
+      <div className="card-li w-full max-w-md rounded-lg bg-li-surface p-8">
+        <div className="flex items-center gap-3">
+          <Loader2 size={22} className="animate-spin text-li-blue" />
+          <h2 className="text-[18px] font-semibold">Rastreando leads</h2>
+        </div>
+
+        <ul className="mt-7 space-y-4">
+          {ETAPAS.map((e, i) => {
+            const hecha = i < actual;
+            const activa = i === actual;
+            return (
+              <li key={e.texto} className="flex items-center gap-3">
+                <span
+                  className={`flex size-6 shrink-0 items-center justify-center rounded-full ${
+                    hecha
+                      ? "bg-li-green text-white"
+                      : activa
+                        ? "bg-li-blue/15 text-li-blue"
+                        : "bg-black/[0.06] text-li-text-2"
+                  }`}
+                >
+                  {hecha ? (
+                    <Check size={14} strokeWidth={3} />
+                  ) : activa ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <span className="size-1.5 rounded-full bg-current" />
+                  )}
+                </span>
+                <span
+                  className={`text-[15px] ${
+                    activa
+                      ? "font-medium text-li-text"
+                      : hecha
+                        ? "text-li-text-2"
+                        : "text-li-text-2/60"
+                  }`}
+                >
+                  {e.texto}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="mt-7 h-1 overflow-hidden rounded-full bg-black/[0.06]">
+          <motion.div
+            className="h-full bg-li-blue"
+            initial={{ width: "4%" }}
+            animate={{ width: `${Math.min(6 + transcurrido * 2.4, 94)}%` }}
+            transition={{ ease: "linear", duration: 1 }}
+          />
+        </div>
+        <p className="mt-3 text-center text-[12px] tabular-nums text-li-text-2">
+          {transcurrido}s
+        </p>
+      </div>
+    </div>
+  );
+}
+```
+
+
+===== ARCHIVO: components/FondoParticulas.tsx =====
+
+```tsx
+"use client";
+
+import { useEffect, useRef } from "react";
+
+/**
+ * Campo de partículas para el fondo de Búsqueda.
+ *
+ * Decisiones deliberadas:
+ * - Canvas propio, sin librería ni CDN. Son ~80 líneas y evita 25KB de
+ *   particles.js (sin mantenimiento desde 2016).
+ * - CERO interacción con el mouse. La profundidad sale del paralaje entre
+ *   tres capas de z que derivan a distinta velocidad, no de perseguir el
+ *   cursor: eso último se lee como gadget, no como herramienta.
+ * - Paleta de la casa (#0A66C2 sobre el crema #F4F2EE), opacidades bajas.
+ * - Respeta prefers-reduced-motion (dibuja un cuadro estático) y se pausa
+ *   cuando la pestaña no está visible.
+ */
+
+const AZUL = "10, 102, 194"; // --color-li-blue en RGB
+
+/**
+ * Multiplicador global de presencia. Es la única perilla que hace falta tocar.
+ *   0.6 = discreto (se pierde al comprimir para video)
+ *   1.0 = calibrado para YouTube  <- actual
+ *   1.3 = agresivo, empieza a competir con el formulario
+ *
+ * Calibrado para video a propósito: VP9/H.264 arrasan con las líneas finas de
+ * bajo contraste sobre fondo plano, así que acá pesan más el grosor y el
+ * contraste que la cantidad de partículas.
+ */
+const INTENSIDAD = 1;
+
+/**
+ * Repulsión del cursor. NO es el "grab" de particles.js (donde las partículas
+ * se pegan al mouse con líneas): acá las partículas se apartan al pasar el
+ * cursor y vuelven solas a su deriva con retorno elástico. Las del frente
+ * reaccionan más que las del fondo, así que el paralaje se refuerza en vez de
+ * romperse.
+ *
+ * Para apagarlo del todo: REPULSION_RADIO = 0.
+ */
+const REPULSION_RADIO = 260; // px de alcance alrededor del cursor
+const REPULSION_FUERZA = 9; // cuánto empuja por frame
+const RETORNO = 0.05; // qué tan rápido vuelve a su lugar (0.02 lento, 0.1 seco)
+const AMORTIGUACION = 0.85; // frena el rebote para que no oscile
+
+/**
+ * OJO con el equilibrio: NO es FUERZA / RETORNO. La fuerza cae con `caida²`
+ * a medida que la partícula se aleja, así que se auto-limita. El radio real
+ * del vacío sale de resolver:
+ *
+ *     (1 - ox/RADIO)² · FUERZA = ox · RETORNO
+ *
+ * Con estos valores da ~83px, que es lo que se ve. Medido: la partícula más
+ * cercana al cursor pasa de ~45px a ~85px. Por debajo de 60px la dispersión
+ * no se percibe; por encima de ~120px se ve elástico y falso.
+ */
+
+interface Particula {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
+  z: number; // 0.35 (fondo) .. 1 (frente)
+  /** Desplazamiento por el mouse. Vuelve a 0 solo. */
+  ox: number;
+  oy: number;
+  /** Velocidad del desplazamiento, para que el retorno sea elástico. */
+  ovx: number;
+  ovy: number;
+}
+
+export function FondoParticulas() {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const reducido = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    let ancho = 0;
+    let alto = 0;
+    let particulas: Particula[] = [];
+    let raf = 0;
+
+    // Posición del cursor en coordenadas del canvas. null = fuera.
+    let mouseX: number | null = null;
+    let mouseY: number | null = null;
+
+    // En touch no hay hover: la repulsión solo aplica con puntero fino, y
+    // nunca con reduced-motion.
+    const conPuntero =
+      !reducido && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    function crear() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = canvas!.getBoundingClientRect();
+      ancho = rect.width;
+      alto = rect.height;
+      canvas!.width = ancho * dpr;
+      canvas!.height = alto * dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Densidad por área, con techo. Subimos poco la cantidad: lo que hace
+      // visible el campo en video es el tamaño y el contraste, no el número.
+      const cantidad = Math.min(Math.round((ancho * alto) / 11000), 96);
+
+      particulas = Array.from({ length: cantidad }, () => {
+        const z = 0.4 + Math.random() * 0.6;
+        // Las del fondo son más chicas y más lentas: eso es el paralaje.
+        const velocidad = (0.055 + Math.random() * 0.09) * z;
+        const angulo = Math.random() * Math.PI * 2;
+        return {
+          x: Math.random() * ancho,
+          y: Math.random() * alto,
+          vx: Math.cos(angulo) * velocidad,
+          vy: Math.sin(angulo) * velocidad,
+          r: (1.5 + Math.random() * 2.1) * z,
+          z,
+          ox: 0,
+          oy: 0,
+          ovx: 0,
+          ovy: 0,
+        };
+      });
+    }
+
+    // Posición dibujada = deriva natural + desplazamiento por el mouse.
+    const px = (p: Particula) => p.x + p.ox;
+    const py = (p: Particula) => p.y + p.oy;
+
+    function dibujar() {
+      ctx!.clearRect(0, 0, ancho, alto);
+
+      // Líneas primero, para que los puntos queden por encima.
+      const MAX = 168;
+      for (let i = 0; i < particulas.length; i++) {
+        for (let j = i + 1; j < particulas.length; j++) {
+          const a = particulas[i];
+          const b = particulas[j];
+          const dx = px(a) - px(b);
+          const dy = py(a) - py(b);
+          const d2 = dx * dx + dy * dy;
+          if (d2 > MAX * MAX) continue;
+          const d = Math.sqrt(d2);
+          // Se desvanece con la distancia y con la profundidad del par.
+          const alfa = (1 - d / MAX) * 0.62 * INTENSIDAD * Math.min(a.z, b.z);
+          ctx!.strokeStyle = `rgba(${AZUL}, ${alfa})`;
+          // 1.4px es el piso para que el encoder de video no se la coma.
+          ctx!.lineWidth = 1.4 * Math.min(a.z, b.z) + 0.4;
+          ctx!.beginPath();
+          ctx!.moveTo(px(a), py(a));
+          ctx!.lineTo(px(b), py(b));
+          ctx!.stroke();
+        }
+      }
+
+      for (const p of particulas) {
+        // Halo suave detrás del punto: le da volumen y, sobre todo, sobrevive
+        // a la compresión mucho mejor que un círculo plano de 2px.
+        ctx!.fillStyle = `rgba(${AZUL}, ${0.1 * p.z * INTENSIDAD})`;
+        ctx!.beginPath();
+        ctx!.arc(px(p), py(p), p.r * 3.2, 0, Math.PI * 2);
+        ctx!.fill();
+
+        ctx!.fillStyle = `rgba(${AZUL}, ${Math.min(0.22 + p.z * 0.72 * INTENSIDAD, 0.95)})`;
+        ctx!.beginPath();
+        ctx!.arc(px(p), py(p), p.r, 0, Math.PI * 2);
+        ctx!.fill();
+      }
+    }
+
+    function animar() {
+      for (const p of particulas) {
+        p.x += p.vx;
+        p.y += p.vy;
+        // Envolvente en vez de rebote: el rebote se nota y se siente "pelotita".
+        const m = 12;
+        if (p.x < -m) p.x = ancho + m;
+        if (p.x > ancho + m) p.x = -m;
+        if (p.y < -m) p.y = alto + m;
+        if (p.y > alto + m) p.y = -m;
+
+        // --- Repulsión del cursor ---
+        if (mouseX !== null && mouseY !== null && REPULSION_RADIO > 0) {
+          const dx = px(p) - mouseX;
+          const dy = py(p) - mouseY;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < REPULSION_RADIO * REPULSION_RADIO) {
+            const d = Math.sqrt(d2) || 0.001;
+            // Caída cuadrática: fuerte cerca del cursor, casi nula en el borde
+            // del radio. Sin esto el campo entero se mueve en bloque y se ve mal.
+            const caida = 1 - d / REPULSION_RADIO;
+            // Las del frente reaccionan más: refuerza el paralaje.
+            const fuerza = caida * caida * REPULSION_FUERZA * p.z;
+            p.ovx += (dx / d) * fuerza;
+            p.ovy += (dy / d) * fuerza;
+          }
+        }
+
+        // Retorno elástico a su lugar, amortiguado para que no oscile.
+        p.ovx = (p.ovx - p.ox * RETORNO) * AMORTIGUACION;
+        p.ovy = (p.ovy - p.oy * RETORNO) * AMORTIGUACION;
+        p.ox += p.ovx;
+        p.oy += p.ovy;
+      }
+      dibujar();
+      raf = requestAnimationFrame(animar);
+    }
+
+    function arrancar() {
+      cancelAnimationFrame(raf);
+      if (reducido) dibujar();
+      else raf = requestAnimationFrame(animar);
+    }
+
+    crear();
+    arrancar();
+
+    const alRedimensionar = () => {
+      crear();
+      arrancar();
+    };
+    const alCambiarVisibilidad = () => {
+      if (document.hidden) cancelAnimationFrame(raf);
+      else arrancar();
+    };
+    // El contenedor es pointer-events-none para no bloquear el formulario, así
+    // que el canvas nunca recibe eventos: escuchamos en window y convertimos.
+    const alMover = (e: MouseEvent) => {
+      const rect = canvas!.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const fuera = x < 0 || y < 0 || x > rect.width || y > rect.height;
+      mouseX = fuera ? null : x;
+      mouseY = fuera ? null : y;
+    };
+    const alSalir = () => {
+      mouseX = null;
+      mouseY = null;
+    };
+
+    window.addEventListener("resize", alRedimensionar);
+    document.addEventListener("visibilitychange", alCambiarVisibilidad);
+    if (conPuntero) {
+      window.addEventListener("mousemove", alMover, { passive: true });
+      document.addEventListener("mouseleave", alSalir);
+    }
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", alRedimensionar);
+      document.removeEventListener("visibilitychange", alCambiarVisibilidad);
+      window.removeEventListener("mousemove", alMover);
+      document.removeEventListener("mouseleave", alSalir);
+    };
+  }, []);
+
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Halo frío, anclado arriba: da aire y profundidad sin lavar el crema
+          de la marca, que tiene que seguir leyéndose. */}
+      <div className="absolute inset-0 bg-[radial-gradient(95%_60%_at_50%_-12%,rgba(10,102,194,0.16),transparent_72%)]" />
+      <canvas
+        ref={ref}
+        className="size-full"
+        // Se apagan hacia el centro para que la tarjeta blanca no pelee con
+        // el fondo. El hueco es chico: el campo tiene que llegar cerca de la
+        // tarjeta, si no se lee como sobra en vez de profundidad.
+        style={{
+          maskImage:
+            "radial-gradient(circle at 50% 44%, transparent 0%, transparent 7%, black 34%)",
+          WebkitMaskImage:
+            "radial-gradient(circle at 50% 44%, transparent 0%, transparent 7%, black 34%)",
+        }}
+      />
+    </div>
+  );
+}
+```
+
+
+===== ARCHIVO: components/LeadCard.tsx =====
+
+```tsx
+"use client";
+
+import { MapPin, Sparkles } from "lucide-react";
+import type { Lead } from "@/lib/types";
+import { Avatar } from "./Avatar";
+
+export function LeadCard({
+  lead,
+  onAbrir,
+  onDragStart,
+  onDragEnd,
+  arrastrando,
+}: {
+  lead: Lead;
+  onAbrir: () => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  arrastrando: boolean;
+}) {
+  return (
+    <article
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", lead.id);
+        onDragStart();
+      }}
+      onDragEnd={onDragEnd}
+      onClick={onAbrir}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onAbrir();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Abrir ${lead.nombre}`}
+      className={`card-li card-li-hover cursor-pointer rounded-lg bg-li-surface p-3.5 transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-li-blue ${
+        arrastrando ? "opacity-40" : ""
+      }`}
+    >
+      <div className="flex gap-3">
+        <Avatar nombre={lead.nombre} fotoUrl={lead.fotoUrl} size={44} />
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-[15px] font-semibold leading-tight">
+            {lead.nombre}
+          </h3>
+          <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-li-text-2">
+            {[lead.cargo, lead.empresa].filter(Boolean).join(" · ") ||
+              lead.headline}
+          </p>
+          {lead.ubicacion && (
+            <p className="mt-1.5 flex items-center gap-1 truncate text-[12px] text-li-text-2">
+              <MapPin size={12} className="shrink-0" />
+              {lead.ubicacion}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {lead.porQueBuenLead && (
+        <div className="mt-3 flex items-start gap-1.5 rounded-md bg-li-blue/[0.07] px-2.5 py-2">
+          <Sparkles size={13} className="mt-0.5 shrink-0 text-li-blue" />
+          <p className="line-clamp-2 text-[12px] leading-snug text-li-text">
+            {lead.porQueBuenLead}
+          </p>
+        </div>
+      )}
+    </article>
+  );
+}
+```
+
+
+===== ARCHIVO: components/LeadPanel.tsx =====
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import {
+  Copy,
+  ExternalLink,
+  Loader2,
+  MapPin,
+  MessageSquareQuote,
+  RefreshCw,
+  Sparkles,
+  X,
+} from "lucide-react";
+import { ESTADOS, type EstadoLead, type Lead } from "@/lib/types";
+import { Avatar } from "./Avatar";
+
+export function LeadPanel({
+  lead,
+  onCerrar,
+  onCambiarEstado,
+  onCambiarNota,
+  onMensajeRegenerado,
+  onToast,
+}: {
+  lead: Lead | null;
+  onCerrar: () => void;
+  onCambiarEstado: (id: string, estado: EstadoLead) => void;
+  onCambiarNota: (id: string, nota: string) => void;
+  onMensajeRegenerado: (id: string, mensaje: string) => void;
+  onToast: (texto: string) => void;
+}) {
+  const [mensaje, setMensaje] = useState("");
+  const [nota, setNota] = useState("");
+  const [regenerando, setRegenerando] = useState(false);
+
+  useEffect(() => {
+    if (lead) {
+      setMensaje(lead.mensaje);
+      setNota(lead.nota);
+    }
+  }, [lead]);
+
+  // Cerrar con Escape
+  useEffect(() => {
+    if (!lead) return;
+    const h = (e: KeyboardEvent) => e.key === "Escape" && onCerrar();
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [lead, onCerrar]);
+
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(mensaje);
+    } catch {
+      // Fallback para contextos sin permiso de portapapeles
+      const ta = document.createElement("textarea");
+      ta.value = mensaje;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    onToast("Copiado");
+  }
+
+  async function regenerar() {
+    if (!lead) return;
+    setRegenerando(true);
+    try {
+      const res = await fetch(`/api/leads/${lead.id}/regenerar`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Falló");
+      setMensaje(data.mensaje);
+      onMensajeRegenerado(lead.id, data.mensaje);
+      onToast("Mensaje regenerado");
+    } catch (e) {
+      onToast((e as Error).message);
+    } finally {
+      setRegenerando(false);
+    }
+  }
+
+  return (
+    <AnimatePresence>
+      {lead && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onCerrar}
+            className="fixed inset-0 z-40 bg-black/25"
+          />
+          <motion.aside
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Detalle de ${lead.nombre}`}
+            className="scroll-fino fixed right-0 top-0 z-50 h-full w-full max-w-[460px] overflow-y-auto bg-li-surface shadow-2xl"
+          >
+            {/* Cabecera */}
+            <header className="sticky top-0 z-10 border-b border-li-border bg-li-surface px-6 pb-5 pt-5">
+              <button
+                onClick={onCerrar}
+                aria-label="Cerrar"
+                className="absolute right-4 top-4 rounded-full p-1.5 text-li-text-2 transition-colors hover:bg-black/[0.06] hover:text-li-text"
+              >
+                <X size={19} />
+              </button>
+
+              <div className="flex gap-4 pr-8">
+                <Avatar nombre={lead.nombre} fotoUrl={lead.fotoUrl} size={60} />
+                <div className="min-w-0">
+                  <h2 className="text-[19px] font-semibold leading-tight">
+                    {lead.nombre}
+                  </h2>
+                  <p className="mt-1 text-[14px] leading-snug text-li-text-2">
+                    {[lead.cargo, lead.empresa].filter(Boolean).join(" · ") ||
+                      lead.headline}
+                  </p>
+                  {lead.ubicacion && (
+                    <p className="mt-1 flex items-center gap-1 text-[13px] text-li-text-2">
+                      <MapPin size={12} />
+                      {lead.ubicacion}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {lead.perfilUrl && (
+                <a
+                  href={lead.perfilUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-li-blue px-4 py-1.5 text-[14px] font-semibold text-li-blue transition-colors hover:bg-li-blue/10"
+                >
+                  Ver perfil en LinkedIn
+                  <ExternalLink size={14} />
+                </a>
+              )}
+            </header>
+
+            <div className="space-y-6 px-6 py-6">
+              {/* Análisis IA */}
+              <section className="rounded-lg bg-li-blue/[0.06] p-4">
+                <h3 className="flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-wide text-li-blue">
+                  <Sparkles size={14} />
+                  Análisis IA
+                </h3>
+                {lead.resumen && (
+                  <p className="mt-2.5 text-[14px] leading-relaxed">
+                    {lead.resumen}
+                  </p>
+                )}
+                {lead.porQueBuenLead && (
+                  <p className="mt-2.5 border-l-2 border-li-blue pl-3 text-[14px] leading-relaxed text-li-text-2">
+                    {lead.porQueBuenLead}
+                  </p>
+                )}
+              </section>
+
+              {/* Último post */}
+              {lead.ultimoPost && (
+                <section>
+                  <h3 className="flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-wide text-li-text-2">
+                    <MessageSquareQuote size={14} />
+                    Su último post
+                  </h3>
+                  <blockquote className="mt-2 rounded-lg border border-li-border bg-black/[0.02] p-3.5 text-[13.5px] leading-relaxed text-li-text-2">
+                    {lead.ultimoPost.length > 420
+                      ? `${lead.ultimoPost.slice(0, 420)}…`
+                      : lead.ultimoPost}
+                  </blockquote>
+                </section>
+              )}
+
+              {/* Mensaje */}
+              <section>
+                <h3 className="text-[13px] font-semibold uppercase tracking-wide text-li-text-2">
+                  Mensaje generado
+                </h3>
+                <textarea
+                  value={mensaje}
+                  onChange={(e) => setMensaje(e.target.value)}
+                  rows={9}
+                  className="mt-2 w-full resize-y rounded-lg border border-li-border bg-white p-3.5 text-[14px] leading-relaxed outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+                />
+                <div className="mt-2.5 flex flex-wrap gap-2">
+                  <button
+                    onClick={copiar}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-li-blue px-4 py-2 text-[14px] font-semibold text-white transition-colors hover:bg-li-blue-dark"
+                  >
+                    <Copy size={15} />
+                    Copiar mensaje
+                  </button>
+                  {lead.perfilUrl && (
+                    <a
+                      href={lead.perfilUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-li-border px-4 py-2 text-[14px] font-semibold text-li-text-2 transition-colors hover:border-li-blue hover:text-li-blue"
+                    >
+                      <ExternalLink size={15} />
+                      Abrir LinkedIn
+                    </a>
+                  )}
+                  <button
+                    onClick={regenerar}
+                    disabled={regenerando}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-li-border px-4 py-2 text-[14px] font-semibold text-li-text-2 transition-colors hover:border-li-blue hover:text-li-blue disabled:opacity-50"
+                  >
+                    {regenerando ? (
+                      <Loader2 size={15} className="animate-spin" />
+                    ) : (
+                      <RefreshCw size={15} />
+                    )}
+                    Regenerar
+                  </button>
+                </div>
+              </section>
+
+              {/* Estado + nota */}
+              <section className="grid gap-4">
+                <div>
+                  <label
+                    htmlFor="estado"
+                    className="text-[13px] font-semibold uppercase tracking-wide text-li-text-2"
+                  >
+                    Estado
+                  </label>
+                  <select
+                    id="estado"
+                    value={lead.estado}
+                    onChange={(e) =>
+                      onCambiarEstado(lead.id, e.target.value as EstadoLead)
+                    }
+                    className="mt-2 w-full rounded-md border border-li-border bg-white px-3 py-2.5 text-[14px] outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+                  >
+                    {ESTADOS.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label
+                    htmlFor="nota"
+                    className="text-[13px] font-semibold uppercase tracking-wide text-li-text-2"
+                  >
+                    Nota
+                  </label>
+                  <textarea
+                    id="nota"
+                    value={nota}
+                    onChange={(e) => setNota(e.target.value)}
+                    onBlur={() => onCambiarNota(lead.id, nota)}
+                    rows={3}
+                    placeholder="Lo que quieras recordar de este lead"
+                    className="mt-2 w-full resize-y rounded-md border border-li-border bg-white p-3 text-[14px] outline-none focus:border-li-blue focus:ring-1 focus:ring-li-blue"
+                  />
+                </div>
+              </section>
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+```
+
+
+===== ARCHIVO: components/LeadsView.tsx =====
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { ESTADOS, type EstadoLead, type Lead } from "@/lib/types";
+import { LeadCard } from "./LeadCard";
+
+export function LeadsView({
+  leads,
+  onAbrir,
+  onMover,
+  onIrABusqueda,
+}: {
+  leads: Lead[];
+  onAbrir: (lead: Lead) => void;
+  onMover: (id: string, estado: EstadoLead) => void;
+  onIrABusqueda: () => void;
+}) {
+  const [arrastrando, setArrastrando] = useState<string | null>(null);
+  const [encima, setEncima] = useState<EstadoLead | null>(null);
+
+  if (!leads.length) {
+    return (
+      <div className="flex min-h-full items-center justify-center px-6 py-16">
+        <div className="card-li max-w-sm rounded-lg bg-li-surface px-8 py-10 text-center">
+          <h2 className="text-[18px] font-semibold">Aún no hay leads</h2>
+          <p className="mt-2 text-[15px] text-li-text-2">
+            Empieza una búsqueda.
+          </p>
+          <button
+            onClick={onIrABusqueda}
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-li-blue px-5 py-2.5 text-[15px] font-semibold text-white transition-colors hover:bg-li-blue-dark"
+          >
+            <Search size={16} strokeWidth={2.5} />
+            Ir a Búsqueda
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col px-6 py-6">
+      <h1 className="mb-5 shrink-0 text-[26px] font-semibold tracking-tight">
+        Leads
+      </h1>
+
+      <div className="scroll-fino grid min-h-0 flex-1 grid-cols-[repeat(4,minmax(260px,1fr))] gap-4 overflow-x-auto">
+        {ESTADOS.map(({ id, label }) => {
+          const deLaColumna = leads.filter((l) => l.estado === id);
+          const resaltada = encima === id && arrastrando !== null;
+          return (
+            <section
+              key={id}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setEncima(id);
+              }}
+              onDragLeave={() => setEncima((v) => (v === id ? null : v))}
+              onDrop={(e) => {
+                e.preventDefault();
+                const leadId = e.dataTransfer.getData("text/plain");
+                if (leadId) onMover(leadId, id);
+                setEncima(null);
+                setArrastrando(null);
+              }}
+              className={`flex min-h-0 flex-col rounded-lg border transition-colors ${
+                resaltada
+                  ? "border-li-blue bg-li-blue/[0.06]"
+                  : "border-li-border bg-black/[0.02]"
+              }`}
+            >
+              <header className="flex shrink-0 items-center justify-between border-b border-li-border px-3.5 py-3">
+                <h2 className="text-[14px] font-semibold">{label}</h2>
+                <span className="rounded-full bg-black/[0.06] px-2 py-0.5 text-[12px] font-semibold tabular-nums text-li-text-2">
+                  {deLaColumna.length}
+                </span>
+              </header>
+
+              <div className="scroll-fino flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-2.5">
+                {deLaColumna.map((lead) => (
+                  <LeadCard
+                    key={lead.id}
+                    lead={lead}
+                    arrastrando={arrastrando === lead.id}
+                    onAbrir={() => onAbrir(lead)}
+                    onDragStart={() => setArrastrando(lead.id)}
+                    onDragEnd={() => {
+                      setArrastrando(null);
+                      setEncima(null);
+                    }}
+                  />
+                ))}
+                {!deLaColumna.length && (
+                  <p className="px-1 py-6 text-center text-[13px] text-li-text-2/70">
+                    Arrastrá tarjetas acá
+                  </p>
+                )}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+```
+
+
+===== ARCHIVO: components/Logo.tsx =====
+
+```tsx
+/**
+ * Lockup "in" recreado como SVG tipográfico — NO es el logo oficial de
+ * LinkedIn, es una marca propia que vive en la misma familia visual.
+ */
+export function MarcaIn({ size = 32 }: { size?: number }) {
+  const r = size * 0.22;
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      <rect width="32" height="32" rx={(r / size) * 32} fill="var(--color-li-blue)" />
+      {/* punto de la i */}
+      <circle cx="9.4" cy="9.2" r="2.15" fill="#fff" />
+      {/* asta de la i */}
+      <rect x="7.5" y="13" width="3.8" height="11.5" rx="0.6" fill="#fff" />
+      {/* n */}
+      <path
+        d="M14.2 13h3.6v1.6c.62-1.15 1.85-1.9 3.5-1.9 2.6 0 4.2 1.7 4.2 4.6v7.2h-3.8v-6.5c0-1.5-.72-2.35-2-2.35-1.32 0-2.1.9-2.1 2.4v6.45h-3.4V13Z"
+        fill="#fff"
+      />
+    </svg>
+  );
+}
+
+export function Logo() {
+  return (
+    <div className="flex items-center gap-2.5">
+      <MarcaIn size={32} />
+      <span className="text-[19px] font-semibold tracking-tight text-li-text">
+        LeadHunter
+      </span>
+    </div>
+  );
+}
+
+/** Sello chico del footer del sidebar: refuerza la estética "validado". */
+export function SelloDatos() {
+  return (
+    <div className="flex items-center gap-2 text-[11px] text-li-text-2">
+      <MarcaIn size={16} />
+      <span>Datos vía LinkedIn</span>
+    </div>
+  );
+}
+```
+
+
+===== ARCHIVO: components/Sidebar.tsx =====
+
+```tsx
+"use client";
+
+import { KanbanSquare, Search, Settings } from "lucide-react";
+import { Logo, SelloDatos } from "./Logo";
+
+export type Seccion = "busqueda" | "leads" | "ajustes";
+
+const ITEMS: { id: Seccion; label: string; Icono: typeof Search }[] = [
+  { id: "busqueda", label: "Búsqueda", Icono: Search },
+  { id: "leads", label: "Leads", Icono: KanbanSquare },
+  { id: "ajustes", label: "Ajustes", Icono: Settings },
+];
+
+export function Sidebar({
+  seccion,
+  onCambiar,
+  totalLeads,
+}: {
+  seccion: Seccion;
+  onCambiar: (s: Seccion) => void;
+  totalLeads: number;
+}) {
+  return (
+    <aside className="flex w-60 shrink-0 flex-col border-r border-li-border bg-li-surface">
+      <div className="px-5 py-5">
+        <Logo />
+      </div>
+
+      <nav className="flex flex-col gap-1 px-3">
+        {ITEMS.map(({ id, label, Icono }) => {
+          const activo = seccion === id;
+          return (
+            <button
+              key={id}
+              onClick={() => onCambiar(id)}
+              aria-current={activo ? "page" : undefined}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] transition-colors ${
+                activo
+                  ? "bg-li-blue/10 font-semibold text-li-blue"
+                  : "text-li-text-2 hover:bg-black/[0.04] hover:text-li-text"
+              }`}
+            >
+              <Icono size={19} strokeWidth={activo ? 2.4 : 2} />
+              <span className="flex-1">{label}</span>
+              {id === "leads" && totalLeads > 0 && (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
+                    activo ? "bg-li-blue text-white" : "bg-black/[0.06] text-li-text-2"
+                  }`}
+                >
+                  {totalLeads}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="mt-auto border-t border-li-border px-5 py-4">
+        <SelloDatos />
+      </div>
+    </aside>
+  );
+}
+```
+
+
+===== ARCHIVO: components/Toast.tsx =====
+
+```tsx
+"use client";
+
+import { AnimatePresence, motion } from "motion/react";
+import { Check } from "lucide-react";
+
+export function Toast({ texto }: { texto: string | null }) {
+  return (
+    <AnimatePresence>
+      {texto && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full bg-li-text px-5 py-2.5 text-[14px] font-medium text-white shadow-lg"
+        >
+          <Check size={15} strokeWidth={3} className="text-li-green" />
+          {texto}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+```
+
+
+===== ARCHIVO: eslint.config.mjs =====
+
+```js
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
+```
+
+
+===== ARCHIVO: lib/apify.ts =====
+
+```ts
+import type { ParametrosBusqueda } from "./types";
+import { ubicacionParaApify } from "./us-states";
+
+const BASE = "https://api.apify.com/v2";
+
+const ACTOR_BUSQUEDA = "harvestapi~linkedin-profile-search";
+const ACTOR_POSTS = "harvestapi~linkedin-profile-posts";
+
+/** Tope duro de resultados por búsqueda, pase lo que pase con el slider. */
+export const LIMITE_DURO = 50;
+
+export class ApifyLimiteError extends Error {
+  constructor(mensaje: string) {
+    super(mensaje);
+    this.name = "ApifyLimiteError";
+  }
+}
+
+function token(): string {
+  const t = process.env.APIFY_TOKEN;
+  if (!t) throw new Error("Falta APIFY_TOKEN en .env.local");
+  return t;
+}
+
+/**
+ * Arma el input del actor `harvestapi/linkedin-profile-search`.
+ *
+ * Schema verificado el 2026-07-19 contra el build vigente del actor, vía
+ *   GET https://api.apify.com/v2/acts/harvestapi~linkedin-profile-search/builds
+ * (el `inputSchema` del último build es la fuente de verdad, no la página
+ * pública). Campos usados y confirmados ahí:
+ *   searchQuery        string   — la palabra clave / rubro
+ *   currentJobTitles   string[] — filtro de cargos actuales
+ *   locations          string[] — filtro de ubicación
+ *   maxItems           integer  — tope de perfiles (protección de gasto)
+ *   profileScraperMode string   — "Full" trae el perfil completo
+ */
+export function buildSearchInput(p: ParametrosBusqueda) {
+  const limite = Math.min(Math.max(p.limit, 1), LIMITE_DURO);
+  return {
+    searchQuery: p.keyword.trim(),
+    currentJobTitles: p.titles.filter((t) => t.trim()),
+    locations: ubicacionParaApify(p.state, p.city),
+    maxItems: limite,
+    profileScraperMode: "Full" as const,
+  };
+}
+
+/**
+ * Input del actor `harvestapi/linkedin-profile-posts`.
+ * Mismo método de verificación, misma fecha. `maxPosts: 1` es la protección
+ * de gasto: un solo post por perfil. Reposts y quotes van en false para que
+ * el post sea propio y sirva de verdad para personalizar el mensaje.
+ */
+export function buildPostsInput(perfilUrls: string[]) {
+  return {
+    targetUrls: perfilUrls,
+    maxPosts: 1,
+    includeReposts: false,
+    includeQuotePosts: false,
+  };
+}
+
+async function correrActor(
+  actor: string,
+  input: unknown,
+  timeoutSegs: number,
+): Promise<unknown[]> {
+  const url =
+    `${BASE}/acts/${actor}/run-sync-get-dataset-items` +
+    `?token=${token()}&timeout=${timeoutSegs}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    const texto = await res.text();
+    // El free tier de Apify devuelve 402/403 cuando se acaban los créditos
+    // del mes. Lo traducimos a algo que la UI pueda mostrar sin romperse.
+    const pareceLimite =
+      res.status === 402 ||
+      res.status === 403 ||
+      /usage|limit|credit|quota|exceed/i.test(texto);
+    if (pareceLimite) {
+      throw new ApifyLimiteError(
+        "Límite del plan gratuito de Apify alcanzado; se renueva el día 1.",
+      );
+    }
+    throw new Error(`Apify ${actor} respondió ${res.status}: ${texto.slice(0, 300)}`);
+  }
+
+  const datos = await res.json();
+  return Array.isArray(datos) ? datos : [];
+}
+
+/** Lee un campo probando varios nombres posibles (el actor varía por versión). */
+function campo(obj: Record<string, unknown>, ...claves: string[]): string {
+  for (const k of claves) {
+    const v = obj[k];
+    if (typeof v === "string" && v.trim()) return v.trim();
+    if (v && typeof v === "object") {
+      const anidado = v as Record<string, unknown>;
+      for (const sub of ["name", "title", "text", "linkedinUrl", "url"]) {
+        const s = anidado[sub];
+        if (typeof s === "string" && s.trim()) return s.trim();
+      }
+    }
+  }
+  return "";
+}
+
+export interface PerfilCrudo {
+  perfilUrl: string;
+  nombre: string;
+  cargo: string;
+  empresa: string;
+  ubicacion: string;
+  fotoUrl: string | null;
+  headline: string;
+}
+
+/**
+ * Mapeo verificado contra un item real del dataset (smoke test 2026-07-19).
+ * La forma que devuelve el actor es:
+ *   { firstName, lastName, linkedinUrl, headline, about,
+ *     location: { linkedinText, parsed: { text, city, state } },
+ *     currentPosition: [ { position, companyName, ... } ],
+ *     photo }
+ */
+export function mapearPerfil(raw: Record<string, unknown>): PerfilCrudo | null {
+  const perfilUrl = campo(raw, "linkedinUrl", "profileUrl", "url", "publicUrl");
+  const nombre =
+    campo(raw, "name", "fullName") ||
+    [campo(raw, "firstName"), campo(raw, "lastName")].filter(Boolean).join(" ");
+  if (!perfilUrl && !nombre) return null;
+
+  // El puesto actual viene como array; el primero es el vigente.
+  const puesto = Array.isArray(raw.currentPosition)
+    ? (raw.currentPosition[0] as Record<string, unknown> | undefined)
+    : undefined;
+  const experiencia = Array.isArray(raw.experience)
+    ? (raw.experience[0] as Record<string, unknown> | undefined)
+    : undefined;
+  const fuentePuesto = puesto ?? experiencia;
+
+  // location es un objeto: preferimos el texto tal cual lo muestra LinkedIn.
+  const loc = raw.location as Record<string, unknown> | undefined;
+  const locParsed = loc?.parsed as Record<string, unknown> | undefined;
+  const ubicacion =
+    (typeof loc?.linkedinText === "string" && loc.linkedinText.trim()) ||
+    (typeof locParsed?.text === "string" && locParsed.text.trim()) ||
+    (typeof raw.location === "string" && raw.location.trim()) ||
+    campo(raw, "locationName", "geoRegion", "addressWithCountry");
+
+  return {
+    perfilUrl,
+    nombre: nombre || "Sin nombre",
+    cargo:
+      (fuentePuesto ? campo(fuentePuesto, "position", "title") : "") ||
+      campo(raw, "position", "jobTitle", "title"),
+    empresa:
+      (fuentePuesto ? campo(fuentePuesto, "companyName", "company") : "") ||
+      campo(raw, "companyName", "company", "currentCompany"),
+    ubicacion: ubicacion || "",
+    fotoUrl:
+      campo(raw, "photo", "photoUrl", "profilePicture", "pictureUrl", "avatar") ||
+      null,
+    headline: campo(raw, "headline", "subtitle", "about", "summary"),
+  };
+}
+
+export async function buscarPerfiles(
+  p: ParametrosBusqueda,
+): Promise<PerfilCrudo[]> {
+  const crudos = await correrActor(ACTOR_BUSQUEDA, buildSearchInput(p), 180);
+  if (process.env.LEADHUNTER_DEBUG && crudos[0]) {
+    console.log("[apify] item de ejemplo:", JSON.stringify(crudos[0], null, 2).slice(0, 4000));
+  }
+  return crudos
+    .map((r) => mapearPerfil(r as Record<string, unknown>))
+    .filter((x): x is PerfilCrudo => x !== null);
+}
+
+/**
+ * Trae el último post de cada perfil en UNA sola corrida (el actor acepta
+ * varias `targetUrls` y `maxPosts` aplica por input). Si falla, seguimos sin
+ * post: el mensaje se adapta.
+ */
+export async function traerUltimosPosts(
+  perfilUrls: string[],
+): Promise<Map<string, string>> {
+  const porPerfil = new Map<string, string>();
+  if (!perfilUrls.length) return porPerfil;
+
+  let crudos: unknown[];
+  try {
+    crudos = await correrActor(ACTOR_POSTS, buildPostsInput(perfilUrls), 180);
+  } catch (e) {
+    if (e instanceof ApifyLimiteError) throw e;
+    console.warn("[apify] posts falló, sigo sin posts:", (e as Error).message);
+    return porPerfil;
+  }
+
+  if (process.env.LEADHUNTER_DEBUG && crudos[0]) {
+    console.log("[apify] post de ejemplo:", JSON.stringify(crudos[0], null, 2).slice(0, 2500));
+  }
+
+  for (const c of crudos) {
+    const raw = c as Record<string, unknown>;
+    const texto = campo(raw, "content", "text", "postContent", "description");
+    if (!texto) continue;
+
+    // OJO: `raw.linkedinUrl` es la URL DEL POST (/posts/...), no la del
+    // perfil. La identidad del autor sale de `author`, y el slug es la clave
+    // más estable (las URLs traen ?miniProfileUrn=... y variantes).
+    const autor = raw.author as Record<string, unknown> | undefined;
+    const slug =
+      (autor && campo(autor, "publicIdentifier")) ||
+      (autor ? slugDePerfil(campo(autor, "linkedinUrl", "profileUrl", "url")) : "") ||
+      slugDePerfil(campo(raw, "profileUrl", "targetUrl", "authorUrl"));
+
+    if (!slug) continue;
+    if (!porPerfil.has(slug)) porPerfil.set(slug, texto.slice(0, 900));
+  }
+  return porPerfil;
+}
+
+/**
+ * Devuelve el slug del perfil: de "https://www.linkedin.com/in/jane-doe?x=1"
+ * saca "jane-doe". Es la única parte estable entre lo que devuelven los dos
+ * actores.
+ */
+export function slugDePerfil(u: string): string {
+  if (!u) return "";
+  const m = u.match(/\/in\/([^/?#]+)/i);
+  if (m) return decodeURIComponent(m[1]).toLowerCase();
+  return u
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\/+$/, "")
+    .split("?")[0];
+}
+```
+
+
+===== ARCHIVO: lib/claude.ts =====
+
+```ts
+import Anthropic from "@anthropic-ai/sdk";
+import type { Ajustes } from "./types";
+import type { PerfilCrudo } from "./apify";
+
+/** Cambiá esto si querés volver a otro Sonnet. */
+export const MODELO = "claude-sonnet-5";
+
+let cliente: Anthropic | null = null;
+function anthropic(): Anthropic {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error("Falta ANTHROPIC_API_KEY en .env.local");
+  }
+  cliente ??= new Anthropic();
+  return cliente;
+}
+
+export interface AnalisisIA {
+  resumen: string;
+  porQueBuenLead: string;
+  mensaje: string;
+}
+
+const ESQUEMA = {
+  type: "object",
+  properties: {
+    resumen: {
+      type: "string",
+      description: "1-2 lineas: a que se dedica esta persona",
+    },
+    porQueBuenLead: {
+      type: "string",
+      description: "1 linea: por que encaja como lead",
+    },
+    mensaje: {
+      type: "string",
+      description: "el mensaje de contacto personalizado",
+    },
+  },
+  required: ["resumen", "porQueBuenLead", "mensaje"],
+  additionalProperties: false,
+} as const;
+
+function systemPrompt(a: Ajustes): string {
+  const idioma =
+    a.idioma === "en"
+      ? "INGLES (los leads son de Estados Unidos)"
+      : "ESPANOL neutro";
+
+  return `Sos un fundador que prospecta en LinkedIn. Analizas un perfil y escribis un mensaje de contacto.
+
+TU EMPRESA / OFERTA:
+${a.empresa}
+
+TU NOMBRE: ${a.nombre}
+
+Devolves SOLO JSON valido, sin markdown, sin bloques de codigo, con exactamente estas claves:
+{"resumen": "...", "porQueBuenLead": "...", "mensaje": "..."}
+
+- resumen: 1-2 lineas sobre a que se dedica realmente esta persona, deducido del perfil.
+- porQueBuenLead: 1 linea sobre por que encaja como cliente para tu oferta. Concreto, no generico.
+- mensaje: el mensaje de contacto.
+
+REGLAS DEL MENSAJE (obligatorias, sin excepcion):
+1. Idioma: ${idioma}.
+2. Tono humano, calido y directo, como si lo escribiera un fundador. Nunca como un bot ni como un vendedor.
+3. PROHIBIDO: emojis, guiones largos (el caracter raya), signos de apertura de interrogacion o exclamacion. Usa solo el signo de cierre.
+4. PROHIBIDO abrir con formulas vacias tipo "Espero que este mensaje te encuentre bien" o "I hope this message finds you well".
+5. Estructura exacta, en este orden:
+   a. Saludo por el nombre de pila.
+   b. UNA linea especifica del perfil que demuestre que lo miraste de verdad. Si hay un ultimo post, referencialo concretamente por su contenido. Si no hay post, referencia su empresa o su rol.
+   c. UNA linea sobre como tu oferta ayuda a alguien en su posicion.
+   d. Cierre suave con una pregunta abierta para una llamada.
+6. Firmado por ${a.nombre}.
+7. Maximo 90 palabras. Tiene que entrar comodo en un mensaje de LinkedIn.
+
+Nunca inventes datos que no esten en el perfil. Si el perfil trae poca informacion, se mas general pero nunca falso.`;
+}
+
+function perfilComoTexto(p: PerfilCrudo, ultimoPost: string | null): string {
+  const lineas = [
+    `Nombre: ${p.nombre}`,
+    p.cargo && `Cargo: ${p.cargo}`,
+    p.empresa && `Empresa: ${p.empresa}`,
+    p.ubicacion && `Ubicacion: ${p.ubicacion}`,
+    p.headline && `Headline: ${p.headline}`,
+    ultimoPost
+      ? `Ultimo post publicado: """${ultimoPost}"""`
+      : "Ultimo post: no disponible (no referencies ningun post)",
+  ].filter(Boolean);
+  return lineas.join("\n");
+}
+
+/**
+ * Red de seguridad determinística. El prompt ya prohíbe todo esto, pero el
+ * mensaje es lo que se ve en cámara: no lo dejamos librado al modelo.
+ */
+export function sanitizarMensaje(texto: string): string {
+  return texto
+    // emojis y pictogramas
+    .replace(
+      /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu,
+      "",
+    )
+    // guiones largos y medios -> coma o nada segun contexto
+    .replace(/\s*[—–]\s*/g, ", ")
+    // signos de apertura
+    .replace(/[¿¡]/g, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/ +([,.!?])/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function parsearJson(texto: string): AnalisisIA {
+  // Aunque pedimos structured output, quitamos fences por las dudas.
+  const limpio = texto
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+  const desde = limpio.indexOf("{");
+  const hasta = limpio.lastIndexOf("}");
+  const candidato = desde >= 0 && hasta > desde ? limpio.slice(desde, hasta + 1) : limpio;
+  const obj = JSON.parse(candidato) as Partial<AnalisisIA>;
+  return {
+    resumen: String(obj.resumen ?? "").trim(),
+    porQueBuenLead: String(obj.porQueBuenLead ?? "").trim(),
+    mensaje: sanitizarMensaje(String(obj.mensaje ?? "")),
+  };
+}
+
+/** Techo de salida. Con thinking apagado, la respuesta entra sobrada. */
+const MAX_TOKENS = 2000;
+
+type RespuestaMensajes = Awaited<
+  ReturnType<Anthropic["messages"]["create"]>
+> & { content: { type: string; text?: string }[]; stop_reason: string | null };
+
+/** Centraliza la lectura: refusal, truncado y parseo, en ese orden. */
+function leerRespuesta(res: unknown): AnalisisIA {
+  const r = res as RespuestaMensajes;
+
+  if (r.stop_reason === "refusal") {
+    throw new Error("El modelo declinó analizar este perfil.");
+  }
+  if (r.stop_reason === "max_tokens") {
+    // Sin esto, el JSON truncado explota más abajo con un error críptico.
+    throw new Error(
+      "La respuesta se truncó por max_tokens; subí MAX_TOKENS en lib/claude.ts.",
+    );
+  }
+
+  const bloque = r.content.find((b) => b.type === "text");
+  if (!bloque?.text) throw new Error("Respuesta sin texto del modelo.");
+  return parsearJson(bloque.text);
+}
+
+export async function analizarPerfil(
+  perfil: PerfilCrudo,
+  ultimoPost: string | null,
+  ajustes: Ajustes,
+): Promise<AnalisisIA> {
+  const res = await anthropic().messages.create({
+    model: MODELO,
+    max_tokens: MAX_TOKENS,
+    // Sonnet 5 corre thinking adaptativo si se omite este campo, y el
+    // razonamiento consume el mismo presupuesto que la respuesta: eso truncaba
+    // el JSON a mitad de camino. Esta tarea es extracción estructurada y no
+    // necesita thinking, así que lo apagamos (también baja mucho la latencia).
+    thinking: { type: "disabled" },
+    system: systemPrompt(ajustes),
+    output_config: { format: { type: "json_schema", schema: ESQUEMA } },
+    messages: [
+      {
+        role: "user",
+        content: `Analiza este perfil y escribi el mensaje:\n\n${perfilComoTexto(perfil, ultimoPost)}`,
+      },
+    ],
+  });
+
+  return leerRespuesta(res);
+}
+
+/** Regenera solo el mensaje, pidiendo explícitamente otro ángulo. */
+export async function regenerarMensaje(
+  perfil: PerfilCrudo,
+  ultimoPost: string | null,
+  ajustes: Ajustes,
+  mensajeAnterior: string,
+): Promise<string> {
+  const res = await anthropic().messages.create({
+    model: MODELO,
+    max_tokens: MAX_TOKENS,
+    thinking: { type: "disabled" },
+    system: systemPrompt(ajustes),
+    output_config: { format: { type: "json_schema", schema: ESQUEMA } },
+    messages: [
+      {
+        role: "user",
+        content: `Analiza este perfil y escribi el mensaje:\n\n${perfilComoTexto(perfil, ultimoPost)}
+
+Ya escribiste antes este mensaje:
+"""${mensajeAnterior}"""
+
+Escribi uno NUEVO y claramente distinto: otro angulo de entrada, otra frase de apertura, otra forma de cerrar. Mismas reglas de siempre.`,
+      },
+    ],
+  });
+
+  return leerRespuesta(res).mensaje;
+}
+
+/** Corre el análisis en paralelo con un tope de concurrencia. */
+export async function analizarEnLote<T>(
+  items: T[],
+  concurrencia: number,
+  fn: (item: T, indice: number) => Promise<void>,
+): Promise<void> {
+  let cursor = 0;
+  const trabajadores = Array.from(
+    { length: Math.min(concurrencia, items.length) },
+    async () => {
+      while (cursor < items.length) {
+        const i = cursor++;
+        await fn(items[i], i);
+      }
+    },
+  );
+  await Promise.all(trabajadores);
+}
+```
+
+
+===== ARCHIVO: lib/costo.ts =====
+
+```ts
+/**
+ * Precios reales de los actores, leídos de `pricingInfos` en la API de Apify
+ * el 2026-07-19:
+ *   harvestapi/linkedin-profile-search  → PAY_PER_EVENT
+ *       search-page   $0.10   (una página de resultados ~10 perfiles)
+ *       full-profile  $0.004  (por perfil en modo Full)
+ *   harvestapi/linkedin-profile-posts   → PRICE_PER_DATASET_ITEM
+ *       post          $0.002  ($2 por cada 1.000 posts)
+ */
+export const PRECIO_PAGINA_BUSQUEDA = 0.1;
+export const PRECIO_PERFIL_FULL = 0.004;
+export const PRECIO_POST = 0.002;
+
+const PERFILES_POR_PAGINA = 10;
+
+export function estimarCosto(cantidad: number): number {
+  const paginas = Math.ceil(cantidad / PERFILES_POR_PAGINA);
+  return (
+    paginas * PRECIO_PAGINA_BUSQUEDA +
+    cantidad * PRECIO_PERFIL_FULL +
+    cantidad * PRECIO_POST
+  );
+}
+
+export function formatearUsd(n: number): string {
+  return `$${n.toFixed(2).replace(".", ",")}`;
+}
+```
+
+
+===== ARCHIVO: lib/store.ts =====
+
+```ts
+import { AJUSTES_DEFAULT, type Ajustes, type Lead } from "./types";
+
+/**
+ * Estado del tablero en memoria del servidor. Es una demo: no hay base de
+ * datos y todo se pierde al reiniciar, que es exactamente lo que queremos
+ * para grabar.
+ *
+ * Va colgado de globalThis porque en dev el hot-reload recarga los módulos
+ * y si no, cada cambio de archivo vaciaría el tablero.
+ */
+interface EstadoGlobal {
+  leads: Map<string, Lead>;
+  ajustes: Ajustes;
+}
+
+const g = globalThis as unknown as { __leadhunter?: EstadoGlobal };
+
+if (!g.__leadhunter) {
+  g.__leadhunter = {
+    leads: new Map<string, Lead>(),
+    ajustes: { ...AJUSTES_DEFAULT },
+  };
+}
+
+const estado = g.__leadhunter;
+
+export function listarLeads(): Lead[] {
+  return [...estado.leads.values()].sort((a, b) => a.creadoEn - b.creadoEn);
+}
+
+export function obtenerLead(id: string): Lead | undefined {
+  return estado.leads.get(id);
+}
+
+export function guardarLeads(nuevos: Lead[]): void {
+  for (const lead of nuevos) estado.leads.set(lead.id, lead);
+}
+
+export function actualizarLead(
+  id: string,
+  cambios: Partial<Pick<Lead, "estado" | "nota" | "mensaje">>,
+): Lead | undefined {
+  const lead = estado.leads.get(id);
+  if (!lead) return undefined;
+  const actualizado = { ...lead, ...cambios };
+  estado.leads.set(id, actualizado);
+  return actualizado;
+}
+
+export function obtenerAjustes(): Ajustes {
+  return estado.ajustes;
+}
+
+export function guardarAjustes(cambios: Partial<Ajustes>): Ajustes {
+  estado.ajustes = { ...estado.ajustes, ...cambios };
+  return estado.ajustes;
+}
+```
+
+
+===== ARCHIVO: lib/types.ts =====
+
+```ts
+export type EstadoLead =
+  | "nuevos"
+  | "contactados"
+  | "respondieron"
+  | "reunion";
+
+export const ESTADOS: { id: EstadoLead; label: string }[] = [
+  { id: "nuevos", label: "Nuevos" },
+  { id: "contactados", label: "Contactados" },
+  { id: "respondieron", label: "Respondieron" },
+  { id: "reunion", label: "Reunión agendada" },
+];
+
+export interface Lead {
+  id: string;
+  nombre: string;
+  cargo: string;
+  empresa: string;
+  ubicacion: string;
+  fotoUrl: string | null;
+  perfilUrl: string;
+  headline: string;
+  ultimoPost: string | null;
+  /** Qué hace esta persona, en 1-2 líneas. Lo deduce la IA del perfil. */
+  resumen: string;
+  /** Por qué encaja como lead para Nexus Reach. */
+  porQueBuenLead: string;
+  /** Mensaje de contacto listo para pegar en LinkedIn. */
+  mensaje: string;
+  estado: EstadoLead;
+  nota: string;
+  creadoEn: number;
+}
+
+export interface Ajustes {
+  nombre: string;
+  empresa: string;
+  idioma: "es" | "en";
+}
+
+export const AJUSTES_DEFAULT: Ajustes = {
+  nombre: "Tu Nombre",
+  empresa:
+    "Nexus Reach — ayudamos a agencias a automatizar tareas y reporting con inteligencia artificial.",
+  idioma: "en",
+};
+
+export interface ParametrosBusqueda {
+  keyword: string;
+  titles: string[];
+  state: string;
+  city: string;
+  limit: number;
+}
+```
+
+
+===== ARCHIVO: lib/us-states.ts =====
+
+```ts
+/**
+ * Los 50 estados de EE.UU. El `value` es lo que se manda al actor de Apify
+ * como filtro de `locations`, por eso lleva ", United States" — así es como
+ * LinkedIn nombra las regiones.
+ */
+export const TODO_EEUU = "United States";
+
+export const US_STATES: string[] = [
+  "Alabama",
+  "Alaska",
+  "Arizona",
+  "Arkansas",
+  "California",
+  "Colorado",
+  "Connecticut",
+  "Delaware",
+  "Florida",
+  "Georgia",
+  "Hawaii",
+  "Idaho",
+  "Illinois",
+  "Indiana",
+  "Iowa",
+  "Kansas",
+  "Kentucky",
+  "Louisiana",
+  "Maine",
+  "Maryland",
+  "Massachusetts",
+  "Michigan",
+  "Minnesota",
+  "Mississippi",
+  "Missouri",
+  "Montana",
+  "Nebraska",
+  "Nevada",
+  "New Hampshire",
+  "New Jersey",
+  "New Mexico",
+  "New York",
+  "North Carolina",
+  "North Dakota",
+  "Ohio",
+  "Oklahoma",
+  "Oregon",
+  "Pennsylvania",
+  "Rhode Island",
+  "South Carolina",
+  "South Dakota",
+  "Tennessee",
+  "Texas",
+  "Utah",
+  "Vermont",
+  "Virginia",
+  "Washington",
+  "West Virginia",
+  "Wisconsin",
+  "Wyoming",
+];
+
+/** Cómo se le pasa una ubicación al actor: "Texas, United States". */
+export function ubicacionParaApify(state: string, city: string): string[] {
+  const partes: string[] = [];
+  if (city.trim()) {
+    partes.push(
+      state && state !== TODO_EEUU
+        ? `${city.trim()}, ${state}, ${TODO_EEUU}`
+        : `${city.trim()}, ${TODO_EEUU}`,
+    );
+  } else if (state && state !== TODO_EEUU) {
+    partes.push(`${state}, ${TODO_EEUU}`);
+  } else {
+    partes.push(TODO_EEUU);
+  }
+  return partes;
+}
+```
+
+
+===== ARCHIVO: next.config.ts =====
+
+```ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  // El badge de dev de Next se planta abajo a la izquierda y tapa el sello
+  // "Datos vía LinkedIn" del sidebar. Como esto se graba en pantalla, lo
+  // ocultamos: los errores de compilación se siguen mostrando igual.
+  devIndicators: false,
+};
+
+export default nextConfig;
+```
+
+
+===== ARCHIVO: package.json =====
+
+```json
+{
+  "name": "leadhunter",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.112.3",
+    "lucide-react": "^1.25.0",
+    "motion": "^12.42.2",
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "puppeteer-core": "^25.3.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+```
+
+
+===== ARCHIVO: postcss.config.mjs =====
+
+```js
+const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+```
+
+
+===== ARCHIVO: public/file.svg =====
+
+```xml
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+```
+
+
+===== ARCHIVO: public/globe.svg =====
+
+```xml
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+```
+
+
+===== ARCHIVO: public/next.svg =====
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+```
+
+
+===== ARCHIVO: public/vercel.svg =====
+
+```xml
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+```
+
+
+===== ARCHIVO: public/window.svg =====
+
+```xml
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+```
+
+
+===== ARCHIVO: scripts/shot-fondo.mjs =====
+
+```js
+/** Captura del fondo de Búsqueda en varios anchos y momentos. */
+import puppeteer from "puppeteer-core";
+import { mkdirSync } from "node:fs";
+
+const BASE = process.env.BASE ?? "http://localhost:3200";
+const SHOTS = "/tmp/lh-shots";
+mkdirSync(SHOTS, { recursive: true });
+const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const browser = await puppeteer.launch({
+  executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  headless: "new",
+  args: ["--no-sandbox"],
+});
+const page = await browser.newPage();
+const errores = [];
+page.on("console", (m) => m.type() === "error" && errores.push(m.text()));
+page.on("pageerror", (e) => errores.push(String(e)));
+
+for (const [w, h, tag] of [
+  [1440, 900, "1440"],
+  [1920, 1080, "1920"],
+  [390, 844, "390"],
+]) {
+  await page.setViewport({ width: w, height: h });
+  await page.goto(BASE, { waitUntil: "networkidle0" });
+  await esperar(2500); // dejar que las partículas deriven un poco
+  await page.screenshot({ path: `${SHOTS}/fondo-${tag}.png` });
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+  );
+  console.log(`${tag}px  overflow: ${overflow ? "❌ SÍ" : "✅ no"}`);
+}
+
+// Segundo cuadro a 1440 para confirmar que efectivamente se mueve
+await page.setViewport({ width: 1440, height: 900 });
+await page.goto(BASE, { waitUntil: "networkidle0" });
+await esperar(600);
+const a = await page.screenshot({ encoding: "base64" });
+await esperar(3000);
+const b = await page.screenshot({ encoding: "base64" });
+console.log(`animación: ${a === b ? "❌ cuadro idéntico (estático)" : "✅ se mueve"}`);
+
+// Con reduced-motion tiene que quedar quieto pero visible
+await page.emulateMediaFeatures([
+  { name: "prefers-reduced-motion", value: "reduce" },
+]);
+await page.goto(BASE, { waitUntil: "networkidle0" });
+await esperar(800);
+const c = await page.screenshot({ encoding: "base64" });
+await esperar(2200);
+const d = await page.screenshot({ encoding: "base64" });
+console.log(`reduced-motion: ${c === d ? "✅ estático" : "❌ sigue animando"}`);
+await page.screenshot({ path: `${SHOTS}/fondo-reduced-motion.png` });
+
+console.log(errores.length ? `❌ consola: ${errores[0]}` : "✅ cero errores de consola");
+await browser.close();
+```
+
+
+===== ARCHIVO: scripts/shot-secciones.mjs =====
+
+```js
+/** Confirma que el fondo de partículas vive SOLO en Búsqueda. */
+import puppeteer from "puppeteer-core";
+const BASE = process.env.BASE ?? "http://localhost:3200";
+const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const browser = await puppeteer.launch({
+  executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  headless: "new",
+  args: ["--no-sandbox"],
+});
+const page = await browser.newPage();
+await page.setViewport({ width: 1440, height: 900 });
+await page.goto(BASE, { waitUntil: "networkidle0" });
+await esperar(700);
+
+const contarCanvas = () => page.$$eval("canvas", (c) => c.length);
+
+console.log(`Búsqueda  canvas: ${await contarCanvas()}  ${(await contarCanvas()) === 1 ? "✅" : "❌"}`);
+await page.screenshot({ path: "/tmp/lh-shots/sec-busqueda.png" });
+
+for (const nombre of ["Leads", "Ajustes"]) {
+  await page.evaluate((n) => {
+    [...document.querySelectorAll("nav button")]
+      .find((b) => b.textContent.includes(n))?.click();
+  }, nombre);
+  await esperar(600);
+  const n = await contarCanvas();
+  console.log(`${nombre.padEnd(9)} canvas: ${n}  ${n === 0 ? "✅ limpio" : "❌ se filtró"}`);
+  await page.screenshot({ path: `/tmp/lh-shots/sec-${nombre.toLowerCase()}.png` });
+}
+await browser.close();
+```
+
+
+===== ARCHIVO: scripts/test-repulsion.mjs =====
+
+```js
+/** Verifica la repulsión del cursor: dispersa, vuelve, y no bloquea el form. */
+import puppeteer from "puppeteer-core";
+import { mkdirSync } from "node:fs";
+
+const BASE = process.env.BASE ?? "http://localhost:3200";
+const SHOTS = "/tmp/lh-shots";
+mkdirSync(SHOTS, { recursive: true });
+const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const browser = await puppeteer.launch({
+  executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  headless: "new",
+  args: ["--no-sandbox"],
+});
+const page = await browser.newPage();
+await page.setViewport({ width: 1440, height: 900 });
+const errores = [];
+page.on("console", (m) => m.type() === "error" && errores.push(m.text()));
+page.on("pageerror", (e) => errores.push(String(e)));
+
+await page.goto(BASE, { waitUntil: "networkidle0" });
+await esperar(1200);
+
+/**
+ * Distancia (px) del punto dado a la partícula más cercana.
+ *
+ * Es la métrica correcta para esto: la repulsión abre un vacío alrededor del
+ * cursor, así que lo que hay que medir es el radio de ese vacío. Medir
+ * densidad en una caja no servía — el desplazamiento (~30-70px) deja a la
+ * mayoría dentro de la caja, y encima depende de dónde caigan las partículas
+ * al azar en cada carga.
+ */
+async function distanciaAlMasCercano(pageX, pageY, radioBusqueda = 200) {
+  return page.evaluate(
+    ([pageX, pageY, R]) => {
+      const c = document.querySelector("canvas");
+      const g = c.getContext("2d");
+      const rect = c.getBoundingClientRect();
+      const dpr = c.width / rect.width;
+      // CLAVE: los puntos vienen en coordenadas de PÁGINA y el canvas arranca
+      // después del sidebar. Sin esta conversión se mide 240px al costado de
+      // donde está el cursor y todo el test miente.
+      const cx = pageX - rect.left;
+      const cy = pageY - rect.top;
+      const x0 = Math.max(0, Math.round((cx - R) * dpr));
+      const y0 = Math.max(0, Math.round((cy - R) * dpr));
+      const w = Math.min(c.width - x0, Math.round(2 * R * dpr));
+      const h = Math.min(c.height - y0, Math.round(2 * R * dpr));
+      if (w <= 0 || h <= 0) return R;
+
+      const d = g.getImageData(x0, y0, w, h).data;
+      let mejor = Infinity;
+      // Umbral alto A PROPÓSITO: solo el núcleo opaco de una partícula llega
+      // acá. Con un umbral bajo se colaban las líneas de conexión, que cruzan
+      // el vacío y hacían parecer que no había dispersión.
+      const UMBRAL = 200;
+      for (let py = 0; py < h; py += 2) {
+        for (let pxi = 0; pxi < w; pxi += 2) {
+          const a = d[(py * w + pxi) * 4 + 3];
+          if (a < UMBRAL) continue;
+          const dx = (x0 + pxi) / dpr - cx;
+          const dy = (y0 + py) / dpr - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mejor) mejor = dist;
+        }
+      }
+      return mejor === Infinity ? R : mejor;
+    },
+    [pageX, pageY, radioBusqueda],
+  );
+}
+
+// Varias posiciones: una sola depende de dónde caigan las partículas al azar.
+const PUNTOS = [
+  { x: 330, y: 300 },
+  { x: 330, y: 560 },
+  { x: 1300, y: 400 },
+  { x: 1300, y: 700 },
+];
+const LEJOS = { x: 720, y: 890 };
+
+const sinCursor = [];
+const conCursor = [];
+
+for (const p of PUNTOS) {
+  // Sin cursor cerca: ¿qué tan cerca llega naturalmente una partícula?
+  await page.mouse.move(LEJOS.x, LEJOS.y, { steps: 8 });
+  await esperar(1400);
+  sinCursor.push(await distanciaAlMasCercano(p.x, p.y));
+
+  // Con el cursor encima: debería abrirse un vacío
+  await page.mouse.move(p.x, p.y, { steps: 12 });
+  await esperar(900);
+  conCursor.push(await distanciaAlMasCercano(p.x, p.y));
+}
+await page.mouse.move(PUNTOS[1].x, PUNTOS[1].y, { steps: 8 });
+await esperar(700);
+await page.screenshot({ path: `${SHOTS}/repulsion-con-mouse.png` });
+
+const prom = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+const base = prom(sinCursor);
+const conM = prom(conCursor);
+
+console.log(
+  `distancia a la partícula más cercana, sin cursor: ${base.toFixed(0)}px ` +
+    `[${sinCursor.map((v) => v.toFixed(0)).join(", ")}]`,
+);
+console.log(
+  `distancia a la partícula más cercana, con cursor: ${conM.toFixed(0)}px ` +
+    `[${conCursor.map((v) => v.toFixed(0)).join(", ")}]`,
+);
+console.log(
+  conM > base + 25
+    ? `✅ el cursor abre un vacío de ~${conM.toFixed(0)}px (+${(conM - base).toFixed(0)}px)`
+    : `❌ apenas dispersa (+${(conM - base).toFixed(0)}px)`,
+);
+
+// Retorno: al retirar el cursor, la zona se vuelve a poblar
+await page.mouse.move(LEJOS.x, LEJOS.y, { steps: 12 });
+await esperar(2600);
+const trasVolver = await distanciaAlMasCercano(PUNTOS[1].x, PUNTOS[1].y);
+await page.screenshot({ path: `${SHOTS}/repulsion-tras-volver.png` });
+console.log(
+  trasVolver < conCursor[1] - 15
+    ? `✅ se repuebla al retirar el cursor (${conCursor[1].toFixed(0)}px -> ${trasVolver.toFixed(0)}px)`
+    : `❌ el vacío no se cierra (${conCursor[1].toFixed(0)}px -> ${trasVolver.toFixed(0)}px)`,
+);
+
+// 4. El fondo NO debe bloquear el formulario
+await page.click("#keyword");
+await page.type("#keyword", "growth");
+const escrito = await page.$eval("#keyword", (i) => i.value);
+console.log(
+  escrito === "growth"
+    ? "✅ el formulario sigue clickeable (pointer-events)"
+    : `❌ el fondo bloquea el input (valor: "${escrito}")`,
+);
+
+// 5. Con reduced-motion no debe haber repulsión
+await page.emulateMediaFeatures([
+  { name: "prefers-reduced-motion", value: "reduce" },
+]);
+await page.goto(BASE, { waitUntil: "networkidle0" });
+await esperar(900);
+const rmAntes = await distanciaAlMasCercano(PUNTOS[1].x, PUNTOS[1].y);
+await page.mouse.move(PUNTOS[1].x, PUNTOS[1].y, { steps: 12 });
+await esperar(900);
+const rmDespues = await distanciaAlMasCercano(PUNTOS[1].x, PUNTOS[1].y);
+console.log(
+  Math.abs(rmAntes - rmDespues) < 8
+    ? "✅ reduced-motion: el cursor no lo afecta"
+    : `❌ reduced-motion: sigue reaccionando (${rmAntes.toFixed(2)} -> ${rmDespues.toFixed(2)})`,
+);
+
+console.log(errores.length ? `❌ consola: ${errores[0]}` : "✅ cero errores de consola");
+await browser.close();
+```
+
+
+===== ARCHIVO: scripts/verify.mjs =====
+
+```js
+/**
+ * Verificación E2E headless. No abre nada: saca capturas a /tmp/lh-shots.
+ *   node scripts/verify.mjs
+ */
+import puppeteer from "puppeteer-core";
+import { mkdirSync } from "node:fs";
+
+const CHROME =
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const BASE = "http://localhost:3000";
+const SHOTS = "/tmp/lh-shots";
+mkdirSync(SHOTS, { recursive: true });
+
+const resultados = [];
+const ok = (n, d = "") => resultados.push({ ok: true, n, d });
+const fail = (n, d = "") => resultados.push({ ok: false, n, d });
+
+const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const browser = await puppeteer.launch({
+  executablePath: CHROME,
+  headless: "new",
+  args: ["--no-sandbox", "--window-size=1440,900"],
+});
+
+const page = await browser.newPage();
+await page.setViewport({ width: 1440, height: 900 });
+
+// Permiso de portapapeles para poder verificar "Copiar mensaje"
+await browser
+  .defaultBrowserContext()
+  .overridePermissions(BASE, ["clipboard-read", "clipboard-write"]);
+
+const erroresConsola = [];
+page.on("console", (m) => {
+  if (m.type() === "error") erroresConsola.push(m.text());
+});
+page.on("pageerror", (e) => erroresConsola.push(String(e)));
+
+async function overflow() {
+  return page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+  );
+}
+
+// ---------- 1. Búsqueda ----------
+await page.goto(BASE, { waitUntil: "networkidle0" });
+await esperar(400);
+await page.screenshot({ path: `${SHOTS}/1-busqueda.png` });
+(await overflow()) ? fail("Búsqueda sin overflow") : ok("Búsqueda sin overflow");
+
+const chips = await page.$$eval("form button[type=button]", (b) => b.length);
+chips >= 5 ? ok("Chips de sugerencia", `${chips} botones`) : fail("Chips", `${chips}`);
+
+const estados = await page.$$eval("select", (sels) => {
+  const s = sels.find((x) => !x.disabled);
+  return s ? s.options.length : 0;
+});
+estados === 51
+  ? ok("50 estados + Todo EE.UU.", `${estados} opciones`)
+  : fail("Estados", `${estados} opciones (esperaba 51)`);
+
+// Coste en vivo: mover el slider tiene que cambiar el texto
+const costoAntes = await page.$eval("form", (f) => f.textContent.match(/~\$[\d,]+/)?.[0]);
+await page.$eval('input[type=range]', (el) => {
+  const set = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype, "value").set;
+  set.call(el, "50");
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+});
+await esperar(200);
+const costoDespues = await page.$eval("form", (f) => f.textContent.match(/~\$[\d,]+/)?.[0]);
+costoAntes !== costoDespues
+  ? ok("Coste estimado en vivo", `${costoAntes} -> ${costoDespues}`)
+  : fail("Coste en vivo", `no cambió (${costoAntes})`);
+
+// ---------- 2. Leads / Kanban ----------
+await page.evaluate(() => {
+  [...document.querySelectorAll("nav button")]
+    .find((b) => b.textContent.includes("Leads"))?.click();
+});
+await esperar(600);
+await page.screenshot({ path: `${SHOTS}/2-leads-kanban.png` });
+(await overflow()) ? fail("Kanban sin overflow") : ok("Kanban sin overflow");
+
+const columnas = await page.$$eval("main section h2", (h) => h.map((x) => x.textContent));
+JSON.stringify(columnas) ===
+JSON.stringify(["Nuevos", "Contactados", "Respondieron", "Reunión agendada"])
+  ? ok("4 columnas del kanban", columnas.join(" | "))
+  : fail("Columnas", columnas.join(" | "));
+
+const tarjetas = await page.$$('main article[role=button]');
+tarjetas.length > 0
+  ? ok("Tarjetas en el tablero", `${tarjetas.length}`)
+  : fail("Tarjetas", "ninguna");
+
+// El store vive en memoria: si reiniciaste el server, no hay nada que probar.
+if (!tarjetas.length) {
+  console.log(
+    "\n⚠️  Tablero vacío. Corré una búsqueda primero:\n" +
+      `   curl -X POST ${BASE}/api/search -H 'content-type: application/json' \\\n` +
+      `        -d '{"keyword":"marketing agency","titles":["Founder"],"state":"Texas","city":"","limit":3}'\n`,
+  );
+  await browser.close();
+  process.exit(1);
+}
+
+// ---------- 3. Drag & drop ----------
+const antesPorColumna = await page.$$eval("main section", (s) =>
+  s.map((x) => x.querySelectorAll("article").length),
+);
+const origen = await page.$("main article[role=button]");
+const destino = (await page.$$("main section"))[1]; // Contactados
+if (origen && destino) {
+  const a = await origen.boundingBox();
+  const b = await destino.boundingBox();
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(b.x + b.width / 2, b.y + 120, { steps: 22 });
+  await esperar(120);
+  await page.mouse.up();
+  await esperar(700);
+  const despues = await page.$$eval("main section", (s) =>
+    s.map((x) => x.querySelectorAll("article").length),
+  );
+  despues[1] > antesPorColumna[1]
+    ? ok("Drag & drop mueve de columna", `${antesPorColumna.join("/")} -> ${despues.join("/")}`)
+    : fail("Drag & drop", `${antesPorColumna.join("/")} -> ${despues.join("/")}`);
+  await page.screenshot({ path: `${SHOTS}/3-kanban-tras-drag.png` });
+} else fail("Drag & drop", "sin tarjeta u objetivo");
+
+// ---------- 4. Panel de detalle ----------
+await (await page.$("main article[role=button]")).click();
+await esperar(800);
+await page.screenshot({ path: `${SHOTS}/4-panel-detalle.png` });
+(await overflow()) ? fail("Panel sin overflow") : ok("Panel sin overflow");
+
+const panel = await page.$("aside[role=dialog]");
+panel ? ok("Panel de detalle abre") : fail("Panel de detalle");
+
+// "Ver perfil en LinkedIn" apunta a la URL real
+const href = await page.$eval(
+  'aside[role=dialog] a[target=_blank]',
+  (a) => a.href,
+);
+/^https:\/\/(www\.)?linkedin\.com\/in\//.test(href)
+  ? ok("Ver perfil apunta a LinkedIn", href)
+  : fail("Ver perfil", href);
+
+// Copiar mensaje -> portapapeles + toast
+const textoTextarea = await page.$eval("aside[role=dialog] textarea", (t) => t.value);
+await page.evaluate(() => {
+  [...document.querySelectorAll("aside[role=dialog] button")]
+    .find((b) => b.textContent.includes("Copiar mensaje"))?.click();
+});
+await esperar(600);
+const portapapeles = await page.evaluate(() => navigator.clipboard.readText());
+portapapeles.trim() === textoTextarea.trim()
+  ? ok("Copiar mensaje al portapapeles", `${portapapeles.length} chars`)
+  : fail("Copiar mensaje", `pegado ${portapapeles.length} vs textarea ${textoTextarea.length}`);
+
+const toast = await page.$('[role=status]');
+toast ? ok("Toast 'Copiado' visible") : fail("Toast");
+await page.screenshot({ path: `${SHOTS}/5-copiado-toast.png` });
+
+// ---------- 5. Ajustes ----------
+await page.keyboard.press("Escape");
+await esperar(500);
+await page.evaluate(() => {
+  [...document.querySelectorAll("nav button")]
+    .find((b) => b.textContent.includes("Ajustes"))?.click();
+});
+await esperar(500);
+await page.screenshot({ path: `${SHOTS}/6-ajustes.png` });
+(await overflow()) ? fail("Ajustes sin overflow") : ok("Ajustes sin overflow");
+const nombreDefault = await page.$eval("#nombre", (i) => i.value);
+nombreDefault === "Tu Nombre"
+  ? ok("Ajustes: nombre por defecto", nombreDefault)
+  : fail("Ajustes nombre", nombreDefault);
+
+// ---------- 6. Reduced motion ----------
+await page.emulateMediaFeatures([
+  { name: "prefers-reduced-motion", value: "reduce" },
+]);
+await page.goto(BASE, { waitUntil: "networkidle0" });
+await esperar(400);
+await page.evaluate(() => {
+  [...document.querySelectorAll("nav button")]
+    .find((b) => b.textContent.includes("Leads"))?.click();
+});
+await esperar(500);
+const vivoConRM = await page.$$eval("main section", (s) => s.length);
+vivoConRM === 4
+  ? ok("Reduced-motion no rompe", "kanban sigue con 4 columnas")
+  : fail("Reduced-motion", `${vivoConRM} columnas`);
+await page.screenshot({ path: `${SHOTS}/7-reduced-motion.png` });
+
+// ---------- 7. Mobile ----------
+await page.setViewport({ width: 390, height: 844 });
+await esperar(400);
+await page.screenshot({ path: `${SHOTS}/8-mobile-390.png` });
+
+erroresConsola.length === 0
+  ? ok("Cero errores de consola")
+  : fail("Errores de consola", erroresConsola.slice(0, 3).join(" || "));
+
+await browser.close();
+
+console.log("\n" + "=".repeat(70));
+for (const r of resultados) {
+  console.log(`${r.ok ? "✅" : "❌"} ${r.n}${r.d ? `  — ${r.d}` : ""}`);
+}
+const pasaron = resultados.filter((r) => r.ok).length;
+console.log("=".repeat(70));
+console.log(`${pasaron}/${resultados.length} verificaciones OK`);
+console.log(`capturas en ${SHOTS}`);
+process.exit(pasaron === resultados.length ? 0 : 1);
+```
+
+
+===== ARCHIVO: tsconfig.json =====
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
+```
+
+
+================================================================================
+FIN DEL CÓDIGO FUENTE
+================================================================================

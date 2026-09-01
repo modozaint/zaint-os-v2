@@ -1,0 +1,89 @@
+{
+  "id": "leadhunterAvisos1",
+  "name": "LeadHunter · Avisos al celular",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 15 }] }
+      },
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Reloj · cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/avisos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "1 · ¿Hay algo que avisar?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [120, 300],
+      "notes": "Revisa dos cosas: leads donde el agente se trabó y espera una persona, y si la conexión con LinkedIn sigue en pie. Manda el aviso por Telegram y marca lo avisado para no repetirlo."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "version": 2 },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.avisos }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "2 · ¿Salió algún aviso?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [380, 300]
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Avisado al celular",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [640, 200]
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "Nada que avisar · todo en orden",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [640, 400]
+    }
+  ],
+  "connections": {
+    "Reloj · cada 15 minutos": {
+      "main": [[{ "node": "1 · ¿Hay algo que avisar?", "type": "main", "index": 0 }]]
+    },
+    "1 · ¿Hay algo que avisar?": {
+      "main": [[{ "node": "2 · ¿Salió algún aviso?", "type": "main", "index": 0 }]]
+    },
+    "2 · ¿Salió algún aviso?": {
+      "main": [
+        [{ "node": "Avisado al celular", "type": "main", "index": 0 }],
+        [{ "node": "Nada que avisar · todo en orden", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}

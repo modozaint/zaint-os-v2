@@ -1,0 +1,5 @@
+.DS_Store
+.claude/.initialized
+
+# Lleva llaves reales: nunca al repositorio
+VERCEL-VARIABLES.txt

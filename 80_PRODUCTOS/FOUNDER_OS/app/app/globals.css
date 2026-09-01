@@ -1,0 +1,2189 @@
+:root {
+  --navy: #15254A;
+  --noche: #0C1730;
+  --papel: #EAF0F6;
+  --oliva: #A3BE4C;
+  --borde: rgba(234, 240, 246, 0.12);
+
+  /* La barra de pestanas se retiro el 2026-08-26: el cuarto es la navegacion.
+     Lo que queda por debajo es solo el area segura del telefono (la franja del
+     gesto, ~34px en un iPhone). Se conserva la VARIABLE, con nombre honesto,
+     porque el HUD y el cuarto cuelgan de ella en vez de un numero fijo. */
+  --alto-abajo: env(safe-area-inset-bottom);
+  --alto-hud: 124px;
+  /* Cuanto sitio se le deja arriba al boton de volver al cuarto. */
+  --alto-volver: 46px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--noche);
+  color: var(--papel);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+
+.mono { font-family: ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace; }
+
+.wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+
+.head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.titulo { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.55; }
+.fecha { font-size: 12px; opacity: 0.45; }
+
+.vida-caja { background: var(--navy); border-radius: 14px; padding: 18px; margin: 16px 0 22px; }
+.vida-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.vida-num { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+.vida-num span { font-size: 14px; opacity: 0.4; font-weight: 400; }
+.barra { height: 8px; background: rgba(0,0,0,0.35); border-radius: 99px; overflow: hidden; }
+.barra i { display: block; height: 100%; background: var(--oliva); border-radius: 99px; transition: width .4s; }
+
+.meta { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--borde); font-size: 13px; }
+.meta b { color: var(--oliva); }
+.meta.ok b { color: var(--oliva); }
+
+.seccion { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.45; margin: 26px 0 12px; }
+
+.areas { display: grid; gap: 8px; }
+.area { display: flex; align-items: center; gap: 12px; background: var(--navy); border-radius: 10px; padding: 12px 14px; }
+.punto { width: 8px; height: 8px; border-radius: 99px; flex-shrink: 0; }
+.area-nom { flex: 1; font-size: 14px; }
+.area-niv { font-size: 12px; opacity: 0.6; }
+.area.cero .area-nom { opacity: 0.45; }
+.area.cero .area-niv { color: #E85D5D; opacity: 1; }
+
+.habito { background: var(--navy); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.habito-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.habito-nom { font-size: 15px; font-weight: 600; }
+.habito-area { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.4; }
+.niveles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.niv {
+  border: 1px solid var(--borde); background: transparent; color: var(--papel);
+  border-radius: 8px; padding: 9px 4px; font-size: 11px; cursor: pointer;
+  font-family: inherit; line-height: 1.3; min-height: 46px;
+}
+.niv b { display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; margin-bottom: 2px; }
+.niv.on { background: var(--oliva); border-color: var(--oliva); color: var(--noche); font-weight: 600; }
+.niv.on b { opacity: 0.75; }
+
+.turno-fila { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.turno-btn {
+  border: 1px solid var(--borde); background: transparent; color: var(--papel);
+  border-radius: 99px; padding: 7px 13px; font-size: 12px; white-space: nowrap;
+  cursor: pointer; font-family: inherit;
+}
+.turno-btn.on { background: var(--papel); color: var(--noche); border-color: var(--papel); font-weight: 600; }
+
+.cursor::after { content: '_'; color: var(--oliva); animation: parpadeo 1.1s step-end infinite; }
+@keyframes parpadeo { 50% { opacity: 0 } }
+
+/* ---- Navegación inferior ---- */
+.wrap { padding-bottom: calc(var(--alto-abajo) + 28px); padding-top: calc(var(--alto-volver) + 12px); }
+
+/* ---- Volver al cuarto: la salida de cada pantalla interna ----
+   Reemplaza a la barra de siete pestanas. Va FIJO y en el mismo sitio en las
+   siete: salir del menu y volver al mundo no puede ser algo que haya que
+   buscar en cada pantalla. */
+.volver-cuarto {
+  position: fixed; z-index: 50;
+  top: calc(env(safe-area-inset-top) + 10px); left: 12px;
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 12px 7px 8px; border-radius: 99px;
+  background: rgba(21, 37, 74, 0.92);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border: 1px solid var(--borde);
+  color: var(--papel); text-decoration: none;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  opacity: 0.82;
+}
+.volver-cuarto svg { width: 15px; height: 15px; }
+.volver-cuarto:active { opacity: 1; border-color: var(--oliva); color: var(--oliva); }
+
+/* ---- Área en detalle ---- */
+.area-card { background: var(--navy); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+.area-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.area-card-nom { font-size: 16px; font-weight: 600; flex: 1; }
+.area-card-niv { font-size: 22px; font-weight: 700; }
+.area-def { font-size: 12px; opacity: 0.5; line-height: 1.45; margin-bottom: 12px; }
+.barra-xp { height: 6px; background: rgba(0,0,0,0.35); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+.barra-xp i { display: block; height: 100%; border-radius: 99px; transition: width .4s; }
+.area-pie { display: flex; justify-content: space-between; font-size: 11px; opacity: 0.5; }
+.area-habs { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--borde); font-size: 12px; opacity: 0.6; }
+.aviso {
+  background: rgba(232, 93, 93, 0.1); border: 1px solid rgba(232, 93, 93, 0.3);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.5; margin-bottom: 14px;
+}
+.aviso b { color: #E85D5D; }
+
+/* ---- Ajustes ---- */
+.campo { margin-bottom: 12px; }
+.campo label { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.45; margin-bottom: 5px; }
+.campo input {
+  width: 100%; background: rgba(0,0,0,0.28); border: 1px solid var(--borde);
+  border-radius: 8px; padding: 10px 12px; color: var(--papel);
+  font-size: 14px; font-family: inherit;
+}
+.campo input:focus { outline: none; border-color: var(--oliva); }
+.guardar {
+  width: 100%; background: var(--oliva); color: var(--noche); border: none;
+  border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 600;
+  font-family: inherit; cursor: pointer; margin-top: 4px;
+}
+.guardar:disabled { opacity: 0.5; }
+.pista { font-size: 11px; opacity: 0.45; line-height: 1.5; margin-top: 8px; }
+
+/* ---- Radar ---- */
+.radar { width: 100%; max-width: 300px; display: block; margin: 0 auto 4px; }
+.radar-caja { background: var(--navy); border-radius: 14px; padding: 16px 8px 8px; margin-bottom: 14px; }
+
+/* ---- Hábitos en cuadrícula ---- */
+.grid-hab { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tarjeta {
+  background: var(--navy); border: 1px solid transparent; border-radius: 14px;
+  padding: 14px 12px; text-align: center; cursor: pointer; position: relative;
+  transition: border-color .15s, background .15s;
+}
+.tarjeta.hecho { border-color: var(--oliva); background: rgba(163,190,76,0.09); }
+.tarjeta-ico {
+  width: 44px; height: 44px; border-radius: 99px; margin: 0 auto 9px;
+  display: grid; place-items: center;
+  border: 1.5px solid rgba(234,240,246,0.18);
+  font-size: 19px;
+}
+.tarjeta.hecho .tarjeta-ico { background: var(--oliva); border-color: var(--oliva); }
+.tarjeta-nom { font-size: 12px; font-weight: 600; letter-spacing: 0.03em; line-height: 1.25; }
+.tarjeta-xp { font-size: 11px; opacity: 0.45; margin-top: 4px; }
+.tarjeta.hecho .tarjeta-xp { color: var(--oliva); opacity: 1; font-weight: 600; }
+.tarjeta-nivel {
+  position: absolute; top: 8px; right: 9px; font-size: 9px;
+  letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5;
+}
+.tarjeta.hecho .tarjeta-nivel { opacity: 1; color: var(--oliva); }
+
+.contador {
+  font-size: 12px; opacity: 0.55;
+  border: 1px solid var(--borde); border-radius: 99px; padding: 3px 11px;
+}
+.fila-seccion { display: flex; align-items: center; justify-content: space-between; margin: 26px 0 12px; }
+.fila-seccion .seccion { margin: 0; }
+
+/* ---- Hoja de niveles ---- */
+.hoja-fondo {
+  position: fixed; inset: 0; background: rgba(5,10,22,0.72);
+  backdrop-filter: blur(3px); z-index: 100; display: flex; align-items: flex-end;
+}
+.hoja {
+  width: 100%; background: var(--navy); border-radius: 18px 18px 0 0;
+  padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
+  max-width: 560px; margin: 0 auto;
+}
+.hoja h3 { font-size: 17px; margin-bottom: 3px; }
+.hoja .sub { font-size: 12px; opacity: 0.5; margin-bottom: 16px; }
+.hoja-niv {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  background: transparent; border: 1px solid var(--borde); border-radius: 10px;
+  padding: 13px 14px; margin-bottom: 8px; color: var(--papel);
+  font-family: inherit; font-size: 13px; text-align: left; cursor: pointer;
+}
+.hoja-niv.on { background: var(--oliva); border-color: var(--oliva); color: var(--noche); }
+.hoja-niv b { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; min-width: 48px; }
+.hoja-niv.on b { opacity: 0.8; }
+.hoja-niv span { flex: 1; }
+.hoja-niv i { font-style: normal; font-size: 11px; opacity: 0.5; }
+.hoja-quitar {
+  width: 100%; background: transparent; border: none; color: #E85D5D;
+  font-size: 13px; padding: 12px; font-family: inherit; cursor: pointer; margin-top: 4px;
+}
+
+/* ---- Detalle del registro: nota, voz y foto ---- */
+.detalle { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--borde); }
+.detalle-cab {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px;
+}
+.detalle-cab span {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.45;
+}
+.mic {
+  background: transparent; border: 1px solid var(--borde); color: var(--papel);
+  border-radius: 99px; padding: 6px 12px; font-size: 12px;
+  font-family: inherit; cursor: pointer;
+}
+.mic.on { background: #E85D5D; border-color: #E85D5D; color: #fff; }
+
+.nota {
+  width: 100%; background: rgba(0,0,0,0.28); border: 1px solid var(--borde);
+  border-radius: 10px; padding: 11px 12px; color: var(--papel);
+  font-size: 14px; font-family: inherit; line-height: 1.45; resize: vertical;
+  margin-bottom: 10px;
+}
+.nota:focus { outline: none; border-color: var(--oliva); }
+.nota::placeholder { color: rgba(234,240,246,0.3); }
+
+.foto-btn {
+  width: 100%; background: transparent; border: 1px dashed var(--borde);
+  color: var(--papel); border-radius: 10px; padding: 13px;
+  font-size: 13px; font-family: inherit; cursor: pointer; opacity: 0.75;
+  margin-bottom: 10px;
+}
+.foto-btn:disabled { opacity: 0.4; }
+.foto-ok { margin-bottom: 10px; }
+.foto-ok img {
+  width: 100%; max-height: 190px; object-fit: cover;
+  border-radius: 10px; display: block; margin-bottom: 7px;
+}
+.foto-ok button {
+  background: transparent; border: none; color: var(--oliva);
+  font-size: 12px; font-family: inherit; cursor: pointer; padding: 3px 0;
+}
+.error { color: #E85D5D; font-size: 12px; margin-bottom: 8px; }
+
+.marca-detalle {
+  position: absolute; top: 9px; left: 10px;
+  width: 5px; height: 5px; border-radius: 99px; background: var(--oliva);
+}
+
+/* ---- Chip de turno plegable ---- */
+.chip-turno {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: var(--navy); border: 1px solid var(--borde); border-radius: 10px;
+  padding: 12px 14px; color: var(--papel); font-size: 13px;
+  font-family: inherit; cursor: pointer; margin-top: 18px;
+}
+.chip-turno span { flex: 1; text-align: left; }
+.chip-turno svg { width: 16px; height: 16px; opacity: 0.5; }
+.meta-turno { display: block; font-size: 11px; opacity: 0.5; font-style: normal; margin-top: 2px; }
+.hoja-niv.on .meta-turno { opacity: 0.7; }
+
+/* ---- HUD: la capa de vida y XP, FLOTANDO sobre la escena ----
+   Dejo de ser una barra pegada al borde el 2026-08-26. En un juego la vida no
+   es una pestana del menu: es una capa encima del mundo. */
+.wrap.con-hud { padding-bottom: calc(var(--alto-abajo) + var(--alto-hud) + 16px); }
+
+.hud {
+  position: fixed; left: 10px; right: 10px; z-index: 49;
+  bottom: calc(var(--alto-abajo) + 10px);
+  background: linear-gradient(to top, rgba(12,23,48,0.97), rgba(12,23,48,0.88));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  padding: 9px 14px 10px;
+  max-width: 540px; margin: 0 auto;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.38);
+}
+.hud-aviso {
+  font-size: 12px; opacity: 0.65; margin-bottom: 7px; text-align: center;
+}
+.hud-aviso b { color: var(--oliva); opacity: 1; }
+.hud-barras { display: flex; align-items: center; gap: 14px; }
+.hud-lado { display: flex; align-items: center; gap: 7px; }
+.hud-lado:first-child { flex: 1; }
+.hud-ico { font-size: 13px; color: #E85D5D; }
+.hud-ico.xp { color: var(--oliva); }
+.hud-barra {
+  flex: 1; height: 9px; background: rgba(0,0,0,0.45);
+  border-radius: 3px; overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+}
+.hud-barra i {
+  display: block; height: 100%; border-radius: 3px; transition: width .4s;
+  background: linear-gradient(90deg, #E85D5D, #F07878);
+}
+.hud-num { font-size: 12px; opacity: 0.8; min-width: 42px; text-align: right; }
+
+
+
+/* ---- El "por qué" de cada hábito ---- */
+.porque { margin-bottom: 14px; }
+.porque-btn {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  background: transparent; border: none; color: var(--oliva);
+  font-size: 12px; font-family: inherit; cursor: pointer;
+  padding: 0 0 2px; letter-spacing: 0.03em;
+}
+.porque-btn svg { width: 14px; height: 14px; transition: transform .2s; }
+.porque-txt {
+  font-size: 13px; line-height: 1.55; opacity: 0.7;
+  border-left: 2px solid var(--oliva); padding: 6px 0 6px 11px; margin-top: 7px;
+}
+
+/* ---- Onboarding ---- */
+.onb { padding-bottom: 120px; }
+.pasos { display: flex; gap: 5px; margin-bottom: 30px; }
+.paso { flex: 1; height: 3px; border-radius: 99px; background: rgba(234,240,246,0.14); transition: background .3s; }
+.paso.on { background: var(--oliva); }
+
+.onb-h1 { font-size: 30px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 8px; }
+.onb-sub { font-size: 14px; opacity: 0.55; margin-bottom: 22px; }
+
+.onb-caja {
+  background: var(--navy); border-radius: 14px; padding: 17px;
+  font-size: 14px; line-height: 1.6; opacity: 0.85; margin-bottom: 20px;
+}
+.onb-caja b { color: var(--papel); opacity: 1; }
+
+.ciclo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ciclo-item { background: var(--navy); border-radius: 12px; padding: 15px 13px; }
+.ciclo-num {
+  display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 99px; background: rgba(163,190,76,0.16); color: var(--oliva);
+  font-size: 12px; font-weight: 700; margin-bottom: 9px;
+}
+.ciclo-item b { display: block; font-size: 13px; margin-bottom: 3px; }
+.ciclo-item em { font-style: normal; font-size: 11px; opacity: 0.5; line-height: 1.4; }
+
+.opcion {
+  width: 100%; text-align: left; background: var(--navy);
+  border: 1px solid var(--borde); border-radius: 12px; padding: 15px;
+  color: var(--papel); font-family: inherit; cursor: pointer; margin-top: 4px;
+}
+.opcion.on { border-color: var(--oliva); background: rgba(163,190,76,0.09); }
+.opcion b { display: block; font-size: 14px; margin-bottom: 4px; }
+.opcion.on b::before { content: '✓ '; color: var(--oliva); }
+.opcion em { font-style: normal; font-size: 12px; opacity: 0.55; line-height: 1.45; }
+
+.desplegable {
+  background: none; border: none; width: 100%; color: inherit;
+  cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 0;
+}
+.desplegable .area-card-nom { text-align: left; }
+
+.area-hab { margin-bottom: 16px; }
+.area-hab-top {
+  display: flex; align-items: center; gap: 9px; margin-bottom: 8px;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6;
+}
+.hab-mini {
+  background: var(--navy); border-radius: 9px; padding: 11px 13px; margin-bottom: 6px;
+}
+.hab-mini span { display: block; font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.hab-mini em { font-style: normal; font-size: 11px; opacity: 0.45; line-height: 1.4; }
+.hab-vacio { font-size: 12px; opacity: 0.35; padding: 8px 2px; }
+
+.onb-pie {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  display: flex; gap: 10px; padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--noche) 62%, transparent);
+  max-width: 560px; margin: 0 auto;
+}
+.onb-pie .guardar { margin-top: 0; flex: 1; }
+.atras {
+  background: transparent; border: 1px solid var(--borde); color: var(--papel);
+  border-radius: 8px; padding: 12px 20px; font-size: 14px;
+  font-family: inherit; cursor: pointer;
+}
+
+.mic-no { font-size: 10px; opacity: 0.35; font-style: italic; }
+
+/* ---- Lo único de hoy ---- */
+.unico {
+  position: relative;
+  background: var(--navy); border-radius: 14px;
+  padding: 15px 15px 14px; margin-top: 14px;
+  border: 1px solid transparent;
+}
+.unico.lista { border-color: var(--oliva); background: rgba(163,190,76,0.08); }
+.unico.protegido { opacity: 0.85; }
+
+.unico-cab {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  opacity: 0.45; margin-bottom: 9px;
+}
+.unico-cap { letter-spacing: 0.04em; text-transform: none; }
+
+.unico-txt { font-size: 16px; line-height: 1.4; padding-right: 34px; }
+.unico.lista .unico-txt { opacity: 0.55; text-decoration: line-through; }
+
+.unico-check {
+  position: absolute; top: 13px; right: 13px;
+  width: 27px; height: 27px; border-radius: 99px;
+  border: 1.5px solid var(--borde); background: transparent;
+  color: var(--noche); font-size: 14px; font-weight: 700;
+  cursor: pointer; display: grid; place-items: center;
+}
+.unico.lista .unico-check { background: var(--oliva); border-color: var(--oliva); }
+
+.unico-pie {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--borde);
+}
+.peldano {
+  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  border: 1px solid; border-radius: 99px; padding: 3px 9px;
+}
+.unico-min { font-size: 11px; opacity: 0.5; }
+.unico-editar {
+  margin-left: auto; background: none; border: none; color: var(--papel);
+  opacity: 0.45; font-size: 12px; font-family: inherit; cursor: pointer;
+}
+
+.unico-aviso {
+  margin-top: 10px; font-size: 12px; line-height: 1.45;
+  color: #E8A33D; background: rgba(232,163,61,0.09);
+  border-radius: 8px; padding: 9px 11px;
+}
+.unico-nota {
+  margin-top: 10px; font-size: 11.5px; line-height: 1.45; opacity: 0.5;
+}
+
+.unico-add {
+  background: none; border: none; color: var(--oliva);
+  font-size: 13px; font-family: inherit; cursor: pointer; padding: 2px 0;
+}
+.unico-add.grande {
+  width: 100%; border: 1px dashed var(--borde); border-radius: 10px;
+  padding: 14px; opacity: 0.8;
+}
+
+.unico-editor { margin-top: 4px; }
+.peldano-opt {
+  display: flex; align-items: flex-start; gap: 11px; width: 100%;
+  background: transparent; border: 1px solid var(--borde); border-radius: 9px;
+  padding: 10px 12px; margin-bottom: 6px; color: var(--papel);
+  font-family: inherit; text-align: left; cursor: pointer;
+}
+.peldano-opt.on { background: rgba(255,255,255,0.04); }
+.peldano-opt b { font-size: 15px; min-width: 14px; }
+.peldano-opt span { flex: 1; font-size: 13px; }
+.peldano-opt em {
+  display: block; font-style: normal; font-size: 11px;
+  opacity: 0.45; margin-top: 2px; line-height: 1.4;
+}
+
+/* ---- Plan del día ---- */
+.plan { background: var(--navy); border-radius: 14px; padding: 15px; margin-top: 14px; }
+.plan.protegido { opacity: 0.85; }
+.plan-cab {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  opacity: 0.45; margin-bottom: 12px;
+}
+.plan-cab span { letter-spacing: 0.04em; text-transform: none; }
+.plan-vacio { font-size: 13.5px; line-height: 1.55; opacity: 0.7; padding: 4px 0; }
+.plan-reloj {
+  font-size: 11px; line-height: 1.5; opacity: 0.4;
+  margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--borde);
+}
+.plan-reloj b { opacity: 1; color: var(--papel); }
+
+/* la regla: cuánto del bloque está asignado */
+.regla { margin-bottom: 14px; }
+.regla-barra {
+  display: flex; gap: 2px; height: 7px;
+  background: rgba(0,0,0,0.35); border-radius: 3px; overflow: hidden;
+}
+.regla-barra i { display: block; height: 100%; }
+.regla-pie {
+  display: flex; justify-content: space-between;
+  font-size: 10.5px; opacity: 0.45; margin-top: 5px;
+}
+.regla-pie .libre { color: var(--oliva); opacity: 0.8; }
+
+/* una tarea */
+.tarea {
+  display: flex; align-items: flex-start; gap: 11px; width: 100%;
+  background: transparent; border: none; border-top: 1px solid var(--borde);
+  padding: 12px 0; color: var(--papel); font-family: inherit;
+  text-align: left; cursor: pointer;
+}
+.tarea.primera { border-top: none; }
+.tarea-check {
+  width: 20px; height: 20px; border-radius: 99px; flex-shrink: 0; margin-top: 1px;
+  border: 1.5px solid var(--borde); background: transparent;
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+  color: var(--noche); cursor: pointer; padding: 0;
+}
+.tarea-check.on { background: var(--oliva); border-color: var(--oliva); }
+.tarea-cuerpo { flex: 1; min-width: 0; }
+.tarea-txt { display: block; font-size: 14.5px; line-height: 1.35; }
+.tarea.hecha .tarea-txt { opacity: 0.4; text-decoration: line-through; }
+.tarea-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.tarea-meta i { font-style: normal; font-size: 11px; opacity: 0.5; }
+.tarea-meta .pel { opacity: 1; }
+.tarea-meta .primero {
+  color: var(--oliva); opacity: 1;
+  letter-spacing: 0.06em; text-transform: uppercase; font-size: 9.5px;
+}
+.tarea-x {
+  background: none; border: none; color: var(--papel); opacity: 0.25;
+  font-size: 19px; line-height: 1; cursor: pointer; padding: 0 2px;
+}
+
+/* lo que no cabe */
+.fuera { margin-top: 12px; }
+.fuera summary {
+  font-size: 12px; opacity: 0.5; cursor: pointer; padding: 6px 0;
+  list-style: none;
+}
+.fuera summary::-webkit-details-marker { display: none; }
+.fuera summary::before { content: '▸ '; }
+.fuera[open] summary::before { content: '▾ '; }
+.fuera-item { opacity: 0.5; cursor: default; }
+.fuera-nota { font-size: 11px; opacity: 0.4; line-height: 1.5; padding: 8px 0 2px; }
+
+/* la lista completa */
+.grupo { margin-top: 22px; }
+.grupo-cab {
+  display: flex; align-items: center; gap: 9px; margin-bottom: 2px;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55;
+}
+.grupo-cab em { margin-left: auto; font-style: normal; opacity: 0.6; }
+.lista-item { border-top: 1px solid var(--borde); }
+
+/* ---- Iconos Lucide (elegidos por Santiago el 2026-08-14) ----
+   Se dibujan con currentColor. En la tarjeta el color lo pone el área;
+   cuando el hábito está hecho, el círculo se llena de oliva y el trazo
+   pasa a azul noche para que siga legible. */
+.tarjeta-ico { font-size: 0; color: rgba(234, 240, 246, 0.72); }
+.tarjeta-ico svg { display: block; }
+.tarjeta.hecho .tarjeta-ico { color: var(--noche); }
+.tarjeta.hecho .tarjeta-ico svg { stroke-width: 2; }
+
+.hud-ico { display: grid; place-items: center; font-size: 0; }
+.hab-mini-nom { display: inline-flex; align-items: center; gap: 7px; }
+.hab-mini-nom svg { flex-shrink: 0; opacity: 0.75; }
+
+/* ---- Entrar ---- */
+.entrar { display: flex; flex-direction: column; justify-content: center; min-height: 100dvh; gap: 22px; }
+.entrar-marca { text-align: center; }
+.entrar-sub { font-size: 13px; opacity: 0.55; margin-top: 8px; line-height: 1.5; }
+.entrar-caja { background: var(--navy); border-radius: 16px; padding: 20px; }
+.entrar-error {
+  font-size: 12.5px; color: #E85D5D; background: rgba(232,93,93,0.1);
+  border-radius: 8px; padding: 9px 11px; margin-bottom: 12px; line-height: 1.45;
+}
+.entrar-aviso {
+  font-size: 12.5px; color: var(--oliva); background: rgba(163,190,76,0.1);
+  border-radius: 8px; padding: 9px 11px; margin-bottom: 12px; line-height: 1.45;
+}
+.entrar-cambio {
+  width: 100%; background: none; border: none; color: var(--papel);
+  opacity: 0.5; font-size: 12.5px; font-family: inherit; padding: 12px 0 2px; cursor: pointer;
+}
+.entrar-pie { font-size: 11.5px; opacity: 0.35; text-align: center; line-height: 1.5; }
+
+/* ---- Cuenta ---- */
+.cuenta {
+  margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--borde);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.cuenta span { font-size: 12px; opacity: 0.45; overflow-wrap: anywhere; }
+.salir {
+  background: none; border: 1px solid var(--borde); color: var(--papel);
+  border-radius: 8px; padding: 9px 14px; font-size: 12.5px;
+  font-family: inherit; cursor: pointer; white-space: nowrap;
+}
+
+/* ---- Balance del día en vivo ---- */
+.hud-balance {
+  font-size: 11.5px; text-align: center; margin-bottom: 7px;
+  padding: 5px 10px; border-radius: 7px; background: rgba(0,0,0,0.25); opacity: 0.8;
+}
+.hud-balance b { font-weight: 700; }
+.hud-balance em { font-style: normal; opacity: 0.55; }
+.hud-balance.bien { color: var(--oliva); }
+.hud-balance.mal { color: #E85D5D; }
+
+/* ---- Entrar con Google ---- */
+.google {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 11px;
+  background: var(--papel); color: #1F2430; border: none; border-radius: 10px;
+  padding: 14px 16px; font-size: 15px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: opacity .15s;
+}
+.google:disabled { opacity: 0.6; cursor: default; }
+.google svg { width: 19px; height: 19px; flex-shrink: 0; }
+
+.separador {
+  display: flex; align-items: center; gap: 12px; margin: 18px 0 14px;
+  font-size: 11px; opacity: 0.35;
+}
+.separador::before, .separador::after {
+  content: ''; flex: 1; height: 1px; background: var(--borde);
+}
+
+/* ---- Cuentas: las marcas que compiten por las mismas horas ---- */
+.cuentas { background: var(--navy); border-radius: 14px; padding: 14px; margin-bottom: 16px; }
+.cuentas-cab {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 11px;
+  font-size: 11px; letter-spacing: 0.14em; opacity: 0.55;
+}
+.foco {
+  letter-spacing: 0; font-size: 11px; opacity: 1; color: var(--oliva);
+  background: rgba(163,190,76,0.12); border-radius: 6px; padding: 3px 8px;
+}
+.foco.lleno { color: #E8A33D; background: rgba(232,163,61,0.12); }
+.cuentas-fila { display: flex; flex-wrap: wrap; gap: 7px; }
+.cuenta {
+  display: flex; align-items: center; gap: 7px; cursor: pointer;
+  background: rgba(0,0,0,0.22); border: 1px solid var(--borde); border-radius: 9px;
+  padding: 8px 11px; color: var(--papel); font-family: inherit; font-size: 12.5px;
+}
+.cuenta.mantenimiento { opacity: 0.6; }
+.cuenta.dormida { opacity: 0.35; }
+.cuenta.abierta { background: rgba(0,0,0,0.4); }
+.cuenta .punto { width: 7px; height: 7px; }
+.cuenta-nom { font-weight: 600; }
+.cuenta-carga { font-size: 10.5px; opacity: 0.5; }
+.cuenta-detalle { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--borde); }
+.cuenta-detalle-cab {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 13px; margin-bottom: 8px;
+}
+.cuenta-detalle-cab span { font-size: 11px; opacity: 0.5; }
+.cuenta-gatillo, .cuenta-nota { font-size: 12px; opacity: 0.6; line-height: 1.5; margin-bottom: 9px; }
+.cuenta-estados { display: grid; gap: 6px; }
+.estado-opt {
+  text-align: left; background: rgba(0,0,0,0.22); border: 1px solid var(--borde);
+  border-radius: 9px; padding: 9px 11px; color: var(--papel);
+  font-family: inherit; cursor: pointer;
+}
+.estado-opt b { display: block; font-size: 12.5px; font-weight: 600; }
+.estado-opt em { font-style: normal; font-size: 11px; opacity: 0.5; }
+.estado-opt.on { border-color: var(--oliva); background: rgba(163,190,76,0.1); cursor: default; }
+.cuentas-sueltas {
+  margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--borde);
+  font-size: 11.5px; opacity: 0.55; line-height: 1.5;
+}
+.cuentas-sueltas b { color: #E8A33D; opacity: 1; }
+.cuenta-elige { display: flex; flex-wrap: wrap; gap: 6px; }
+.cuenta-chip {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  background: transparent; border: 1px solid var(--borde); border-radius: 8px;
+  padding: 7px 10px; color: var(--papel); font-family: inherit; font-size: 12px;
+}
+.cuenta-chip .punto { width: 6px; height: 6px; }
+.cuenta-chip.on { background: rgba(0,0,0,0.25); font-weight: 600; }
+.cuenta-tag { font-style: normal; font-size: 10.5px; font-weight: 600; }
+.cuenta-tag.suelta { color: #E8A33D; opacity: 0.75; font-weight: 400; }
+
+/* ==========================================================================
+   CLAY OSCURO · elegido por Santiago el 2026-08-14
+   Claymorfismo sobre la paleta de MODOZAINT, no sobre pasteles claros.
+   La receta: la superficie es un degradado apenas mas claro que el fondo,
+   con sombra dura abajo-derecha y un filo de luz arriba-izquierda. Eso da el
+   volumen de plastilina sin abandonar la estetica de terminal oscura.
+   El vidrio (liquid glass) se reserva para lo que FLOTA: HUD, nav y hojas.
+   ========================================================================== */
+
+:root {
+  --clay-alto:  linear-gradient(145deg, #1B2E58 0%, #12203E 100%);
+  --clay-bajo:  linear-gradient(145deg, #16264A 0%, #0F1B36 100%);
+  --clay-sombra:
+    7px 7px 16px rgba(0, 0, 0, 0.45),
+    -4px -4px 12px rgba(255, 255, 255, 0.035),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.07),
+    inset -1px -2px 3px rgba(0, 0, 0, 0.28);
+  --clay-hundido:
+    inset 4px 4px 9px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 7px rgba(255, 255, 255, 0.045);
+  --vidrio: rgba(18, 32, 62, 0.62);
+}
+
+/* ---- Superficies: todo lo que antes era un rectangulo plano ---- */
+.vida-caja,
+.plan,
+.cuentas,
+.habito,
+.unico,
+.area-card,
+.onb-caja,
+.entrar-caja,
+.grupo {
+  background: var(--clay-alto);
+  border-radius: 22px;
+  box-shadow: var(--clay-sombra);
+  border: none;
+}
+
+.area {
+  background: var(--clay-bajo);
+  border-radius: 16px;
+  box-shadow: var(--clay-sombra);
+}
+
+/* ---- Tarjetas de habito: el volumen se nota mas porque son cuadradas ---- */
+.tarjeta {
+  background: var(--clay-alto);
+  border: none;
+  border-radius: 24px;
+  padding: 18px 12px 16px;
+  box-shadow: var(--clay-sombra);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.tarjeta:active { transform: scale(0.97); box-shadow: var(--clay-hundido); }
+.tarjeta.hecho {
+  background: linear-gradient(145deg, #2A3D22 0%, #1B2A16 100%);
+  box-shadow:
+    7px 7px 16px rgba(0, 0, 0, 0.45),
+    -3px -3px 10px rgba(163, 190, 76, 0.09),
+    inset 1px 1px 2px rgba(163, 190, 76, 0.22);
+}
+
+/* El circulo del icono queda hundido: se ve incrustado en la plastilina. */
+.tarjeta-ico {
+  border: none;
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: var(--clay-hundido);
+  width: 48px; height: 48px;
+}
+.tarjeta.hecho .tarjeta-ico {
+  background: var(--oliva);
+  box-shadow:
+    inset -2px -2px 5px rgba(0, 0, 0, 0.28),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.3),
+    0 3px 8px rgba(163, 190, 76, 0.28);
+}
+
+/* ---- Barras: hundidas, con el relleno abombado encima ---- */
+.barra, .hud-barra, .regla-barra {
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow: var(--clay-hundido);
+  border-radius: 99px;
+}
+.barra i, .hud-barra i {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* ---- Botones: pastilla con volumen, que se hunde al tocarla ---- */
+.guardar, .google, .unico-add, .niv, .hoja-niv,
+.peldano-opt, .estado-opt, .cuenta, .cuenta-chip, .foto-btn, .salir {
+  border: none;
+  border-radius: 15px;
+  background: var(--clay-bajo);
+  box-shadow: var(--clay-sombra);
+  transition: transform .1s ease, box-shadow .1s ease;
+}
+.guardar, .google { border-radius: 17px; padding: 15px 16px; }
+.guardar:active, .google:active, .unico-add:active, .niv:active,
+.hoja-niv:active, .peldano-opt:active, .estado-opt:active,
+.cuenta:active, .cuenta-chip:active, .foto-btn:active, .salir:active {
+  transform: scale(0.975);
+  box-shadow: var(--clay-hundido);
+}
+.google { background: linear-gradient(145deg, #F4F8FC 0%, #DCE5EF 100%); }
+
+/* Lo seleccionado no se abomba: se hunde. Es como se lee "esto ya esta puesto". */
+.niv.on, .hoja-niv.on, .peldano-opt.on, .estado-opt.on, .cuenta-chip.on {
+  box-shadow: var(--clay-hundido);
+}
+.niv.on, .hoja-niv.on {
+  background: linear-gradient(145deg, #B3CE5C 0%, #92AD41 100%);
+  color: var(--noche);
+}
+
+/* ---- Campos de texto: hundidos, como una ranura ---- */
+.nota, .campo input, .campo textarea, input[type="number"], input[type="email"], input[type="password"] {
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  border-radius: 14px;
+  box-shadow: var(--clay-hundido);
+  color: var(--papel);
+}
+.nota:focus, .campo input:focus, .campo textarea:focus {
+  outline: none;
+  box-shadow: var(--clay-hundido), 0 0 0 2px rgba(163, 190, 76, 0.35);
+}
+
+/* ---- LIQUID GLASS · solo lo que flota sobre el contenido ---- */
+.hud {
+  background: var(--vidrio);
+  -webkit-backdrop-filter: blur(22px) saturate(165%);
+  backdrop-filter: blur(22px) saturate(165%);
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+.hoja {
+  background: rgba(22, 38, 74, 0.82);
+  -webkit-backdrop-filter: blur(26px) saturate(170%);
+  backdrop-filter: blur(26px) saturate(170%);
+  border-radius: 26px 26px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+}
+.hoja-fondo {
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  background: rgba(6, 12, 26, 0.55);
+}
+.hud-balance {
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 10px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* Si el navegador no sabe desenfocar, el vidrio se vuelve solido en vez de
+   quedar transparente y dejar el texto ilegible encima del contenido. */
+@supports not (backdrop-filter: blur(1px)) {
+  .hud { background: #12203E; }
+  .hoja { background: #16264A; }
+}
+
+/* ---- Hablarle a la app ---- */
+.voz { margin: 16px 0 20px; }
+.voz-btn {
+  width: 100%; display: flex; align-items: center; gap: 14px; text-align: left;
+  background: var(--clay-alto); border: none; border-radius: 22px;
+  box-shadow: var(--clay-sombra); padding: 16px 18px;
+  color: var(--papel); font-family: inherit; cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.voz-btn:active { transform: scale(0.98); box-shadow: var(--clay-hundido); }
+.voz-btn:disabled { opacity: 0.6; }
+.voz-ico {
+  width: 46px; height: 46px; border-radius: 99px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: linear-gradient(145deg, #B3CE5C 0%, #92AD41 100%);
+  color: var(--noche);
+  box-shadow: 0 4px 12px rgba(163,190,76,0.3), inset 1px 1px 2px rgba(255,255,255,0.35);
+}
+.voz-ico svg { width: 22px; height: 22px; }
+.voz-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.voz-txt b { font-size: 14.5px; font-weight: 600; }
+.voz-txt em {
+  font-style: normal; font-size: 11.5px; opacity: 0.5; line-height: 1.4;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.voz-btn.on .voz-ico { animation: latido 1.1s ease-in-out infinite; }
+.voz-btn.on .voz-txt em { opacity: 0.9; color: var(--oliva); }
+@keyframes latido {
+  0%, 100% { transform: scale(1);    box-shadow: 0 4px 12px rgba(163,190,76,0.3); }
+  50%      { transform: scale(1.08); box-shadow: 0 6px 20px rgba(163,190,76,0.55); }
+}
+.voz-respuesta {
+  margin-top: 10px; padding: 11px 14px; border-radius: 13px;
+  background: rgba(163,190,76,0.11); color: var(--oliva);
+  font-size: 13px; line-height: 1.5; cursor: pointer;
+}
+.voz-no {
+  display: flex; align-items: center; gap: 9px; margin: 14px 0 18px;
+  padding: 11px 14px; border-radius: 13px; background: rgba(0,0,0,0.22);
+  font-size: 11.5px; opacity: 0.55; line-height: 1.4;
+}
+.voz-no svg { flex-shrink: 0; }
+
+/* ==========================================================================
+   BOTON FLOTANTE DE VOZ
+   Referencia: el microfono rojo de Parcero Financiero — circulo fijo abajo a
+   la derecha, sobre el contenido. Aqui va en AZUL NAVY, no rojo: el rojo en
+   esta app significa perder vida.
+   ========================================================================== */
+.fab {
+  position: fixed; right: 18px; z-index: 60;
+  bottom: calc(150px + env(safe-area-inset-bottom));
+  width: 62px; height: 62px; border-radius: 99px; border: none;
+  display: grid; place-items: center; cursor: pointer;
+  background: linear-gradient(145deg, #3F73DE 0%, #1E3E8F 100%);
+  color: #fff;
+  box-shadow:
+    0 8px 22px rgba(20, 46, 120, 0.55),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.3),
+    inset -1px -2px 4px rgba(0, 0, 0, 0.25);
+  transition: transform .14s ease, box-shadow .14s ease, background .2s;
+}
+.fab svg { width: 27px; height: 27px; }
+.fab:active { transform: scale(0.93); }
+.fab:disabled { opacity: 0.65; }
+.fab.on {
+  background: linear-gradient(145deg, #5A8BF0 0%, #2A4FA8 100%);
+  animation: pulso 1.4s ease-in-out infinite;
+}
+@keyframes pulso {
+  0%, 100% { box-shadow: 0 8px 22px rgba(63,115,222,0.5),  0 0 0 0   rgba(63,115,222,0.45); }
+  50%      { box-shadow: 0 8px 26px rgba(63,115,222,0.65), 0 0 0 14px rgba(63,115,222,0); }
+}
+
+/* Panel de lo que se esta oyendo / lo que se hizo */
+.voz-panel {
+  position: fixed; z-index: 59; left: 14px; right: 92px;
+  bottom: calc(158px + env(safe-area-inset-bottom));
+  background: rgba(22, 38, 74, 0.9);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px; padding: 12px 15px;
+  font-size: 13px; line-height: 1.45; color: var(--papel);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  max-width: 560px; margin: 0 auto;
+}
+.voz-vivo { display: flex; align-items: center; gap: 11px; }
+.voz-resp.ok { color: var(--oliva); }
+.voz-resp.no { color: #E8A33D; }
+
+.ondas { display: flex; align-items: center; gap: 3px; height: 18px; flex-shrink: 0; }
+.ondas i {
+  width: 3px; border-radius: 99px; background: #5A8BF0;
+  animation: onda .9s ease-in-out infinite;
+}
+.ondas i:nth-child(1) { animation-delay: 0s;    height: 7px;  }
+.ondas i:nth-child(2) { animation-delay: .15s;  height: 14px; }
+.ondas i:nth-child(3) { animation-delay: .3s;   height: 18px; }
+.ondas i:nth-child(4) { animation-delay: .45s;  height: 12px; }
+.ondas i:nth-child(5) { animation-delay: .6s;   height: 8px;  }
+@keyframes onda { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+
+.voz-no {
+  margin: 14px 0 18px; padding: 11px 14px; border-radius: 13px;
+  background: rgba(0, 0, 0, 0.22); font-size: 11.5px; opacity: 0.55; line-height: 1.45;
+}
+
+.dictada { font-style: normal; font-size: 10px; color: #5A8BF0; font-weight: 600; }
+.cuando { opacity: 0.4; }
+
+/* ---- Dinero: bolsillos ---- */
+.banco { background: var(--clay-alto); border-radius: 22px; box-shadow: var(--clay-sombra);
+         padding: 16px; margin-bottom: 14px; }
+.banco-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.banco-nom { display: block; font-size: 14px; font-weight: 600; letter-spacing: 0.02em; }
+.banco-total { display: block; font-size: 21px; font-weight: 700; margin-top: 2px; }
+.banco-edit { background: none; border: none; color: var(--papel); opacity: 0.45;
+              font-size: 11.5px; font-family: inherit; cursor: pointer; padding: 4px; }
+
+.disponible { display: flex; justify-content: space-between; align-items: center;
+              margin: 12px 0; padding: 10px 13px; border-radius: 13px;
+              background: rgba(163,190,76,0.1); font-size: 12px; }
+.disponible b { font-size: 15px; color: var(--oliva); }
+.disponible.mal { background: rgba(232,93,93,0.12); }
+.disponible.mal b { color: #E85D5D; }
+.disponible-nota { font-size: 11.5px; opacity: 0.55; line-height: 1.5; margin: -6px 0 12px; }
+
+.bolsillo { background: rgba(0,0,0,0.22); border-radius: 15px; padding: 13px;
+            margin-bottom: 9px; box-shadow: var(--clay-hundido); }
+.bolsillo-cab { display: flex; align-items: center; gap: 9px; }
+.bolsillo-nom { flex: 1; font-size: 13.5px; font-weight: 600; }
+.bolsillo-saldo { font-size: 15px; }
+.bolsillo-meta { font-size: 10.5px; opacity: 0.45; }
+.bolsillo-acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.mini { background: transparent; border: 1px solid var(--borde); border-radius: 8px;
+        padding: 6px 10px; color: var(--papel); font-family: inherit; font-size: 11.5px;
+        cursor: pointer; opacity: 0.75; }
+.mini.cargar { color: var(--oliva); }
+.mini.descargar { color: #E8A33D; }
+.mover { margin-top: 11px; display: grid; gap: 8px; }
+.mover input { width: 100%; padding: 12px 13px; font-size: 14px; }
+
+.movs { margin-top: 11px; border-top: 1px solid var(--borde); padding-top: 9px; display: grid; gap: 7px; }
+.mov { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.mov-tipo { width: 20px; text-align: center; font-weight: 700; }
+.mov-tipo.cargar { color: var(--oliva); }
+.mov-tipo.descargar { color: #E8A33D; }
+.mov-cuerpo { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.mov-cuerpo em { font-style: normal; font-size: 11px; opacity: 0.5; }
+.mov-fecha { font-size: 10.5px; opacity: 0.4; }
+
+.resumen-mes { display: flex; justify-content: space-between; align-items: center;
+               margin-top: 18px; padding: 13px 15px; border-radius: 15px;
+               background: rgba(0,0,0,0.22); font-size: 12.5px; }
+.resumen-mes b { font-size: 15px; color: var(--oliva); }
+
+/* ---- Sub-pestañas dentro de Dinero ---- */
+.sub-tabs { display: flex; gap: 6px; margin: 14px 0 18px; padding: 4px;
+            background: rgba(0,0,0,0.25); border-radius: 14px; box-shadow: var(--clay-hundido); }
+.sub-tabs button { flex: 1; background: transparent; border: none; border-radius: 11px;
+                   padding: 10px; color: var(--papel); opacity: 0.5; font-family: inherit;
+                   font-size: 13px; cursor: pointer; }
+.sub-tabs button.on { opacity: 1; font-weight: 600; background: var(--clay-alto);
+                      box-shadow: var(--clay-sombra); }
+
+/* ---- Antes / después ---- */
+.antes-despues { background: var(--clay-alto); border-radius: 20px; box-shadow: var(--clay-sombra);
+                 padding: 16px 18px; display: grid; gap: 12px; margin-bottom: 12px; }
+.antes-despues span { font-size: 10.5px; letter-spacing: 0.14em; opacity: 0.45; display: block; }
+.antes-despues b { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.antes-despues b.mal { color: #E85D5D; }
+.antes-despues b.bien { color: #4ECB8F; }
+.antes-despues em { font-style: normal; font-size: 12px; opacity: 0.4; margin-left: 4px; }
+
+.cambio-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+.cambio-tabs button { flex: 1; background: transparent; border: 1px solid var(--borde);
+                      border-radius: 11px; padding: 9px; color: var(--papel); opacity: 0.55;
+                      font-family: inherit; font-size: 12px; cursor: pointer; }
+.cambio-tabs button.on { opacity: 1; border-color: var(--oliva); background: rgba(163,190,76,0.1); }
+
+/* ---- Veredicto ---- */
+.veredicto { border-radius: 20px; padding: 18px; margin-bottom: 14px; }
+.veredicto.bien { background: rgba(78,203,143,0.1); }
+.veredicto.mal { background: rgba(232,93,93,0.11); }
+.veredicto > b { font-size: 20px; display: block; }
+.veredicto.bien > b { color: #4ECB8F; }
+.veredicto.mal > b { color: #E85D5D; }
+.veredicto > span { font-size: 12.5px; opacity: 0.6; display: block; margin-top: 5px; line-height: 1.45; }
+.veredicto-cifras { display: flex; gap: 26px; margin-top: 14px; }
+.veredicto-cifras em { font-style: normal; font-size: 10px; letter-spacing: 0.14em; opacity: 0.45; display: block; }
+.veredicto-cifras b { font-size: 22px; font-weight: 700; }
+.veredicto.bien .veredicto-cifras b { color: #4ECB8F; }
+.veredicto.mal .veredicto-cifras b { color: #E85D5D; }
+
+/* ---- Cuadros ---- */
+.cuadros { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+.cuadro { background: var(--clay-alto); border-radius: 16px; box-shadow: var(--clay-sombra); padding: 14px; }
+.cuadro span { font-size: 11.5px; opacity: 0.5; display: block; margin-bottom: 5px; }
+.cuadro b { font-size: 18px; font-weight: 700; }
+.cuadro b.bien { color: #4ECB8F; }
+.cuadro b.mal { color: #E85D5D; }
+
+/* ---- Cómo usas tus ingresos ---- */
+.uso { background: var(--clay-alto); border-radius: 20px; box-shadow: var(--clay-sombra);
+       padding: 17px; margin-bottom: 8px; }
+.uso-cab { font-size: 11px; letter-spacing: 0.14em; opacity: 0.5; margin-bottom: 13px; }
+.uso-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.uso-fila em { font-style: normal; font-size: 10px; letter-spacing: 0.13em; opacity: 0.45; display: block; }
+.uso-fila b { font-size: 25px; font-weight: 700; display: block; margin: 2px 0; }
+.uso-fila b.bien { color: #4ECB8F; }
+.uso-fila b.mal { color: #E85D5D; }
+.uso-fila span { font-size: 11px; opacity: 0.5; line-height: 1.35; }
+.uso-barra { display: flex; height: 10px; border-radius: 99px; overflow: hidden;
+             background: rgba(78,203,143,0.35); margin: 15px 0 10px; box-shadow: var(--clay-hundido); }
+.uso-barra i.g { background: #E85D5D; }
+.uso-barra i.a { background: #E8A33D; }
+.uso-leyenda { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; opacity: 0.6; }
+.uso-leyenda i.p { display: inline-block; width: 7px; height: 7px; border-radius: 99px; margin-right: 5px; }
+.uso-leyenda i.g { background: #E85D5D; }
+.uso-leyenda i.a { background: #E8A33D; }
+.uso-leyenda i.e { background: #4ECB8F; }
+
+/* ---- Categorías ---- */
+.fijos { background: rgba(78,203,143,0.08); border-radius: 16px; padding: 14px;
+         margin-bottom: 12px; display: flex; justify-content: space-between; gap: 14px; }
+.fijos b { font-size: 13px; display: block; line-height: 1.35; }
+.fijos em { font-style: normal; font-size: 11px; opacity: 0.55; line-height: 1.4; display: block; margin-top: 4px; }
+.fijos-num { text-align: right; flex-shrink: 0; }
+.fijos-num b { font-size: 21px; }
+.fijos-num b.bien { color: #4ECB8F; }
+.fijos-num span { font-size: 13px; display: block; }
+.fijos-num em { font-size: 9.5px; letter-spacing: 0.1em; opacity: 0.4; }
+
+.cat { margin-bottom: 15px; }
+.cat-top { display: flex; align-items: center; gap: 9px; }
+.cat-nom { flex: 1; font-size: 13.5px; }
+.cat-monto { font-size: 15px; font-weight: 700; }
+.cat-dif { font-size: 10.5px; padding: 3px 7px; border-radius: 6px; white-space: nowrap; }
+.cat-dif.bien { color: #4ECB8F; background: rgba(78,203,143,0.13); }
+.cat-dif.mal { color: #E85D5D; background: rgba(232,93,93,0.13); }
+.cat-pcts { font-size: 11.5px; opacity: 0.55; margin: 4px 0 6px; }
+.cat-pcts b.bien { color: #4ECB8F; opacity: 1; }
+.cat-pcts b.mal { color: #E85D5D; opacity: 1; }
+.cat-pcts em { font-style: normal; color: #4A9CE8; }
+.cat-barra { height: 8px; border-radius: 99px; background: rgba(0,0,0,0.3);
+             overflow: hidden; box-shadow: var(--clay-hundido); }
+.cat-barra i { display: block; height: 100%; border-radius: 99px; transition: width .4s; }
+
+/* ---- Diagnóstico de la asesoría ---- */
+.diag-nums { background: var(--clay-alto); border-radius: 20px; box-shadow: var(--clay-sombra);
+             padding: 6px 16px; margin-bottom: 16px; }
+.diag-fila { display: flex; justify-content: space-between; align-items: center;
+             padding: 12px 0; border-bottom: 1px solid var(--borde); font-size: 13px; }
+.diag-fila:last-child { border-bottom: none; }
+.diag-fila span { opacity: 0.6; }
+.diag-fila b { font-size: 15px; font-weight: 700; }
+.diag-fila b.bien { color: #4ECB8F; }
+
+.bloque { background: var(--clay-alto); border-radius: 18px; box-shadow: var(--clay-sombra);
+          padding: 16px; margin-bottom: 11px; }
+.bloque h3 { font-size: 14.5px; font-weight: 700; margin-bottom: 7px; }
+.bloque p { font-size: 13px; line-height: 1.6; opacity: 0.78; }
+.bloque-cab { font-size: 10px; letter-spacing: 0.16em; opacity: 0.5; margin-bottom: 7px; }
+.bloque.destacado { background: linear-gradient(145deg, #23324F 0%, #16243F 100%);
+                    border-left: 3px solid var(--oliva); }
+.bloque.destacado h3 { color: var(--oliva); font-size: 16px; }
+
+.reco { width: 100%; text-align: left; background: var(--clay-alto); border: none;
+        border-radius: 16px; box-shadow: var(--clay-sombra); padding: 14px;
+        margin-bottom: 8px; color: var(--papel); font-family: inherit; cursor: pointer; }
+.reco.on { box-shadow: var(--clay-sombra), 0 0 0 1px rgba(163,190,76,0.3); }
+.reco-cab { display: flex; align-items: center; gap: 11px; }
+.reco-n { width: 24px; height: 24px; border-radius: 99px; flex-shrink: 0;
+          display: grid; place-items: center; font-size: 11px; font-weight: 700;
+          background: rgba(163,190,76,0.15); color: var(--oliva); }
+.reco-tit { flex: 1; font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+.reco-flecha { opacity: 0.4; font-size: 17px; }
+.reco-cuerpo { font-size: 12.5px; line-height: 1.6; opacity: 0.75; margin-top: 10px;
+               padding-top: 10px; border-top: 1px solid var(--borde); }
+
+.plan-caja { border-radius: 18px; padding: 16px; margin-bottom: 11px; }
+.plan-caja.ya { background: rgba(163,190,76,0.1); border-left: 3px solid var(--oliva); }
+.plan-caja.fondo { background: rgba(74,156,232,0.1); border-left: 3px solid #4A9CE8; }
+.plan-tag { font-size: 10px; letter-spacing: 0.16em; margin-bottom: 8px; }
+.plan-caja.ya .plan-tag { color: var(--oliva); }
+.plan-caja.fondo .plan-tag { color: #4A9CE8; }
+.plan-caja p { font-size: 13px; line-height: 1.6; opacity: 0.85; }
+
+.mensaje-personal { margin: 20px 0 8px; padding: 18px; border-radius: 18px;
+                    background: linear-gradient(145deg, #23324F 0%, #16243F 100%);
+                    box-shadow: var(--clay-sombra); }
+.mensaje-personal p { font-size: 13.5px; line-height: 1.7; font-style: italic; opacity: 0.9; }
+
+/* ---- Conceptos: el plan línea por línea ---- */
+.cat-top { width: 100%; background: none; border: none; padding: 0;
+           color: var(--papel); font-family: inherit; cursor: pointer; }
+.cat-top:disabled { cursor: default; }
+.cat-ver { background: none; border: none; color: var(--oliva); opacity: 0.8;
+           font-family: inherit; font-size: 11px; cursor: pointer; padding: 0 0 0 8px; }
+.conceptos { margin-top: 10px; padding: 12px 13px; border-radius: 13px;
+             background: rgba(0,0,0,0.25); box-shadow: var(--clay-hundido); }
+.concepto-grupo { font-size: 9.5px; letter-spacing: 0.13em; opacity: 0.4;
+                  margin: 4px 0 7px; line-height: 1.4; }
+.concepto { display: flex; justify-content: space-between; align-items: baseline;
+            gap: 12px; padding: 5px 0; font-size: 12.5px; }
+.concepto span { display: flex; flex-direction: column; gap: 1px; }
+.concepto em { font-style: normal; font-size: 10.5px; opacity: 0.4; }
+.concepto b { flex-shrink: 0; font-size: 12.5px; }
+.concepto.tachado { opacity: 0.45; }
+.concepto.tachado span, .concepto.tachado b { text-decoration: line-through; }
+.ya-no { margin-top: 11px; padding-top: 10px; border-top: 1px dashed var(--borde); }
+.ya-no-cab { font-size: 9.5px; letter-spacing: 0.13em; color: var(--oliva); margin-bottom: 5px; }
+
+/* ---- "Esto entendí": la tarjeta donde el dictado espera el visto bueno ----
+   Fija abajo y por encima de todo: se llega a ella navegando desde otra
+   pantalla, asi que no puede depender de donde quedo en el DOM. */
+.conf {
+  position: fixed; z-index: 70; left: 12px; right: 12px;
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  max-width: 560px; margin: 0 auto;
+  background: rgba(22, 38, 74, 0.94);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(163, 190, 76, 0.45);
+  border-radius: 20px; padding: 15px 16px 14px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+  animation: sube .22s ease-out;
+}
+@keyframes sube {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.conf-cab { display: flex; align-items: baseline; gap: 9px; margin-bottom: 12px; flex-wrap: wrap; }
+.conf-tit { font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--oliva); }
+.conf-sub { font-size: 10.5px; opacity: 0.42; }
+.conf-nombre { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+
+.conf-tipo { display: flex; gap: 7px; margin-bottom: 11px; }
+.conf-op {
+  flex: 1; border: 1px solid var(--borde); background: transparent; color: var(--papel);
+  border-radius: 10px; padding: 9px 6px; font-family: inherit; font-size: 12.5px; cursor: pointer;
+}
+.conf-op.on { background: var(--oliva); border-color: var(--oliva); color: var(--noche); font-weight: 600; }
+
+.conf-campo { display: block; margin-bottom: 10px; }
+.conf-campo span {
+  display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  opacity: 0.45; margin-bottom: 5px;
+}
+.conf-campo input, .conf-campo select {
+  width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--borde);
+  border-radius: 10px; padding: 11px 12px; color: var(--papel);
+  font-family: inherit; font-size: 14px;
+}
+.conf-campo input:focus, .conf-campo select:focus { outline: none; border-color: var(--oliva); }
+.conf-monto { font-size: 21px !important; font-weight: 600; letter-spacing: 0.01em; }
+
+.conf-saldo { font-size: 11.5px; opacity: 0.6; margin: 2px 0 4px; }
+.conf-saldo b { opacity: 1; font-weight: 600; }
+.conf-alerta { color: #E85D5D; }
+.conf-error { font-size: 12px; color: #E8A33D; margin: 6px 0 2px; }
+
+.conf-botones { display: flex; gap: 8px; margin-top: 13px; }
+.conf-ok {
+  flex: 2; background: var(--oliva); color: var(--noche); border: none;
+  border-radius: 12px; padding: 13px; font-family: inherit;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.conf-ok:disabled { opacity: 0.6; }
+.conf-no {
+  flex: 1; background: transparent; color: var(--papel); border: 1px solid var(--borde);
+  border-radius: 12px; padding: 13px; font-family: inherit; font-size: 13px; cursor: pointer;
+}
+
+/* Con la tarjeta abierta, el panel de voz estorba: se sube. */
+.conf ~ .voz-panel { bottom: calc(158px + env(safe-area-inset-bottom)); }
+
+/* ---- La quincena: el panel del día de pago ---- */
+.quincena {
+  background: linear-gradient(160deg, rgba(163,190,76,0.14), rgba(163,190,76,0.04));
+  border: 1px solid rgba(163, 190, 76, 0.32);
+  border-radius: 16px; padding: 15px 16px 14px; margin-bottom: 16px;
+}
+.quincena.ok { border-color: rgba(163, 190, 76, 0.55); }
+.quincena-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.quincena-tit { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--oliva); }
+.quincena-dias { font-size: 10.5px; opacity: 0.45; flex-shrink: 0; }
+.quincena-cifra { display: flex; justify-content: space-between; align-items: baseline; margin-top: 11px; }
+.quincena-cifra span { font-size: 12.5px; opacity: 0.7; }
+.quincena-cifra b { font-size: 24px; font-weight: 700; }
+.quincena-pie { font-size: 11px; opacity: 0.5; }
+.quincena-btn {
+  width: 100%; margin-top: 12px; background: var(--oliva); color: var(--noche);
+  border: none; border-radius: 11px; padding: 12px;
+  font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer;
+}
+.quincena-confirma { margin-top: 12px; }
+.quincena-confirma p { font-size: 12px; line-height: 1.5; opacity: 0.8; margin-bottom: 10px; }
+.quincena-acciones { display: flex; gap: 8px; }
+.quincena-acciones .guardar { flex: 2; margin: 0; }
+.quincena-acciones .hoja-quitar { flex: 1; margin: 0; }
+.quincena-aviso {
+  margin-top: 10px; font-size: 12px; color: var(--oliva); cursor: pointer;
+}
+
+/* ---- Ritmo de un bolsillo ---- */
+.ritmos { display: flex; gap: 6px; margin-bottom: 4px; }
+.ritmo-op {
+  flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: center;
+  border: 1px solid var(--borde); background: transparent; color: var(--papel);
+  border-radius: 10px; padding: 9px 4px; font-family: inherit; cursor: pointer;
+}
+.ritmo-op b { font-size: 11.5px; font-weight: 600; }
+.ritmo-op em { font-style: normal; font-size: 9.5px; opacity: 0.45; }
+.ritmo-op.on { background: var(--oliva); border-color: var(--oliva); color: var(--noche); }
+.ritmo-op.on em { opacity: 0.7; }
+.ritmo-lab {
+  display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  opacity: 0.45; margin: 6px 0 6px;
+}
+.ritmo-pista { font-size: 11.5px; opacity: 0.6; margin-top: 7px; }
+.ritmo-pista b { opacity: 1; color: var(--oliva); }
+.bolsillo-ritmo { opacity: 0.5; }
+
+/* ---- La foto mientras se guarda ---- */
+/* Se ve desde el primer segundo, atenuada, con el aviso encima: la prueba de
+   que llego es verla, no leer "subiendo". */
+.foto-ok { position: relative; }
+.foto-ok.subiendo img { opacity: 0.45; filter: saturate(0.6); }
+.foto-estado {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(12,23,48,0.85); color: var(--papel);
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 5px 9px; border-radius: 7px; border: 1px solid var(--borde);
+}
+
+/* ---- Cuenta regresiva del cierre ---- */
+.cierre { font-style: normal; opacity: 0.6; }
+.cierre b { font-weight: 600; opacity: 1; }
+.cierre.pronto { opacity: 0.9; color: #E8A33D; }
+.cierre.ya { opacity: 0.9; color: #E85D5D; }
+
+/* ---- Historial ---- */
+.volver { text-decoration: none; color: var(--papel); opacity: 0.5; }
+
+.hist-resumen {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  background: var(--navy); border-radius: 14px; padding: 14px; margin: 16px 0 14px;
+}
+.hist-resumen div { text-align: center; }
+.hist-resumen b { display: block; font-size: 20px; font-weight: 700; }
+.hist-resumen span { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.45; }
+
+.hist-dia { background: var(--navy); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.hist-cab {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; background: none; border: 0; color: var(--papel);
+  padding: 13px 14px; font-family: inherit; font-size: 14px; text-align: left; cursor: pointer;
+}
+.hist-dia.abierto .hist-cab { border-bottom: 1px solid var(--borde); }
+.hist-fecha { text-transform: capitalize; }
+.hist-turno {
+  font-style: normal; font-size: 10px; opacity: 0.45; margin-left: 7px;
+  border: 1px solid var(--borde); border-radius: 5px; padding: 1px 5px;
+}
+.hist-cifras { display: flex; align-items: center; gap: 8px; font-size: 11px; opacity: 0.75; white-space: nowrap; }
+.hist-xp { font-style: normal; color: var(--oliva); }
+.hist-marca { font-style: normal; font-size: 10px; }
+.hist-marca.ok { color: var(--oliva); }
+.hist-marca.no { color: #E85D5D; opacity: 0.8; }
+.hist-marca.prot { color: #4A9CE8; }
+
+.hist-cuerpo { padding: 12px 14px 14px; }
+.hist-habs { display: flex; flex-direction: column; gap: 8px; }
+.hist-hab { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.hist-hab-nom { flex: 1; }
+.hist-niv {
+  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  border-radius: 5px; padding: 2px 6px; background: rgba(0,0,0,0.3); opacity: 0.7;
+}
+.hist-niv.super { color: var(--oliva); opacity: 1; }
+.hist-niv.normal { opacity: 0.85; }
+.hist-hab-xp { font-size: 11px; opacity: 0.55; min-width: 34px; text-align: right; }
+.hist-nota { flex-basis: 100%; font-size: 12px; opacity: 0.55; padding-left: 18px; }
+.hist-meta { font-size: 11px; opacity: 0.4; margin-top: 12px; }
+.hist-extra { font-size: 12px; opacity: 0.6; margin-top: 8px; line-height: 1.5; }
+.hist-extra.gracias { font-style: italic; color: var(--oliva); opacity: 0.8; }
+.hist-vacio { font-size: 13px; opacity: 0.5; }
+
+/* ---- Quincena y movimientos ---- */
+.quincena-explica {
+  font-size: 12px; line-height: 1.55; opacity: 0.6;
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--borde);
+}
+.quincena-explica b { opacity: 0.95; }
+
+.mov-x {
+  background: none; border: 0; color: var(--papel); opacity: 0.3;
+  font-size: 17px; line-height: 1; padding: 2px 4px; cursor: pointer;
+}
+.mov-x:hover { opacity: 0.8; }
+.mov.confirmando { background: rgba(232,93,93,0.08); border-radius: 7px; }
+.mov-confirma { display: flex; align-items: center; gap: 6px; }
+.mov-si, .mov-no {
+  border: 1px solid var(--borde); border-radius: 6px; background: none;
+  color: var(--papel); font-family: inherit; font-size: 11px; padding: 3px 8px; cursor: pointer;
+}
+.mov-si { color: #E85D5D; border-color: rgba(232,93,93,0.4); }
+
+/* El desglose del balance: por qué la vida sube o baja hoy. */
+.hud-cuentas { display: block; font-size: 10px; opacity: 0.45; margin-top: 3px; }
+
+/* ---- El mes de un vistazo ---- */
+.mes { background: var(--navy); border-radius: 14px; padding: 14px 12px 12px; margin-bottom: 14px; }
+.mes-cab { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.mes-tit { font-size: 14px; text-transform: capitalize; }
+.mes-pct { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--oliva); }
+.mes-flecha {
+  background: none; border: 1px solid var(--borde); border-radius: 7px;
+  color: var(--papel); font-size: 15px; line-height: 1;
+  width: 26px; height: 26px; cursor: pointer; opacity: 0.7;
+}
+.mes-flecha:disabled { opacity: 0.2; cursor: default; }
+
+.mes-curva { display: block; width: 100%; height: 30px; opacity: 0.55; margin-bottom: 10px; }
+
+/* La columna de nombres queda quieta y las casillas ruedan: 31 columnas no
+   caben en un celular sin volverse ilegibles. */
+.mes-reja { display: flex; gap: 8px; }
+.mes-nombres { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; }
+.mes-esquina { height: 14px; }
+.mes-nom {
+  display: flex; align-items: center; gap: 5px; height: 15px;
+  font-size: 11px; opacity: 0.75; white-space: nowrap; max-width: 116px;
+}
+.mes-nom span { overflow: hidden; text-overflow: ellipsis; }
+.mes-nom .punto { width: 6px; height: 6px; flex: 0 0 auto; }
+.mes-racha {
+  font-style: normal; font-size: 9px; color: var(--oliva);
+  border: 1px solid rgba(163,190,76,0.35); border-radius: 4px; padding: 0 3px; margin-left: auto;
+}
+
+.mes-scroll { flex: 1; overflow-x: auto; padding-bottom: 2px; }
+.mes-numeros { display: flex; gap: 3px; height: 14px; }
+.mes-num {
+  width: 15px; flex: 0 0 15px; text-align: center;
+  font-size: 8px; opacity: 0.3; font-family: ui-monospace, monospace;
+}
+.mes-num.hoy { opacity: 0.9; color: var(--oliva); }
+.mes-fila { display: flex; gap: 3px; height: 15px; margin-bottom: 4px; }
+.celda {
+  width: 15px; flex: 0 0 15px; height: 15px; padding: 0;
+  border: 1px solid var(--borde); border-radius: 4px;
+  background: rgba(0,0,0,0.28); cursor: pointer;
+}
+.celda.futuro { opacity: 0.25; border-color: transparent; }
+.celda.hoy { border-color: rgba(163,190,76,0.6); }
+.celda.viendo { box-shadow: 0 0 0 1px var(--papel); }
+.mes-pie { font-size: 10px; opacity: 0.35; margin-top: 10px; }
+
+/* ---- Diagnóstico (temporal) ---- */
+.diag { display: flex; gap: 10px; padding: 6px 0; border-top: 1px solid var(--borde); font-size: 12px; }
+.diag:first-of-type { border-top: 0; }
+.diag-k { flex: 0 0 40%; opacity: 0.45; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.diag-v { flex: 1; word-break: break-word; opacity: 0.9; }
+
+/* ---- Selector de periodo del historial ---- */
+.rangos {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px;
+  background: rgba(0,0,0,0.28); border-radius: 10px; padding: 3px; margin: 16px 0 12px;
+}
+.rango {
+  background: none; border: 0; border-radius: 8px; color: var(--papel);
+  font-family: inherit; font-size: 12px; letter-spacing: 0.04em;
+  padding: 8px 0; opacity: 0.5; cursor: pointer;
+}
+.rango.on { background: var(--navy); opacity: 1; }
+
+/* En semana caben 7 columnas anchas: se leen mejor y muestran el día. */
+.mes.ancha .celda, .mes.ancha .mes-num { width: 100%; flex: 1; }
+.mes.ancha .celda { height: 22px; }
+.mes.ancha .mes-numeros { height: 22px; }
+.mes.ancha .mes-num { font-size: 9px; display: flex; flex-direction: column; line-height: 1.25; }
+.mes.ancha .mes-num i { font-style: normal; opacity: 0.7; }
+.mes.ancha .mes-fila { height: 22px; }
+.mes.ancha .mes-scroll { overflow-x: visible; }
+
+.aviso.chico { font-size: 12px; padding: 10px 12px; }
+
+/* ---- El precio de la hora ---- */
+.hora { background: var(--navy); border-radius: 14px; padding: 14px; margin: 16px 0 12px; }
+.hora-cab { display: flex; align-items: baseline; gap: 9px; }
+.hora-lab { font-size: 12px; opacity: 0.55; }
+.hora-num { font-size: 22px; font-weight: 700; color: var(--oliva); }
+.hora-editar {
+  margin-left: auto; background: none; border: 1px solid var(--borde);
+  border-radius: 7px; color: var(--papel); font-family: inherit;
+  font-size: 11px; padding: 4px 9px; opacity: 0.7; cursor: pointer;
+}
+.hora-pie { font-size: 11px; opacity: 0.4; margin-top: 5px; }
+.hora-campos { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.hora-campos label { display: block; }
+.hora-campos label span {
+  display: block; font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; opacity: 0.45; margin-bottom: 5px;
+}
+.hora-nota { font-size: 11px; opacity: 0.45; line-height: 1.5; }
+
+/* ---- Delegar ---- */
+.deleg { flex-basis: 100%; margin-top: 7px; }
+.deleg-cab {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: none; border: 0; padding: 4px 0 0 26px;
+  color: var(--papel); font-family: inherit; text-align: left; cursor: pointer;
+}
+.deleg-propio { font-size: 11px; opacity: 0.45; }
+.deleg-marca {
+  font-size: 10px; letter-spacing: 0.04em; color: var(--oliva);
+  border: 1px solid rgba(163,190,76,0.35); border-radius: 5px; padding: 1px 6px;
+}
+.deleg-marca.pedido { opacity: 0.6; }
+.deleg-marca.cara { color: #E8A33D; border-color: rgba(232,163,61,0.35); }
+
+.deleg-cuerpo {
+  margin: 8px 0 4px 26px; padding: 12px;
+  background: rgba(0,0,0,0.25); border-radius: 10px;
+}
+.deleg-campos { display: flex; flex-direction: column; gap: 10px; }
+.deleg-campos label span {
+  display: block; font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; opacity: 0.45; margin-bottom: 5px;
+}
+.deleg-cuenta { font-size: 11px; opacity: 0.7; line-height: 1.6; margin-top: 10px; }
+.deleg-cuenta b { color: var(--oliva); opacity: 1; }
+.deleg-msg { margin-top: 10px; font-size: 12px; opacity: 0.85; }
+.deleg-acciones { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.deleg-wa { flex: 1; text-align: center; text-decoration: none; margin: 0; }
+.deleg-acciones .hoja-quitar { margin: 0; white-space: nowrap; }
+.deleg-deshacer {
+  background: none; border: 0; color: var(--papel); opacity: 0.4;
+  font-family: inherit; font-size: 11px; padding: 8px 0 0; cursor: pointer;
+}
+
+/* ---- Cuadro de turnos ---- */
+.cuadro { margin-top: 14px; }
+.cuadro-dias, .cuadro-rejilla {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+}
+.cuadro-dias {
+  margin-bottom: 6px; font-size: 10px; opacity: 0.35; text-align: center;
+  font-family: ui-monospace, monospace;
+}
+.cuadro-hueco { aspect-ratio: 1; }
+.cuadro-dia {
+  aspect-ratio: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px;
+  border: 1px solid var(--borde); border-radius: 9px;
+  background: var(--navy); color: var(--papel);
+  font-family: inherit; padding: 0; cursor: pointer;
+}
+.cuadro-num { font-style: normal; font-size: 10px; opacity: 0.45; }
+.cuadro-cod { font-size: 10px; letter-spacing: 0.02em; }
+.cuadro-dia.vacio { background: rgba(0,0,0,0.22); }
+.cuadro-dia.vacio .cuadro-cod { opacity: 0.25; }
+/* El color sale de las horas que cobra el dia, no del nombre del turno. */
+.cuadro-dia.duro { background: rgba(232,93,93,0.22); border-color: rgba(232,93,93,0.4); }
+.cuadro-dia.duro .cuadro-cod { color: #E85D5D; }
+.cuadro-dia.medio { background: rgba(232,163,61,0.18); border-color: rgba(232,163,61,0.35); }
+.cuadro-dia.medio .cuadro-cod { color: #E8A33D; }
+.cuadro-dia.libre { background: rgba(163,190,76,0.16); border-color: rgba(163,190,76,0.35); }
+.cuadro-dia.libre .cuadro-cod { color: var(--oliva); }
+.cuadro-dia.protegido { background: rgba(74,156,232,0.16); border-color: rgba(74,156,232,0.35); }
+.cuadro-dia.protegido .cuadro-cod { color: #4A9CE8; }
+.cuadro-dia.hoy { outline: 1px solid var(--papel); outline-offset: 1px; }
+
+.hoja-cuadro {
+  display: block; text-align: center; text-decoration: none;
+  border: 1px solid var(--borde); border-radius: 10px;
+  padding: 11px; margin-bottom: 14px;
+  color: var(--oliva); font-size: 13px;
+}
+
+/* ============================================================
+   EL CUARTO — habitación isométrica. planes/cuarto-founderos-2026-08-23.md
+   Todo dibujado: ni una imagen. La paleta del cuarto vive AQUÍ y solo aquí,
+   así que cambiarle el skin es cambiar estas variables.
+   ============================================================ */
+/* ---- El cuarto ES la pantalla ----
+   Nada de `.wrap`: ese contenedor tiene `max-width: 560px` y padding, y con el
+   el cuarto no podia llenar nada. Aqui se ocupa la ventana entera, contando el
+   area segura del telefono. */
+.cuarto-pantalla {
+  position: fixed; inset: 0;
+  /* Lo que rodea al cuarto no es vacío: es la penumbra donde está la
+     habitación. Sin esto, el aire de arriba se lee como pantalla sin pintar. */
+  background:
+    radial-gradient(120% 62% at 50% 46%, rgba(28, 49, 96, 0.55), transparent 70%),
+    linear-gradient(180deg, #070E1F 0%, var(--noche) 46%, #070E1F 100%);
+  display: flex; flex-direction: column;
+  padding: calc(env(safe-area-inset-top) + 8px) 0
+           calc(var(--alto-abajo) + var(--alto-hud) + 6px);
+  overflow: hidden;               /* la escena no se scrollea: es un mundo, no una pagina */
+}
+.cuarto-titulo {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 0 16px 4px; flex-shrink: 0;
+}
+
+.cuarto {
+  --cu-pared-izq: #17284F;
+  --cu-pared-der: #1C3160;
+  --cu-zocalo: #0E1B38;
+  --cu-piso-a: #1B2D57;
+  --cu-piso-b: #16264A;
+  --cu-piso-linea: rgba(234, 240, 246, 0.07);
+  --cu-tapete: rgba(163, 190, 76, 0.10);
+  --cu-tapete-borde: rgba(163, 190, 76, 0.30);
+
+  --cu-mueble-top: #2F4C80;
+  --cu-mueble-der: #243C68;
+  --cu-mueble-izq: #19294A;
+
+  --cu-sabana: #35558C; --cu-sabana-der: #2A4573; --cu-sabana-izq: #1F3457;
+  --cu-cobija: #4A6FA8; --cu-cobija-der: #3B5B8C; --cu-cobija-izq: #2C4569;
+  --cu-oliva-der: #8AA341; --cu-oliva-izq: #6E8434;
+
+  --cu-papel: #D7E1EC; --cu-papel-der: #B4C2D3;
+  --cu-tinta: #15254A;
+  --cu-corcho: #6E5A3C;
+  --cu-alcancia: #E8A33D;
+  --cu-apagado: #22375E;
+
+  --cu-piel: #E7C39A;
+  --cu-pelo: #2A2118;
+  --cu-pantalon: #2E4A7D;
+
+  --cu-puerta: #1E3055;
+  --cu-puerta-hoja: #2A4470;
+  --cu-techo: #101E3C;
+  --cu-lampara-pantalla: #24406F;
+  --cu-lampara-luz: #E8C478;
+
+  /* El ancho del lienzo es constante; el ALTO lo pone la escena midiendo la
+     pantalla y escribiendo `--cu-alto` en este mismo nodo. 236 es solo el
+     valor del primer pintado, antes de medir. */
+  --cu-ancho: 320;
+  --cu-alto: 236;
+
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+/* La caja del cuarto conserva EXACTAMENTE la proporción del viewBox. Es lo que
+   permite poner los botones en % encima del dibujo: si la caja se deformara,
+   el objeto y su zona de toque dejarían de coincidir. Por eso el límite de
+   altura se aplica sobre el ANCHO y no con un max-height — un max-height sí
+   rompería la proporción. */
+/* 🔑 La caja conserva EXACTAMENTE la proporcion del viewBox, y por eso la capa
+   de botones en % cae encima del dibujo sin desfase. El limite se aplica al
+   ANCHO —no con un `max-height`— porque un max-height rompe la proporcion y
+   deja los toques separados de su objeto. */
+.cuarto-caja {
+  position: relative;
+  width: min(100%, calc(var(--cu-h) * var(--cu-ancho) / var(--cu-alto)));
+  aspect-ratio: var(--cu-ancho) / var(--cu-alto);
+  margin: 0 auto;
+}
+.cuarto-svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: block; pointer-events: none;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.35));
+}
+.cuarto-toques { position: absolute; inset: 0; }
+
+/* ---- los objetos: botones de verdad, no divs con onClick ---- */
+.cu-obj {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 42px; height: 42px; border-radius: 50%;
+  background: none; border: none; padding: 0; margin: 0;
+  color: inherit; cursor: pointer;
+}
+.cu-obj:active { background: rgba(163, 190, 76, 0.16); }
+.cu-obj:focus-visible { outline: 2px solid var(--oliva); outline-offset: 2px; }
+
+/* La etiqueta lleva su propio fondo. Sin él se pierde cuando cae encima de un
+   mueble claro —la de Ajustes quedaba sobre la almohada y no se leía— y la
+   sombra de texto sola no alcanza contra una superficie clara. */
+.cu-etq {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase;
+  opacity: 0.72; white-space: nowrap; pointer-events: none;
+  padding: 2px 6px; border-radius: 7px;
+  background: rgba(7, 14, 31, 0.62);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+.cu-etq.abajo { top: 96%; }
+.cu-etq.arriba { bottom: 96%; }
+.cu-obj.activo .cu-etq { opacity: 1; color: var(--oliva); }
+.cu-dato { font-style: normal; font-size: 8.5px; color: var(--oliva); opacity: 0.95; }
+
+/* ---- el muñequito ---- */
+.cu-yo {
+  position: absolute;
+  /* El ancho va dividido por el numero de habitaciones: el % es del MUNDO,
+     no de una habitacion, y sin esto el munequito sale N veces mas grande. */
+  width: calc(9.5% / var(--casa-n, 1));
+  /* ⚠️ EL ALTO TAMBIEN SE DIVIDE, y es nuevo: hasta el 27-ago el mundo era una
+     FILA, o sea mas ancho pero igual de alto, y bastaba con dividir el ancho.
+     Con la planta el mundo tambien crece hacia abajo: sin esto el munequito
+     sale del doble de alto. Es la misma trampa que ya lo dejo 3 veces mas
+     grande el 26-ago, solo que en el otro eje. */
+  height: calc(22% / var(--casa-filas, 1));
+  display: flex; flex-direction: column; align-items: center;
+  pointer-events: none;
+  transition-property: left, top;
+  transition-timing-function: cubic-bezier(0.35, 0, 0.2, 1);
+  transform: translate(-50%, -100%);
+}
+.cu-yo.izq { transform: translate(-50%, -100%) scaleX(-1); }
+.cu-yo.sentado { transform: translate(-50%, -84%); }
+.cu-yo.sentado.izq { transform: translate(-50%, -84%) scaleX(-1); }
+
+.cu-sombra {
+  position: absolute; bottom: -4%; left: 50%; transform: translateX(-50%);
+  width: 96%; height: 15%; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.38); filter: blur(1.5px);
+}
+.cu-cabeza {
+  position: relative; z-index: 2;
+  width: 66%; aspect-ratio: 1; border-radius: 42%;
+  background: var(--cu-piel);
+}
+.cu-cabeza::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 40%;
+  background: var(--cu-pelo); border-radius: 42% 42% 26% 26%;
+}
+.cu-cabeza::before {
+  content: ''; position: absolute; top: 54%; left: 28%;
+  width: 2px; height: 2px; border-radius: 50%; background: var(--cu-tinta);
+  box-shadow: 6px 0 0 var(--cu-tinta);
+}
+.cu-torso {
+  position: relative; z-index: 1;
+  width: 86%; height: 36%; margin-top: -5%;
+  border-radius: 30% 30% 16% 16%;
+  background: var(--oliva);
+}
+.cu-piernas {
+  position: relative;
+  width: 62%; height: 26%;
+  border-radius: 0 0 22% 22%;
+  background: var(--cu-pantalon);
+}
+.cu-piernas::after {
+  content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+  background: rgba(0, 0, 0, 0.28); transform: translateX(-50%);
+}
+
+.cu-yo:not(.camina):not(.sentado) .cu-cabeza { animation: cu-respira 2.8s ease-in-out infinite; }
+@keyframes cu-respira { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5%); } }
+
+.cu-yo.camina .cu-torso { animation: cu-bote 0.32s ease-in-out infinite alternate; }
+.cu-yo.camina .cu-piernas { animation: cu-paso 0.32s ease-in-out infinite alternate; }
+@keyframes cu-bote { from { transform: translateY(3%); } to { transform: translateY(-4%); } }
+@keyframes cu-paso { from { transform: skewX(-8deg); } to { transform: skewX(8deg); } }
+
+/* Sentado: las piernas se doblan y el torso se inclina hacia el escritorio. */
+.cu-yo.sentado .cu-piernas { height: 15%; transform: translateY(12%) skewX(-16deg); }
+.cu-yo.sentado .cu-torso { transform: rotate(-3deg); }
+
+.cuarto-pie {
+  text-align: center; font-size: 11px; opacity: 0.45; margin-top: 10px;
+  color: var(--oliva);
+}
+.cuarto-pie span { color: var(--papel); opacity: 0.5; }
+
+/* Quien pidió que nada se mueva, que nada se mueva. */
+@media (prefers-reduced-motion: reduce) {
+  .cu-yo { transition-duration: 1ms; }
+  .cu-yo .cu-cabeza, .cu-yo .cu-torso, .cu-yo .cu-piernas { animation: none; }
+}
+
+/* ---- el cuaderno del escritorio (la bitácora) ---- */
+.hoja.cuaderno { max-height: 88dvh; overflow-y: auto; }
+.cuaderno-cab { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.cuaderno-fecha { font-size: 11px; opacity: 0.45; }
+.cuaderno-hoja { min-height: 130px; line-height: 1.6; }
+.cuaderno-estado { font-size: 10.5px; opacity: 0.4; text-align: right; margin-bottom: 14px; }
+.cuaderno-atras { border-top: 1px solid var(--borde); padding-top: 4px; margin-bottom: 14px; }
+.cuaderno-atras .seccion { margin: 10px 0 8px; }
+.cuaderno-vieja { padding: 9px 0; border-bottom: 1px solid var(--borde); }
+.cuaderno-vieja span { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.4; }
+.cuaderno-vieja p { font-size: 13px; line-height: 1.5; opacity: 0.8; margin-top: 4px; white-space: pre-wrap; }
+
+/* ============================================================
+   LLENAR UN DÍA QUE YA PASÓ (los últimos 7)
+   ============================================================ */
+.llenar-btn {
+  width: 100%; margin-top: 12px;
+  background: transparent; border: 1px dashed rgba(163, 190, 76, 0.45);
+  color: var(--oliva); border-radius: 10px; padding: 11px;
+  font-size: 13px; font-family: inherit; cursor: pointer;
+}
+.llenar-btn:active { background: rgba(163, 190, 76, 0.10); }
+.llenar-btn.cerrar { border-style: solid; }
+
+.llenar { margin-top: 12px; border-top: 1px solid var(--borde); padding-top: 12px; }
+.llenar-cab {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  opacity: 0.5; margin-bottom: 10px;
+}
+.llenar-cuenta { opacity: 0.8; }
+.llenar-fila { padding: 7px 0; border-bottom: 1px solid rgba(234, 240, 246, 0.06); }
+.llenar-top { display: flex; align-items: center; gap: 9px; }
+.llenar-nom { flex: 1; font-size: 13.5px; }
+.llenar-nivs { display: flex; gap: 4px; flex-shrink: 0; }
+.llenar-niv {
+  background: transparent; border: 1px solid var(--borde); color: var(--papel);
+  border-radius: 7px; padding: 5px 7px; min-width: 38px;
+  font-size: 10.5px; font-family: ui-monospace, monospace;
+  opacity: 0.55; cursor: pointer;
+}
+.llenar-niv.on { opacity: 1; color: var(--noche); font-weight: 700; }
+.llenar-dice {
+  font-size: 11.5px; opacity: 0.55; line-height: 1.4;
+  margin: 5px 0 1px 17px;
+}
+.llenar-dice em { font-style: normal; color: var(--oliva); opacity: 0.85; }
+.llenar-pie { font-size: 10.5px; opacity: 0.4; line-height: 1.5; margin-top: 11px; }
+
+/* El aviso de días por llenar es una invitación, no una alarma: no puede
+   verse igual que el rojo de "algo se rompió". */
+.aviso.llenables {
+  background: rgba(163, 190, 76, 0.08);
+  border-color: rgba(163, 190, 76, 0.3);
+}
+.aviso.llenables b { color: var(--oliva); }
+.aviso.llenables .llenar-btn { margin-top: 10px; }
+
+.hist-marca.llenar {
+  color: var(--oliva); border: 1px solid rgba(163, 190, 76, 0.4);
+  border-radius: 6px; padding: 1px 5px; font-size: 9.5px; font-style: normal;
+}
+
+
+/* ---- Cargar el cuadro de un mes (turnos) ----
+   Solo sale si hay un cuadro leido del PDF en lib/cuadros.ts: la app no
+   inventa turnos para un mes del que nadie mando el cuadro. */
+.cargar-cuadro {
+  background: var(--navy); border: 1px solid rgba(163, 190, 76, 0.3);
+  border-radius: 12px; padding: 13px 14px; margin: 14px 0;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+}
+.cargar-cuadro-txt { flex: 1; min-width: 190px; display: flex; flex-direction: column; gap: 3px; }
+.cargar-cuadro-txt b { font-size: 13px; color: var(--oliva); font-weight: 600; }
+.cargar-cuadro-txt span { font-size: 11px; opacity: 0.65; }
+.cargar-cuadro-txt em { font-size: 10px; opacity: 0.4; font-style: normal; }
+.cargar-cuadro button {
+  background: rgba(163, 190, 76, 0.16); border: 1px solid var(--oliva);
+  color: var(--oliva); border-radius: 9px; padding: 9px 14px;
+  font-size: 12.5px; font-family: inherit; cursor: pointer; flex-shrink: 0;
+}
+.cargar-cuadro button:disabled { opacity: 0.5; cursor: default; }
+.cargar-cuadro-res { flex-basis: 100%; font-size: 11px; opacity: 0.7; margin-top: 2px; }
+
+/* ---- Esqueletos de carga ----
+   No aceleran nada: hacen que la app responda EN EL INSTANTE del toque. La
+   mitad de la lentitud que se sentia era que al tocar no pasaba nada y la
+   pantalla anterior se quedaba puesta. */
+.esqueleto { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.esq-fila {
+  height: 58px; border-radius: 12px;
+  background: linear-gradient(90deg,
+    rgba(234,240,246,0.045) 0%, rgba(234,240,246,0.085) 50%, rgba(234,240,246,0.045) 100%);
+  background-size: 220% 100%;
+  animation: esq-brillo 1.5s ease-in-out infinite;
+}
+@keyframes esq-brillo {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+.cuarto-esqueleto {
+  position: absolute; inset: 8%;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(234,240,246,0.05), rgba(234,240,246,0.02));
+  animation: esq-latido 1.6s ease-in-out infinite;
+}
+@keyframes esq-latido { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.9; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .esq-fila, .cuarto-esqueleto { animation: none; }
+}
+
+/* ---- Las dos acciones que flotan en el cuarto: dictar y anotar un gasto ----
+   Se hacen de pie, sin abrir nada. Van sobre la escena y encima del HUD, al
+   alcance del pulgar. */
+.cuarto-acciones {
+  position: fixed; left: 10px; right: 10px; z-index: 48;
+  bottom: calc(var(--alto-abajo) + var(--alto-hud) + 16px);
+  max-width: 540px; margin: 0 auto;
+  display: flex; align-items: center; gap: 8px;
+}
+/* La barra de voz es de ancho completo en su pantalla; aca se encoge para
+   dejarle sitio al signo de dinero. */
+.cuarto-acciones .voz { margin: 0; flex: 1; min-width: 0; }
+.cuarto-acciones .voz-btn { padding: 11px 13px; border-radius: 18px; gap: 10px; }
+.cuarto-acciones .voz-ico { width: 36px; height: 36px; }
+.cuarto-acciones .voz-ico svg { width: 17px; height: 17px; }
+.cuarto-acciones .voz-txt b { font-size: 13px; }
+.cuarto-acciones .voz-txt span { font-size: 11px; }
+
+.cu-gasto {
+  flex-shrink: 0; width: 52px; height: 52px; border-radius: 18px;
+  background: var(--clay-alto); box-shadow: var(--clay-sombra);
+  border: none; color: var(--cu-alcancia, #E8A33D);
+  font-size: 22px; font-weight: 700; font-family: inherit; cursor: pointer;
+  transition: transform .12s ease;
+}
+.cu-gasto:active { transform: scale(0.94); box-shadow: var(--clay-hundido); }
+.cu-gasto-ok {
+  position: fixed; left: 0; right: 0; z-index: 49;
+  bottom: calc(var(--alto-abajo) + var(--alto-hud) + 78px);
+  text-align: center; font-size: 12px; color: var(--oliva);
+}
+
+.gasto-monto { font-size: 30px; text-align: center; padding: 14px; letter-spacing: 0.02em; }
+.gasto-bolsillos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.gasto-chip {
+  display: flex; flex-direction: column; gap: 1px; align-items: flex-start;
+  background: transparent; border: 1px solid var(--borde); color: var(--papel);
+  border-radius: 10px; padding: 8px 11px; font-family: inherit; cursor: pointer;
+  font-size: 12.5px;
+}
+.gasto-chip em { font-size: 10.5px; opacity: 0.5; font-style: normal; }
+.gasto-chip.on { border-color: var(--oliva); color: var(--oliva); }
+.gasto-chip.on em { opacity: 0.8; }
+
+/* ---- Las cuentas, plegadas al final de Tareas ----
+   Santiago (26-ago): "que en tareas no salgan por cuenta". No se borran: la
+   cuenta dice de que frente salen las horas y sostiene el candado de
+   capacidad. Deja de encabezar la pantalla. */
+.cuentas-plegadas { margin-top: 26px; border-top: 1px solid var(--borde); padding-top: 14px; }
+.cuentas-plegadas summary {
+  cursor: pointer; font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; opacity: 0.45; list-style: none;
+}
+.cuentas-plegadas summary::-webkit-details-marker { display: none; }
+.cuentas-plegadas summary::before { content: '▸ '; }
+.cuentas-plegadas[open] summary::before { content: '▾ '; }
+
+/* ---- LA CASA: cada habitacion tiene su piel ----
+   Las variables --cu-* siguen viviendo en .cuarto y son la base. Una
+   habitacion solo redefine lo que la hace suya. Asi anadir una es cambiar
+   colores, no escribir un tema entero. */
+
+/* El taller — House of Kaizen. Lo que lo delata sin un rotulo: el naranja
+   racing (#FF4D00, el de su identidad) sobre el negro taller. En el cuarto no
+   hay naranja en ninguna parte. */
+.hab-taller {
+  --cu-pared-izq: #1A1613;
+  --cu-pared-der: #221C18;
+  --cu-zocalo: #0E0B09;
+  --cu-piso-a: #241E19;
+  --cu-piso-b: #1C1714;
+  --cu-piso-linea: rgba(255, 77, 0, 0.10);
+  --cu-techo: #100D0B;
+  --cu-mueble-top: #4A3826;
+  --cu-mueble-der: #3A2C1D;
+  --cu-mueble-izq: #281E14;
+}
+/* La habitacion de prueba: sin piel propia, para que se vea que el motor
+   dibuja algo aunque la habitacion no declare nada. */
+.hab-prueba {
+  --cu-pared-izq: #232323;
+  --cu-pared-der: #2C2C2C;
+  --cu-piso-a: #2A2A2A;
+  --cu-piso-b: #222;
+}
+
+/* ---- La oficina — Dermatinta. Lo que la delata sin rotulo: el verde bosque
+   #0D3D34 y el dorado #C49A52, que son su color primario y su acento. ---- */
+.hab-oficina {
+  --cu-pared-izq: #0A2A23;
+  --cu-pared-der: #0D3D34;
+  --cu-zocalo: #061512;
+  --cu-piso-a: #123B33;
+  --cu-piso-b: #0E312A;
+  --cu-piso-linea: rgba(196, 154, 82, 0.12);
+  --cu-techo: #071C17;
+  --cu-mueble-top: #14544A;
+  --cu-mueble-der: #0D3D34;
+  --cu-mueble-izq: #0A2A23;
+}
+
+/* ---- 🐈 Los dos gatos ----
+   No hacen nada mas que dejarse acariciar, y esa es la gracia: no son un
+   boton disfrazado de gato. */
+:root { --gato-uno: #D8C7A8; --gato-dos: #3A3733; }
+
+.cu-gato {
+  position: absolute; transform: translate(-50%, -100%);
+  width: calc(5.6% / var(--casa-n, 1)); height: calc(7% / var(--casa-filas, 1));
+  background: none; border: none; padding: 0; cursor: pointer;
+  transition: left 1.6s ease-in-out, top 1.6s ease-in-out;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.cu-gato.izq { transform: translate(-50%, -100%) scaleX(-1); }
+.gato-cuerpo {
+  position: absolute; bottom: 0; left: 8%;
+  width: 78%; height: 52%; border-radius: 46% 46% 38% 38%;
+  background: currentColor;
+}
+.gato-cabeza {
+  position: absolute; bottom: 38%; right: 0;
+  width: 46%; aspect-ratio: 1; border-radius: 44%;
+  background: currentColor;
+}
+/* las orejas */
+.gato-cabeza::before, .gato-cabeza::after {
+  content: ''; position: absolute; top: -26%;
+  border-left: 3px solid transparent; border-right: 3px solid transparent;
+  border-bottom: 5px solid currentColor;
+}
+.gato-cabeza::before { left: 6%; }
+.gato-cabeza::after { right: 6%; }
+.gato-cola {
+  position: absolute; bottom: 26%; left: -14%;
+  width: 34%; height: 8%; border-radius: 99px;
+  background: currentColor; transform-origin: right center;
+  animation: gato-cola 2.4s ease-in-out infinite;
+}
+@keyframes gato-cola {
+  0%, 100% { transform: rotate(-16deg); }
+  50% { transform: rotate(-42deg); }
+}
+.cu-gato:active { filter: brightness(1.3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cu-gato { transition-duration: 1ms; }
+  .gato-cola { animation: none; }
+}
+
+/* ---- LA CASA EN PLANTA: se ve entera y no se mueve ----
+   Santiago (28-ago): "que se vean todas en la interfaz como tal... que se
+   pueda ir explorando". Las habitaciones se dibujan todas en cuadricula y el
+   mundo llena la caja. Lo unico que se desplaza es el munequito.
+
+   El 26-ago esto era una camara que se deslizaba con translateX para ensenar
+   una habitacion; se quito entera. La caja conserva `overflow: hidden` por si
+   una sombra se sale del borde, no para recortar habitaciones. */
+.cuarto-caja { overflow: hidden; }
+.casa-mundo { position: absolute; inset: 0; width: 100%; height: 100%; }
+.casa-mundo .cuarto-svg,
+.casa-mundo .cuarto-toques { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+
+
+/* ═════════ OLA 2 · el piso se camina ═════════
+   Cada baldosa libre es un botón con forma de rombo. El clip-path importa:
+   con un cuadrado, las esquinas de una baldosa robarían el toque de la
+   vecina y caminar se sentiría impreciso justo en los bordes, que es donde
+   más se toca. */
+.cu-baldosa {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: calc(60% / var(--casa-n, 1) / 5.333);
+  height: 3.9%;
+  padding: 0; margin: 0; border: none;
+  background: transparent;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  cursor: pointer;
+}
+/* Solo se ve al tocarla: un piso con la cuadrícula pintada se ve a tablero,
+   que es justo lo que la Ola 3 quiere evitar. */
+.cu-baldosa:active { background: rgba(163, 190, 76, 0.20); }
+.cu-baldosa:focus-visible { background: rgba(163, 190, 76, 0.14); outline: none; }
+
+/* ═════════ OLA 3 · que se sienta viva ═════════ */
+
+/* La luz de la hora. Encima de todo, y transparente al dedo. */
+.casa-luz {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  transition: background 1.2s linear;
+  mix-blend-mode: multiply;
+}
+/* De madrugada multiplicar apaga demasiado el trazo; ahí tiñe sin oscurecer
+   el dibujo hasta perderlo. */
+@media (prefers-color-scheme: dark) { .casa-luz { mix-blend-mode: normal; } }
+
+/* Un objeto que está pidiendo algo late. No parpadea: el parpadeo cansa a los
+   diez segundos y esta pantalla se mira mucho rato. */
+.cu-obj.urge .cu-etq { animation: cu-late 2.4s ease-in-out infinite; }
+.cu-obj.urge .cu-dato { color: var(--oliva); }
+@keyframes cu-late {
+  0%, 100% { opacity: 0.72; }
+  50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cu-obj.urge .cu-etq { animation: none; opacity: 1; }
+  .casa-luz { transition: none; }
+}
+
+/* Una baldosa tapada por un mueble sí se toca —lleva al borde— pero no se
+   ilumina: iluminar la cómoda al tocarla prometería que se puede pisar. */
+.cu-baldosa.tapada:active { background: transparent; }
+
+/* ---- El cuarto — MODOZAINT, y ahora SU cuarto de verdad ----
+
+   Sale de `referencias/cuarto-real-01..05.jpg`. Lo que se ve ahí y no estaba:
+   la pared VERDE LIMA con el zócalo crema, la madera CAOBA de todos los
+   muebles (escritorio, cama, mecedora, armario), el piso de baldosa
+   terracota y la alfombra ocre de rombos que lo cubre casi entero.
+
+   ⚠️ El azul noche de `.cuarto` NO se borra: sigue siendo la base y la piel
+   de cualquier habitación que no declare la suya. Lo que cambia es que el
+   cuarto ya no la usa. */
+.hab-cuarto {
+  --cu-pared-izq: #7E8C3C;
+  --cu-pared-der: #94A44A;
+  --cu-zocalo: #C9BFA8;
+  --cu-piso-a: #8A4A34;
+  --cu-piso-b: #7A3E2B;
+  --cu-piso-linea: rgba(0, 0, 0, 0.10);
+  --cu-techo: #4E3320;
+
+  /* La caoba. Todo el cuarto es del mismo mueble viejo de madera rojiza. */
+  --cu-mueble-top: #8E4E33;
+  --cu-mueble-der: #713C27;
+  --cu-mueble-izq: #532B1C;
+
+  /* La cama: sábana gris lila, y la colcha ocre de rombos burdeos. */
+  --cu-sabana: #C9C2CC; --cu-sabana-der: #ABA3AF; --cu-sabana-izq: #8C8492;
+  --cu-cobija: #C79E52; --cu-cobija-der: #A8823E; --cu-cobija-izq: #86662E;
+
+  --cu-papel: #EFE7D8; --cu-papel-der: #D3C7B2;
+  --cu-tinta: #3A2A1C;
+  --cu-corcho: #8A6A42;
+  --cu-apagado: #43301F;
+
+  --cu-puerta: #5E3320;
+  --cu-puerta-hoja: #7A452C;
+  --cu-lampara-pantalla: #6E4029;
+
+  /* Lo suyo, y por eso está: el morado y el amarillo del keyboard rug de
+     K Studio, que en las fotos está tirado al lado de la cama. */
+  --cu-rug: #4A2A6B;
+  --cu-rug-k: #E8B33C;
+  --cu-cortina: #C0392B;
+  --cu-cajon: #B5CC3D;
+  --cu-cajon-marco: #2C4A9A;
+}
+
+
+/* ═════════ LA PLANTA · rotulos y objetos de lejos ═════════ */
+
+/* El nombre de cada habitacion, sobre su celda. Con todas a la vista, saber
+   que es cada una no puede depender de entrar. */
+.casa-rotulo {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  transform: translateX(-100%);
+  text-align: right;
+  font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--papel); opacity: 0.34;
+  pointer-events: none; white-space: nowrap;
+  transition: opacity 0.35s ease;
+}
+.casa-rotulo em {
+  font-style: normal; font-size: 7.5px; letter-spacing: 0.06em;
+  color: var(--oliva); opacity: 0.8;
+}
+/* La habitacion donde estas parado se lee sin esfuerzo; las otras se insinuan. */
+.casa-rotulo.aqui { opacity: 0.92; }
+
+/* Un objeto de OTRA habitacion: solo un punto.
+   No se esconde —seguir viendo que hay algo es la mitad de explorar— pero deja
+   de gritar su etiqueta y deja de robarle el toque al piso. */
+.cu-obj.lejos { width: 16px; height: 16px; }
+.cu-obj.lejos .cu-etq { opacity: 0; pointer-events: none; }
+.cu-obj.lejos::after {
+  content: ''; position: absolute; inset: 34%;
+  border-radius: 50%; background: var(--papel); opacity: 0.30;
+}
+/* Si ademas esta pidiendo algo, su punto es oliva y late: se ve desde la otra
+   punta de la casa que en ese cuarto hay algo sin hacer. */
+.cu-obj.lejos.urge::after { background: var(--oliva); opacity: 0.85; animation: cu-late 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cu-obj.lejos.urge::after { animation: none; }
+}
+
+
+/* ═════════ CUANTAS ETIQUETAS CABEN, SEGUN EL SITIO QUE HAY ═════════
+
+   El problema, medido y no supuesto: con la casa entera en un telefono de 390,
+   cada habitacion queda en 195 px y las 11 etiquetas del cuarto SE PISAN 8
+   VECES entre ellas (contadas comparando sus rectangulos en el DOM).
+
+   La salida no es encogerlas —a 4.5 px no se leen— sino ensenar menos:
+   en pantalla angosta solo hablan los objetos que estan PIDIENDO algo, y el
+   resto son puntos. El boton «nombres» los muestra todos cuando toca buscar.
+
+   Encima de 760 px de ancho una habitacion pasa de 330 px y caben todas, asi
+   que ahi no se esconde nada: el limite es el espacio real, no una opinion. */
+@media (max-width: 760px) {
+  .cuarto:not(.con-nombres) .cu-obj:not(.lejos):not(.urge) .cu-etq { opacity: 0; }
+  /* Sin etiqueta se convierte en un punto, igual que los de las otras
+     habitaciones: si no, seria un area de 42 px invisible robandole el toque
+     al piso por el que hay que caminar. */
+  .cuarto:not(.con-nombres) .cu-obj:not(.lejos):not(.urge) { width: 20px; height: 20px; }
+  .cuarto:not(.con-nombres) .cu-obj:not(.lejos):not(.urge)::after {
+    content: ''; position: absolute; inset: 32%;
+    border-radius: 50%; background: var(--papel); opacity: 0.42;
+  }
+}
+
+/* El interruptor. Discreto: es una salida de emergencia, no una funcion. */
+.casa-nombres {
+  display: block; margin: 8px auto 0;
+  background: none; border: none; cursor: pointer; padding: 4px 8px;
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--papel); opacity: 0.28;
+}
+.casa-nombres.si { color: var(--oliva); opacity: 0.75; }
+.casa-nombres:focus-visible { outline: 1px solid var(--oliva); outline-offset: 2px; }
+/* En pantalla ancha caben todas las etiquetas solas: el boton no pinta nada. */
+@media (min-width: 761px) { .casa-nombres { display: none; } }
+
+
+/* Una etiqueta sobre un objeto pegado a la pared no cabe centrada: se arrima.
+   El caso que lo destapo: «Dias · 2 sin llenar» se salia 19 px de la caja. */
+/* Se ancla al CENTRO del objeto y crece hacia adentro, no al borde del boton:
+   el boton mide 42 px y con `left: 0` la etiqueta empezaba 21 px antes del
+   objeto — todavia un pixel fuera de la caja. Medido, no supuesto. */
+.cu-obj.al-borde-izq .cu-etq { left: 50%; right: auto; transform: none; align-items: flex-start; }
+.cu-obj.al-borde-der .cu-etq { left: auto; right: 50%; transform: none; align-items: flex-end; }
+
+
+/* Un segundo nivel de altura para la etiqueta. Con tres objetos apretados,
+   arriba y abajo solo dan dos sitios: este da el tercero. */
+/* 190% y no 260%: con 260 la etiqueta de HOY se salia 23 px por ARRIBA de la
+   caja — medido. 190 la separa de la de DIAS y la deja dentro. */
+.cu-etq.arriba.lejos-del-objeto { bottom: 190%; }
+.cu-etq.abajo.lejos-del-objeto { top: 190%; }
+
+/* La etiqueta se lee AUNQUE el munequito este debajo. Antes el munequito se
+   pintaba despues en el DOM y tapaba la etiqueta por la que ibas a pasar; al
+   caminar por toda la habitacion eso pasa constantemente. */
+.cu-etq { z-index: 4; }
+.cu-yo { z-index: 3; }
+
+
+/* La etiqueta de una puerta se calla: la habitacion a la que lleva ya se ve,
+   con su nombre encima. La puerta sigue tocandose igual. */
+.cu-obj.es-puerta .cu-etq { opacity: 0; }
+.cu-obj.es-puerta::after {
+  content: ''; position: absolute; inset: 40%;
+  border-radius: 50%; background: var(--papel); opacity: 0.26;
+}

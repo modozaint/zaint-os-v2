@@ -1,0 +1,11 @@
+{
+  "name": "Mi Vida",
+  "short_name": "Mi Vida",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0C1730",
+  "theme_color": "#0C1730",
+  "icons": [
+    { "src": "/icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta LinkedIn */
+  --color-li-blue: #0a66c2;
+  --color-li-blue-dark: #004182;
+  --color-li-bg: #f4f2ee;
+  --color-li-surface: #ffffff;
+  --color-li-text: #1d2226;
+  --color-li-text-2: #56687a;
+  --color-li-border: #e0dfdc;
+  --color-li-green: #057642;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+/*
+ * Modo oscuro: toda la app usa estos tokens (bg-li-surface, text-li-text-2,
+ * border-li-border...), así que redefinir las variables acá re-tiñe TODA la
+ * interfaz sin tocar un solo componente. El atributo en <html> lo pone
+ * TemaToggle.tsx (y, antes del primer pintado, el script de layout.tsx para
+ * que no haya parpadeo).
+ */
+:root[data-theme="dark"] {
+  --color-li-bg: #0f1115;
+  --color-li-surface: #1a1d23;
+  --color-li-text: #e8eaed;
+  --color-li-text-2: #9aa4b2;
+  --color-li-border: #2a2e37;
+  --color-li-blue: #4c9aff;
+  --color-li-blue-dark: #2f7de0;
+  --color-li-green: #2dd4a7;
+}
+
+html,
+body {
+  background: var(--color-li-bg);
+  color: var(--color-li-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sombra suave estilo LinkedIn: hairline + elevación mínima. */
+.card-li {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.card-li-hover:hover {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.12);
+}
+/* En oscuro una sombra negra se pierde: se usa un borde claro sutil en su lugar. */
+:root[data-theme="dark"] .card-li {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.35);
+}
+:root[data-theme="dark"] .card-li-hover:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.scroll-fino::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-fino::-webkit-scrollbar-thumb {
+  background: #cfd4d9;
+  border-radius: 8px;
+}
+.scroll-fino::-webkit-scrollbar-track {
+  background: transparent;
+}
+:root[data-theme="dark"] .scroll-fino::-webkit-scrollbar-thumb {
+  background: #3a3f4b;
+}
+
+/* Cambiar de tema no debería animar toda la interfaz de golpe — solo los
+   colores base cambian instantáneo, sin transición rara en cada elemento. */
+:root[data-theme="dark"] img {
+  filter: brightness(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

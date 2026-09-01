@@ -1,0 +1,43 @@
+# LeadHunter junto a n8n en el mismo VPS.
+#
+# Traefik (el que ya sirve n8n) descubre este contenedor por las labels y le
+# emite el certificado HTTPS solo. Por eso NO hay nginx ni certbot acá.
+#
+# La red `n8n_default` es la que creó el stack de n8n: unirse a ella es lo que
+# permite que Traefik lo vea y que n8n pueda llamar a la app por su nombre
+# interno (http://leadhunter:3000) sin salir a internet.
+
+services:
+  leadhunter:
+    build: .
+    container_name: leadhunter
+    restart: unless-stopped
+    env_file: .env.local
+    environment:
+      - DATOS_DIR=/datos
+      # El servidor corre en UTC, pero la cadencia (horaInicio/horaFin, días
+      # activos) se configura pensando en hora colombiana. Sin esto, una
+      # ventana de 9am-6pm salía en realidad de 4am a 1pm hora Colombia:
+      # mensajes de trabajo de madrugada, que es justo lo que delata un bot.
+      # Se arregla acá y no en el código para que TODA cuenta de fechas quede
+      # consistente (cadencia de contacto, seguimientos y agenda).
+      - TZ=${TZ_NEGOCIO:-America/Bogota}
+    volumes:
+      # Los leads y su historial viven acá: sobreviven a cada rebuild.
+      - leadhunter_datos:/datos
+    networks:
+      - n8n_default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.leadhunter.rule=Host(`${LEADHUNTER_HOST}`)
+      - traefik.http.routers.leadhunter.entrypoints=web,websecure
+      - traefik.http.routers.leadhunter.tls=true
+      - traefik.http.routers.leadhunter.tls.certresolver=mytlschallenge
+      - traefik.http.services.leadhunter.loadbalancer.server.port=3000
+
+volumes:
+  leadhunter_datos:
+
+networks:
+  n8n_default:
+    external: true

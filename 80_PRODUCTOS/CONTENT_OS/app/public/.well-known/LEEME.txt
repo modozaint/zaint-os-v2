@@ -1,0 +1,8 @@
+Aca van los archivos de verificacion de propiedad de dominio.
+
+La carpeta existe para que el proxy ya la deje publica: cualquier archivo que se
+ponga aca se sirve SIN sesion. Los archivos sueltos en la raiz con el patron
+tiktok*.txt tambien pasan.
+
+Sin esto, el verificador pide el archivo, se topa con el login y falla sin decir
+por que.

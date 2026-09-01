@@ -1,0 +1,250 @@
+{
+  "name": "LeadHunter · Setter (respuestas reales)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Reloj · cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-260, 300],
+      "notes": "El único trabajo de n8n es preguntar cada tanto. La cadencia real (a quién y cuándo) la decide la app, para que el cliente pueda cambiarla desde Ajustes sin tocar estos nodos."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/sync",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "1 · Leer LinkedIn y responder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-40, 300],
+      "notes": "Un ciclo completo: lee los mensajes nuevos de cada chat, transcribe las notas de voz, responde con el setter y agenda en Cal.com si el lead dio día, hora y correo."
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "eventos",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "2 · Un renglón por lead",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "notes": "Abre el resultado del ciclo para ver qué pasó con CADA lead, en vez de un solo bloque de datos."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c-agendo",
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "agendo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cita agendada"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c-apertura",
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "apertura-enviada",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Aceptó y le escribí"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c-espera",
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "esperando-para-responder",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Esperando (parecer humano)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c-error",
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "error",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Revisar a mano"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Conversación avanzando"
+        }
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "3 · ¿Qué pasó con cada uno?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [440, 300],
+      "notes": "Cada salida es un desenlace posible del ciclo. Sirve para ver el proceso y para colgar avisos (correo, WhatsApp) donde haga falta."
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "Cita agendada",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [720, 60],
+      "notes": "El lead ya quedó en Cal.com con correo y link de reunión, y en el tablero se movió solo a Reunión. Acá se puede colgar un aviso a tu WhatsApp."
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0006-4000-8000-000000000006",
+      "name": "Aceptó y le escribí",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [720, 200],
+      "notes": "Aceptó la invitación y salió el primer mensaje. Así se detecta la aceptación sin necesidad de webhooks de LinkedIn."
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0007-4000-8000-000000000007",
+      "name": "Conversación avanzando",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [720, 340],
+      "notes": "Respondió y el agente le contestó. Incluye los que quedaron en frío, pospuestos o escalados para que los tomes vos."
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0008-4000-8000-000000000008",
+      "name": "Esperando (parecer humano)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [720, 480],
+      "notes": "El lead escribió hace muy poco. Contestar al instante es lo que más delata a un bot, así que se deja para el próximo ciclo. No es un error."
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0009-4000-8000-000000000009",
+      "name": "Revisar a mano",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [720, 620],
+      "notes": "Algo falló con ese lead (LinkedIn, Cal.com o el modelo). El ciclo sigue con los demás. Acá conviene colgar un aviso."
+    }
+  ],
+  "connections": {
+    "Reloj · cada 15 minutos": {
+      "main": [[{ "node": "1 · Leer LinkedIn y responder", "type": "main", "index": 0 }]]
+    },
+    "1 · Leer LinkedIn y responder": {
+      "main": [[{ "node": "2 · Un renglón por lead", "type": "main", "index": 0 }]]
+    },
+    "2 · Un renglón por lead": {
+      "main": [[{ "node": "3 · ¿Qué pasó con cada uno?", "type": "main", "index": 0 }]]
+    },
+    "3 · ¿Qué pasó con cada uno?": {
+      "main": [
+        [{ "node": "Cita agendada", "type": "main", "index": 0 }],
+        [{ "node": "Aceptó y le escribí", "type": "main", "index": 0 }],
+        [{ "node": "Esperando (parecer humano)", "type": "main", "index": 0 }],
+        [{ "node": "Revisar a mano", "type": "main", "index": 0 }],
+        [{ "node": "Conversación avanzando", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "leadhunter"
+  }
+}

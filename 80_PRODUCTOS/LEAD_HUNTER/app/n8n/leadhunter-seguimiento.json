@@ -1,0 +1,137 @@
+{
+  "name": "LeadHunter · Seguimiento (al que no contestó)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 4 }] }
+      },
+      "id": "c2000000-0000-4000-8000-000000000001",
+      "name": "Reloj · cada 4 horas",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-260, 300],
+      "notes": "El seguimiento se mide en DÍAS, así que no hace falta preguntar cada 15 minutos. La app descarta sola los que están fuera de la ventana horaria configurada."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/seguimiento",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET" }]
+        },
+        "options": { "timeout": 280000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "c2000000-0000-4000-8000-000000000002",
+      "name": "1 · Seguir a los que no contestaron",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 300],
+      "notes": "Le vuelve a escribir a quien se quedó callado, a los días que diga la cadencia (Ajustes → Seguimientos).\n\nTres candados antes de mandar nada:\n1. Relee el hilo real: si el lead SÍ contestó, cancela el seguimiento y lo pasa a la cola de respuestas.\n2. Respeta la ventana horaria y los días activos (nada de madrugada).\n3. Respeta el freno de mano.\n\nPara probar sin esperar 3 días: body {\"adelantar\": true}. Para ver el mensaje sin enviarlo: {\"soloRedactar\": true}."
+    },
+    {
+      "parameters": { "fieldToSplitOut": "resultados", "options": {} },
+      "id": "c2000000-0000-4000-8000-000000000003",
+      "name": "2 · Un renglón por lead",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "notes": "Abre el resultado para ver qué pasó con cada uno: el mensaje que salió, o el motivo por el que no salió."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "s-enviado",
+                    "leftValue": "={{ $json.enviado }}",
+                    "rightValue": true,
+                    "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Seguimiento enviado"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "s-contesto",
+                    "leftValue": "={{ $json.motivo }}",
+                    "rightValue": "contestó",
+                    "operator": { "type": "string", "operation": "contains" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cancelado · sí contestó"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra", "renameFallbackOutput": "No correspondía" }
+      },
+      "id": "c2000000-0000-4000-8000-000000000004",
+      "name": "3 · ¿Qué pasó con cada uno?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [480, 300],
+      "notes": "'Cancelado · sí contestó' es el candado funcionando: el lead escribió y el sistema decidió NO mandarle un '¿seguís ahí?'. Es la salida que hay que mostrar cuando pregunten qué pasa si el lead responde justo antes del seguimiento."
+    },
+    {
+      "parameters": {},
+      "id": "c2000000-0000-4000-8000-000000000005",
+      "name": "Seguimiento enviado",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [740, 160],
+      "notes": "Salió por LinkedIn. Si era el último de la cadencia, el lead queda marcado como frío."
+    },
+    {
+      "parameters": {},
+      "id": "c2000000-0000-4000-8000-000000000006",
+      "name": "Cancelado · sí contestó",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [740, 300],
+      "notes": "El lead había contestado y no lo habíamos procesado. Se cancela el seguimiento y pasa a la cola de respuestas del otro flujo."
+    },
+    {
+      "parameters": {},
+      "id": "c2000000-0000-4000-8000-000000000007",
+      "name": "No correspondía",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [740, 440],
+      "notes": "Fuera de horario, sin conexión de LinkedIn, freno puesto o ya se le hicieron todos los seguimientos. El motivo lo dice el campo 'motivo'."
+    }
+  ],
+  "connections": {
+    "Reloj · cada 4 horas": {
+      "main": [[{ "node": "1 · Seguir a los que no contestaron", "type": "main", "index": 0 }]]
+    },
+    "1 · Seguir a los que no contestaron": {
+      "main": [[{ "node": "2 · Un renglón por lead", "type": "main", "index": 0 }]]
+    },
+    "2 · Un renglón por lead": {
+      "main": [[{ "node": "3 · ¿Qué pasó con cada uno?", "type": "main", "index": 0 }]]
+    },
+    "3 · ¿Qué pasó con cada uno?": {
+      "main": [
+        [{ "node": "Seguimiento enviado", "type": "main", "index": 0 }],
+        [{ "node": "Cancelado · sí contestó", "type": "main", "index": 0 }],
+        [{ "node": "No correspondía", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "instanceId": "leadhunter" }
+}

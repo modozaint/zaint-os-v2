@@ -1,0 +1,350 @@
+{
+  "name": "LeadHunter · Conversación (paso a paso)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 15 }] }
+      },
+      "id": "b1000000-0000-4000-8000-000000000001",
+      "name": "Reloj · cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-380, 300],
+      "notes": "n8n solo pregunta cada tanto. La cadencia real (a quién y cuándo) la decide la app, para que el cliente pueda cambiarla desde Ajustes sin tocar un nodo."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/pendientes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET" }]
+        },
+        "options": { "timeout": 30000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "b1000000-0000-4000-8000-000000000002",
+      "name": "1 · ¿A quién le toca?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-160, 300],
+      "notes": "Solo LEE. Devuelve los leads listos y por qué: 'apertura' (aceptó y no le escribimos) o 'respondio' (escribió y hay que contestarle). No toca nada, se puede correr las veces que sea."
+    },
+    {
+      "parameters": { "fieldToSplitOut": "pendientes", "options": {} },
+      "id": "b1000000-0000-4000-8000-000000000003",
+      "name": "2 · Un renglón por lead",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [60, 300],
+      "notes": "Abre la lista para tratar cada lead por separado. De acá en adelante, cada ejecución es UNA persona."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/analizar",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"leadId\": \"{{ $json.leadId }}\"}",
+        "options": { "timeout": 120000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "b1000000-0000-4000-8000-000000000004",
+      "name": "3 · Analizar el mensaje",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [280, 300],
+      "notes": "ACÁ TRABAJA EL AGENTE. Lee el hilo, transcribe las notas de voz y decide qué contestar usando la oferta del cliente, lo que sabe del lead y la cadencia.\n\nNO ENVÍA NADA. En la salida se ve: 'accion' (qué corresponde), 'porQue' (en palabras), 'borrador' (el mensaje antes de salir) y 'lectura' (lo que entendió: si quiere agendar, si se enfrió, si necesita un humano)."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "c-responder",
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "responder",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Hay que contestarle"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "c-abrir",
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "abrir",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Aceptó · primer mensaje"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "c-esperar",
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "esperar",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Esperar (parecer humano)"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra", "renameFallbackOutput": "Sin novedad" }
+      },
+      "id": "b1000000-0000-4000-8000-000000000005",
+      "name": "4 · ¿Qué decidió el agente?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [520, 300],
+      "notes": "Cada salida es una decisión distinta del agente. 'Esperar' NO es un error: el lead escribió hace segundos y responder al instante es lo que más delata a un bot."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+          "conditions": [
+            {
+              "id": "tiene-cita",
+              "leftValue": "={{ $json.cita ? $json.cita.fecha : '' }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b1000000-0000-4000-8000-000000000006",
+      "name": "5 · ¿Ya dio día, hora y correo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [780, 200],
+      "notes": "Solo se intenta reservar cuando el lead ya dio los tres datos. Si falta alguno, se sigue conversando: todavía están coordinando."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/agendar",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"leadId\": \"{{ $json.leadId }}\", \"cita\": {{ JSON.stringify($json.cita) }} }",
+        "options": { "timeout": 60000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "b1000000-0000-4000-8000-000000000007",
+      "name": "6 · Reservar en la agenda",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1020, 120],
+      "notes": "Consulta los cupos REALES de Cal.com y reserva. Corrige el año si el modelo lo escribió mal y convierte '3:45' a 15:45 en horario de oficina.\n\nSi la hora ya no está libre, devuelve el aviso con la hora válida más cercana para agregarlo al mensaje."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://leadhunter:3000/api/motor/enviar",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "Bearer CAMBIAR_POR_TU_CRON_SECRET" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"leadId\": \"{{ $('3 · Analizar el mensaje').item.json.leadId }}\", \"analisis\": {{ JSON.stringify($('3 · Analizar el mensaje').item.json) }}, \"agenda\": {{ JSON.stringify($json.agendado !== undefined ? $json : { intentado: false, agendado: false }) }} }",
+        "options": { "timeout": 60000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "b1000000-0000-4000-8000-000000000008",
+      "name": "7 · Enviar por LinkedIn",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1280, 300],
+      "notes": "EL ÚNICO PASO QUE SALE HACIA AFUERA, y va al final a propósito: si algo falló en el análisis o en la agenda, acá no se envía nada y el lead queda como estaba.\n\nTambién mueve el tablero: Reunión si agendó, Frío si rechazó, Futuro si pidió después."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "e-reunion",
+                    "leftValue": "={{ $json.estado }}",
+                    "rightValue": "reunion",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cita agendada"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "e-frio",
+                    "leftValue": "={{ $json.estado }}",
+                    "rightValue": "frio",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "No le interesó"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  {
+                    "id": "e-futuro",
+                    "leftValue": "={{ $json.estado }}",
+                    "rightValue": "futuro",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Para más adelante"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra", "renameFallbackOutput": "Conversación sigue" }
+      },
+      "id": "b1000000-0000-4000-8000-000000000009",
+      "name": "8 · ¿Cómo quedó?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1520, 300],
+      "notes": "El desenlace de este turno. Acá se cuelgan los avisos: por ejemplo un WhatsApp a Santiago cuando cae una cita."
+    },
+    {
+      "parameters": {},
+      "id": "b1000000-0000-4000-8000-000000000010",
+      "name": "Cita agendada",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1780, 60],
+      "notes": "Quedó en Cal.com con correo y link de reunión, y el tablero se movió solo a Reunión."
+    },
+    {
+      "parameters": {},
+      "id": "b1000000-0000-4000-8000-000000000011",
+      "name": "Conversación sigue",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1780, 200],
+      "notes": "Le contestó y la conversación avanza. Todavía no hay decisión."
+    },
+    {
+      "parameters": {},
+      "id": "b1000000-0000-4000-8000-000000000012",
+      "name": "No le interesó",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1780, 340],
+      "notes": "Rechazó. Se le agradeció y no se insiste más."
+    },
+    {
+      "parameters": {},
+      "id": "b1000000-0000-4000-8000-000000000013",
+      "name": "Para más adelante",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1780, 480],
+      "notes": "Interesado pero pidió tiempo. Vuelve a la cola de re-contacto según los días configurados."
+    },
+    {
+      "parameters": {},
+      "id": "b1000000-0000-4000-8000-000000000014",
+      "name": "Esperar (parecer humano)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [780, 480],
+      "notes": "El lead escribió hace muy poco. Se deja para el próximo ciclo. NO es un error: es lo que hace que no parezca un bot."
+    },
+    {
+      "parameters": {},
+      "id": "b1000000-0000-4000-8000-000000000015",
+      "name": "Sin novedad",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [780, 600],
+      "notes": "No hay mensajes nuevos del lead desde la última respuesta."
+    }
+  ],
+  "connections": {
+    "Reloj · cada 15 minutos": {
+      "main": [[{ "node": "1 · ¿A quién le toca?", "type": "main", "index": 0 }]]
+    },
+    "1 · ¿A quién le toca?": {
+      "main": [[{ "node": "2 · Un renglón por lead", "type": "main", "index": 0 }]]
+    },
+    "2 · Un renglón por lead": {
+      "main": [[{ "node": "3 · Analizar el mensaje", "type": "main", "index": 0 }]]
+    },
+    "3 · Analizar el mensaje": {
+      "main": [[{ "node": "4 · ¿Qué decidió el agente?", "type": "main", "index": 0 }]]
+    },
+    "4 · ¿Qué decidió el agente?": {
+      "main": [
+        [{ "node": "5 · ¿Ya dio día, hora y correo?", "type": "main", "index": 0 }],
+        [{ "node": "7 · Enviar por LinkedIn", "type": "main", "index": 0 }],
+        [{ "node": "Esperar (parecer humano)", "type": "main", "index": 0 }],
+        [{ "node": "Sin novedad", "type": "main", "index": 0 }]
+      ]
+    },
+    "5 · ¿Ya dio día, hora y correo?": {
+      "main": [
+        [{ "node": "6 · Reservar en la agenda", "type": "main", "index": 0 }],
+        [{ "node": "7 · Enviar por LinkedIn", "type": "main", "index": 0 }]
+      ]
+    },
+    "6 · Reservar en la agenda": {
+      "main": [[{ "node": "7 · Enviar por LinkedIn", "type": "main", "index": 0 }]]
+    },
+    "7 · Enviar por LinkedIn": {
+      "main": [[{ "node": "8 · ¿Cómo quedó?", "type": "main", "index": 0 }]]
+    },
+    "8 · ¿Cómo quedó?": {
+      "main": [
+        [{ "node": "Cita agendada", "type": "main", "index": 0 }],
+        [{ "node": "No le interesó", "type": "main", "index": 0 }],
+        [{ "node": "Para más adelante", "type": "main", "index": 0 }],
+        [{ "node": "Conversación sigue", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "instanceId": "leadhunter" }
+}
