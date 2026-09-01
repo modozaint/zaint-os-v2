@@ -30,6 +30,9 @@ estado: vigente
 | `70_AGENTES/` | Que agentes y skills trabajan aqui |
 | `_ARCHIVO_V1/` | Que quedo como puente al sistema anterior |
 
+GitHub conserva el repositorio y su historial. Hostinger puede ser un runtime opcional para servicios
+concretos, pero nunca sustituye Git ni se activa sin pruebas, registro y rollback.
+
 ## 2. Como se trabaja
 
 - Capacidad finita. Si entra algo nuevo, sale tiempo de algun otro lado.

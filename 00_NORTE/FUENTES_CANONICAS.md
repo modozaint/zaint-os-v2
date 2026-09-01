@@ -17,6 +17,7 @@ Este archivo registra punteros; no repite el contenido de las fuentes.
 | Arquitectura y eficiencia multiagente | `60_CONOCIMIENTO/DECISIONES_MULTIAGENTE.md` | ORQUESTADOR | Mediante ADR |
 | Contrato de tarea y handoff | `50_SOP/TAREA_Y_HANDOFF.md` | ORQUESTADOR | Después de un fallo repetible |
 | Datos de dominio V1 todavía no migrados | `SOURCE_ROOT/<RUTA_DE_DOMINIO>` | Dueño del dominio | En la fuente V1 |
+| Política Git y runtime remoto | `00_NORTE/DECISIONES/ADR_0003_GIT_Y_HOSTINGER.md` | ORQUESTADOR | Antes de desplegar |
 | Evidencia de arquitectura | `60_CONOCIMIENTO/EVIDENCIA/ARQUITECTURA_MULTIAGENTE_2026_08_29.md` | ORQUESTADOR | Archivo fechado |
 | Evidencia de eficiencia | `60_CONOCIMIENTO/EVIDENCIA/EFICIENCIA_COSTO_MULTIAGENTE_2026_08_29.md` | ORQUESTADOR | Archivo fechado |
 
