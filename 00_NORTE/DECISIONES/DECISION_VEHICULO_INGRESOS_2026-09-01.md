@@ -17,6 +17,23 @@ El vehículo no será elegir entre IA y ecommerce. Será construir y operar nego
 aplicando IA, documentar el proceso y convertir la capacidad demostrada en una oferta para otros
 negocios digitales.
 
+## Priorización confirmada después del análisis comparativo
+
+La arquitectura anterior se conserva, pero se aclara el papel económico de cada unidad:
+
+- **Soluciones IA:** vehículo comercial principal hacia los `10.000.000 COP/mes`, con ofertas B2B
+  de alcance cerrado para negocios digitales y ecommerce.
+- **Dermatinta:** primer laboratorio operativo y caso propio de ecommerce. El inventario actual se
+  vende antes de ampliar compras; la jagua queda como hipótesis prioritaria de validación, no como
+  producto aprobado.
+- **House of Kaizen:** segundo laboratorio de contenido, automatización y productos de tufting. La
+  producción física no carga por sí sola la meta hasta reconstruir margen, capacidad y oferta fija.
+- **MODOZAINT:** distribución y documentación del proceso; no se cuenta como fuente de facturación
+  independiente en esta fase.
+
+Esta priorización fue aceptada por Santiago después de comparar velocidad de monetización, capital
+requerido, competencia, capacidad operativa y número de clientes o pedidos necesarios.
+
 ## Sistema de prueba
 
 - **Dermatinta:** ecommerce propio donde aplicar y demostrar IA en operación, contenido, marketing y
@@ -39,15 +56,17 @@ negocios digitales.
 
 ## Lo que sigue abierto
 
-- Primera oferta concreta que se venderá a un negocio externo.
-- Orden de ejecución entre Dermatinta y House of Kaizen.
+- Primera oferta B2B concreta de Soluciones IA y su primer segmento objetivo.
 - Resultado medible que demostrará que la primera aplicación de IA funciona.
 - Fecha de la primera venta y escalera de ingresos hasta `10.000.000 COP/mes`.
+- Diferencia entre facturación objetivo, utilidad y retiro personal sostenible.
 
 ## Primer caso operativo aprobado
 
 Dermatinta será el primer caso principal de aplicación de IA. La fase inicial será posicionamiento y
-crecimiento con el objetivo de encontrar la oferta o producto ganador.
+crecimiento con el objetivo de encontrar la oferta o producto ganador. La hipótesis de tatuajes de
+jagua se evaluará dentro de este laboratorio con contenido, solicitudes de interés o preventa antes
+de comprar inventario relevante.
 
 Criterio candidato aprobado para 12 semanas:
 
