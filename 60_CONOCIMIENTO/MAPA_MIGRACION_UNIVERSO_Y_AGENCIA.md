@@ -17,7 +17,7 @@ indica qué existe, dónde está y cómo debe entrar a V2 cuando se necesite.
 | Hub de entrada Universo ZAINT v2 | `C:\DEPARTAMENTO MODOZAINT\BRANDS\MODOZAINT\landing\universo-zaint-v2.html` | Artefacto web | Conservar como fuente; preparar versión V2 solo después de revisar identidad y enlaces |
 | Plan/brief del hub | `C:\DEPARTAMENTO MODOZAINT\planes\landing-universo-zaint-v2-2026-08-28.md` y `BRIEF_MARCOS_landing-universo-zaint.md` | Estrategia y especificación | Consultar como contexto de diseño; no tratarlo como oferta final |
 | Universo narrativo | `C:\DEPARTAMENTO MODOZAINT\SISTEMA\UNIVERSO_ZAINT.md` | Conocimiento/arquitectura de marca | Mantener como referencia V1 hasta crear un puente V2 validado |
-| Agencia de IA | `C:\DEPARTAMENTO MODOZAINT\SISTEMA\DECISION_agencia-ia-2026-08-27.md` | Decisión estratégica | Usar para reconstruir la línea de Soluciones IA bajo MODOZAINT |
+| Agencia de IA | `C:\DEPARTAMENTO MODOZAINT\SISTEMA\DECISION_agencia-ia-2026-08-27.md` | Decisión estratégica | Usar para reconstruir Zagencia bajo MODOZAINT |
 | LeadHunter | `C:\DEPARTAMENTO MODOZAINT\SOLUCIONES_IA\PRODUCTOS\leadhunter-v1.md` y recursos Nexum | Producto/capacidad | Tratar como capacidad existente y evidencia, no como oferta final automática |
 | Flujos de automatización | `C:\DEPARTAMENTO MODOZAINT\SOLUCIONES_IA\_recursos_nexum\` | Workflows/artefactos técnicos | Reutilizar por caso y auditar credenciales antes de ejecutar |
 | Propuesta y mapa comercial | `C:\DEPARTAMENTO MODOZAINT\SOLUCIONES_IA\BANCO_SOLUCIONES\` | Servicios/propuestas | Extraer componentes útiles; no mezclar borradores con una oferta aceptada |
@@ -45,7 +45,7 @@ hasta verificar:
 
 ## Próximo orden
 
-1. Resolver la jerarquía de nombre: MODOZAINT como marca pública y nombre de la línea de IA.
+1. Propagar la jerarquía confirmada: MODOZAINT como marca pública y Zagencia como línea de IA.
 2. Auditar el hub existente contra las fuentes V2 y definir sus enlaces.
 3. Consolidar el inventario de agentes, skills, workflows y servicios.
 4. Seleccionar el primer caso demostrable de Soluciones IA.

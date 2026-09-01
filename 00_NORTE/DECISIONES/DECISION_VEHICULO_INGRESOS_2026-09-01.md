@@ -23,8 +23,9 @@ La arquitectura anterior se conserva, pero se aclara el papel económico de cada
 
 - **MODOZAINT:** marca personal y frente público/comercial principal. Su contenido construye
   autoridad, atrae conversaciones y muestra el proceso.
-- **Soluciones IA:** línea de servicios/agencia de MODOZAINT y vehículo comercial principal hacia
-  los `10.000.000 COP/mes`, con ofertas B2B de alcance cerrado para negocios digitales y ecommerce.
+- **Zagencia:** agencia y línea comercial de IA dentro de MODOZAINT. Será el vehículo principal hacia
+  los `10.000.000 COP/mes`, con varias ofertas B2B de alcance cerrado para negocios digitales y
+  ecommerce.
 - **Dermatinta:** primer laboratorio operativo y caso propio de ecommerce. El inventario actual se
   vende antes de ampliar compras; la jagua queda como hipótesis prioritaria de validación, no como
   producto aprobado.
@@ -46,7 +47,7 @@ soluciones/agencia de IA, usando los negocios propios como evidencia pública pr
   depender de fabricar alfombras por encargo y prioriza productos estandarizados, materiales y
   conocimiento para emprender en tufting.
 - **MODOZAINT:** marca personal y narrativa pública del proceso, aprendizajes y resultados.
-- **Soluciones IA:** capacidad que se empaqueta y vende después de probarla en los negocios propios.
+- **Zagencia:** capacidad que se empaqueta y vende después de probarla en los negocios propios.
 
 ## Principios
 
@@ -60,7 +61,7 @@ soluciones/agencia de IA, usando los negocios propios como evidencia pública pr
 
 ## Lo que sigue abierto
 
-- Primera oferta B2B concreta, segmento inicial y posicionamiento público de MODOZAINT.
+- Primera línea de oferta B2B, segmento inicial y posicionamiento público de MODOZAINT.
 - Resultado medible que demostrará que la primera aplicación de IA funciona.
 - Fecha de la primera venta y escalera de ingresos hasta `10.000.000 COP/mes`.
 - Diferencia entre facturación objetivo, utilidad y retiro personal sostenible.
