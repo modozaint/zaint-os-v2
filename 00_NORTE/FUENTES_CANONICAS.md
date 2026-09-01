@@ -17,8 +17,8 @@ Este archivo registra punteros; no repite el contenido de las fuentes.
 | Arquitectura y eficiencia multiagente | `60_CONOCIMIENTO/DECISIONES_MULTIAGENTE.md` | ORQUESTADOR | Mediante ADR |
 | Contrato de tarea y handoff | `50_SOP/TAREA_Y_HANDOFF.md` | ORQUESTADOR | Después de un fallo repetible |
 | Datos de dominio V1 todavía no migrados | `SOURCE_ROOT/<RUTA_DE_DOMINIO>` | Dueño del dominio | En la fuente V1 |
-| Evidencia de arquitectura | `BUZZ_RESEARCH_ROOT/ARQUITECTURA_MULTIAGENTE_2026_08_29.md` | Honey | Archivo fechado |
-| Evidencia de eficiencia | `BUZZ_RESEARCH_ROOT/EFICIENCIA_COSTO_MULTIAGENTE_2026_08_29.md` | Pollen | Archivo fechado |
+| Evidencia de arquitectura | `60_CONOCIMIENTO/EVIDENCIA/ARQUITECTURA_MULTIAGENTE_2026_08_29.md` | ORQUESTADOR | Archivo fechado |
+| Evidencia de eficiencia | `60_CONOCIMIENTO/EVIDENCIA/EFICIENCIA_COSTO_MULTIAGENTE_2026_08_29.md` | ORQUESTADOR | Archivo fechado |
 
 ## Regla contra duplicados
 

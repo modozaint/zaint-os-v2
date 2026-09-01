@@ -10,7 +10,8 @@ tipo: mapa
 
 - Workspace nuevo: `C:\DEPARTAMENTO MODOZAINT V2`
 - Fuente V1, solo lectura durante esta migración: `C:\DEPARTAMENTO MODOZAINT`
-- Evidencia externa de investigación: `C:\Users\Zaint}\.buzz\RESEARCH`, usada solo como respaldo.
+- Evidencia portable de investigación: `60_CONOCIMIENTO/EVIDENCIA/`, copiada selectivamente desde el
+  respaldo externo. Buzz no es una dependencia operativa.
 - Exportación portable de origen: `_MIGRACION/agentes/`, resuelta desde la raíz V1.
 
 Cambiar de máquina exige actualizar únicamente estas raíces. Los agentes usan rutas relativas.

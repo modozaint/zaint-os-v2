@@ -6,7 +6,7 @@ tipo: sop
 
 # Presupuesto y eficiencia diaria
 
-Evidencia: `BUZZ_RESEARCH_ROOT/EFICIENCIA_COSTO_MULTIAGENTE_2026_08_29.md`.
+Evidencia: `60_CONOCIMIENTO/EVIDENCIA/EFICIENCIA_COSTO_MULTIAGENTE_2026_08_29.md`.
 
 | Clase | Uso | Agentes iniciales | Herramientas | Motor inicial | Escalada |
 |---|---|---:|---:|---|---|
@@ -26,8 +26,9 @@ Evidencia: `BUZZ_RESEARCH_ROOT/EFICIENCIA_COSTO_MULTIAGENTE_2026_08_29.md`.
 ## Medición mínima
 
 Registrar por tarea: clase, agentes, modelo, esfuerzo, tokens disponibles, caché disponible, llamadas,
-reintentos, tiempo, costo disponible, aprobación e intervenciones humanas. Si Buzz no expone tokens o
-costo, registrar `no_disponible` y usar llamadas, tiempo y tasa de aprobación; nunca inventar cifras.
+reintentos, tiempo, costo disponible, aprobación e intervenciones humanas. Si el runtime no expone
+tokens o costo, registrar `no_disponible` y usar llamadas, tiempo y tasa de aprobación; nunca inventar
+cifras.
 
 Una configuración barata se adopta después de 20 tareas representativas y solo si su aprobación queda
 a no más de cinco puntos porcentuales de la mejor. Objetivos iniciales: 30% menos tokens de entrada

@@ -1,6 +1,6 @@
 param(
     [string]$SourceRoot = 'C:\DEPARTAMENTO MODOZAINT',
-    [string]$EvidenceRoot = 'C:\Users\Zaint}\.buzz\RESEARCH'
+    [string]$EvidenceRoot = (Join-Path $PSScriptRoot '..\60_CONOCIMIENTO\EVIDENCIA')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -88,7 +88,7 @@ foreach ($file in $markdownFiles) {
         if ($reference -match '^SOURCE_ROOT/(.+)$') {
             $candidate = Join-Path $SourceRoot $Matches[1]
         }
-        elseif ($reference -match '^BUZZ_RESEARCH_ROOT/(.+)$') {
+        elseif ($reference -match '^EVIDENCE_ROOT/(.+)$') {
             $candidate = Join-Path $EvidenceRoot $Matches[1]
         }
         elseif ($reference -match '^(70_AGENTES|00_NORTE|20_OPERACION|60_CONOCIMIENTO|50_SOP)/') {

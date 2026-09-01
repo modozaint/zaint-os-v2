@@ -28,9 +28,9 @@ Carpeta local: `C:\DEPARTAMENTO MODOZAINT V2`.
 - El cierre documental está versionado en Git y el repositorio está sincronizado con `origin/master`.
 - Los nueve especialistas están preparados como portables, pero no deben abrirse todos a la vez ni
   activarse fuera de su oficio.
-- Buzz tiene la identidad local del usuario configurada; la publicación o vinculación de un repo en
-  Buzz requiere hacerlo desde Buzz Desktop con la clave privada activa. Nunca copiar una clave
-  privada a este archivo ni al repositorio.
+- Buzz es opcional y no forma parte del flujo operativo principal. La coordinación puede ocurrir en
+  Buzz, pero la fuente de verdad es V2 local y GitHub. Nunca copiar una clave privada a este archivo
+  ni al repositorio.
 
 ## Entrada mínima obligatoria
 
@@ -67,6 +67,7 @@ No escanear todo el vault por defecto. Usar recuperación just-in-time y conserv
 - No publicar contenido ni gastar dinero sin la decisión del propietario.
 - No borrar ni sobrescribir trabajo útil. Copiar, versionar y dejar cada cambio reversible.
 - No tocar V1 durante la integración salvo lectura explícita.
+- No asumir que Buzz tiene una copia completa del historial; verificar siempre el checkout local y Git.
 - Si una decisión afecta arquitectura, producción, datos sensibles, dinero o una acción irreversible,
   detenerse y pedir al propietario la decisión.
 
@@ -80,7 +81,6 @@ No escanear todo el vault por defecto. Usar recuperación just-in-time y conserv
 
 ## Nota de acceso
 
-ChatGPT no puede leer una carpeta local solo porque exista en este equipo. Para darle este contexto,
-abre este archivo y pégalo en el chat, o conecta el repositorio privado V2 mediante el mecanismo de
-acceso que use esa instalación. Después de cada sesión, los resultados deben volver a V2 como archivo
-revisable y commit atribuible.
+Un runtime no puede leer una carpeta local solo porque exista en este equipo: debe abrir el workspace
+o recibir los archivos necesarios. Usa este archivo como puente inicial, no como sustituto del router.
+Después de cada sesión, los resultados deben volver a V2 como archivo revisable y commit atribuible.
