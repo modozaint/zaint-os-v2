@@ -1,7 +1,7 @@
 # Estado de migracion V1 -> V2
 
 Fecha: 2026-09-01
-Estado: copia inicial preparada, validacion pendiente
+Estado: copia inicial preparada y versionada; validacion local parcial
 
 ## Fuentes
 
@@ -17,6 +17,17 @@ Estado: copia inicial preparada, validacion pendiente
 - Contexto y referencia de Content OS -> `CONTENT_OS/docs`
 - `videojuego-vida` (sin generados ni referencias privadas) -> `FOUNDER_OS/app`
 - `videojuego-vida/supabase` -> `FOUNDER_OS/infra`
+
+## Validacion local
+
+- Lead Hunter: compilacion TypeScript/Next correcta; lint falla con 23 errores y
+  21 advertencias preexistentes. No se corrigio codigo durante la migracion.
+- Content OS: compilacion inicial correcta; generacion de paginas falla porque
+  no se proporcionaron `SUPABASE_URL` ni `SUPABASE_SERVICE_KEY`. Las credenciales
+  fueron excluidas deliberadamente.
+- FounderOS: compilacion Next correcta; no tiene script `lint` declarado.
+- `npm ci --ignore-scripts` se ejecuto en cada app; las dependencias generadas
+  permanecen ignoradas por Git.
 
 ## Excluido deliberadamente
 
@@ -35,4 +46,8 @@ Estado: copia inicial preparada, validacion pendiente
 4. Resolver el ICP de Juanca en Lead Hunter.
 5. Aprobar el cambio de fuente canonica antes de cualquier despliegue.
 
-No se hizo push, deploy ni modificacion de V1.
+## Trazabilidad
+
+- Commit local de esta fase: `c9c35a2c23480e692aeccda2b1998ca7ab59b1a4`
+- La rama V2 queda dos commits por delante de `origin/master`.
+- No se hizo push, deploy ni modificacion de V1.
