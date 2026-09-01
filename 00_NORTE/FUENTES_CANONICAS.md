@@ -12,6 +12,7 @@ Este archivo registra punteros; no repite el contenido de las fuentes.
 |---|---|---|---|
 | Prioridad y fase actual | `20_OPERACION/AHORA.md` | ORQUESTADOR | Al cambiar el trabajo activo |
 | Estado actual de Santiago | `60_CONOCIMIENTO/CURRENT_TRUTH_SANTIAGO.md` | Santiago / ORQUESTADOR | Cuando Santiago confirme un cambio |
+| Vehículo de ingresos y relación entre proyectos | `00_NORTE/DECISIONES/DECISION_VEHICULO_INGRESOS_2026-09-01.md` | Santiago | Antes de cambiar el orden o modelo |
 | Enrutamiento de encargos | `00_NORTE/AGENT_ROUTER.md` | ORQUESTADOR | Al crear o retirar un oficio |
 | Función de cada agente | `70_AGENTES/<NOMBRE>/00_ENTRAR.md` | Agente del oficio | Con revisión de ORQUESTADOR |
 | Modelos y escalado | `70_AGENTES/MODELOS.md` | ORQUESTADOR | Después de una evaluación |

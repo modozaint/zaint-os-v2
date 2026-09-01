@@ -20,6 +20,13 @@ privacy: private
 - Le interesa la inteligencia artificial y quiere implementarla como parte de su camino profesional.
 - Quiere que MODOZAINT V2 ayude a convertir en realidad sus ideas y también a organizar y mejorar su
   vida, no solo sus proyectos.
+- Su vehículo de ingresos será aplicar IA para construir y operar negocios digitales desde cero,
+  usando sus propios proyectos como laboratorios y convirtiendo después la capacidad demostrada en
+  una oferta vendible.
+- Dermatinta será el laboratorio ecommerce.
+- House of Kaizen cambiará de fabricar alfombras por encargo hacia productos estandarizados,
+  infoproductos y materiales para emprender en tufting.
+- MODOZAINT documentará y mostrará el proceso; Soluciones IA será la capacidad empaquetable.
 - Reporta que puede dedicar más tiempo del que reflejaban los cuadros de turnos históricos y que tiene
   una urgencia fuerte por avanzar; esto no equivale todavía a un número confirmado de horas semanales.
 
@@ -27,6 +34,7 @@ privacy: private
 
 - Horas sostenibles por semana sin afectar salud ni empleo.
 - Primera oferta o proyecto que se convertirá en ingreso.
+- Orden de ejecución entre Dermatinta y House of Kaizen.
 - Fecha exacta de la primera venta y de la facturación estable de 10 millones.
 - Gastos personales, obligaciones y margen real disponible para inversión.
 
