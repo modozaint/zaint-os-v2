@@ -26,12 +26,12 @@ verifica en el selector o instalación antes de usarla.
 |---|---|---|---|---|
 | ORQUESTADOR | Coordinar, enrutar, verificar y cerrar | Codex con acceso al checkout | OpenAI de alta capacidad | Claude para síntesis estratégica larga |
 | Xiomara | Público, posicionamiento, tesis de marca | Claude para síntesis de contexto | Claude equilibrado | Claude de máxima capacidad |
-| MODOZAINT | Narrativa, autoridad y distribución | Claude para estrategia; Codex para leer/escribir V2 | Claude equilibrado | Claude de máxima capacidad |
-| Contenido | Guiones y piezas | Claude para piezas con contexto; ChatGPT para iteraciones | Claude equilibrado | Claude de máxima capacidad |
+| MODOZAINT | Narrativa, autoridad y distribución | Content OS + Claude para estrategia; Codex para leer/escribir V2 | Claude equilibrado | Claude de máxima capacidad |
+| Contenido | Guiones y piezas | Content OS como sistema de planificación; Claude para piezas con contexto | Claude equilibrado | Claude de máxima capacidad |
 | Copy | Captions, CTA y variantes | ChatGPT/Codex para iteración corta | OpenAI rápido/equilibrado | Claude si exige voz de marca extensa |
 | Juanjo | Edición, montaje y especificación visual | ChatGPT/Codex para instrucciones; herramienta de edición para ejecutar | OpenAI rápido/equilibrado | Claude para análisis de pieza compleja |
 | Video | Destilar fuentes externas en aprendizaje | Claude para transcripciones y síntesis | Claude equilibrado | Modelo de máxima capacidad solo si cruza fuentes |
-| Dermatinta | Operar el laboratorio ecommerce | Codex para repo/documentos; navegador/Shopify solo cuando esté conectado | Claude para criterio; OpenAI para estado | ORQUESTADOR revisa cambios de riesgo |
+| Dermatinta | Operar el laboratorio ecommerce | Content OS para contenido/métricas; Codex para repo/documentos; Shopify solo conectado | Claude para criterio; OpenAI para estado | ORQUESTADOR revisa cambios de riesgo |
 | Kaizen | Costear, cotizar y operar taller | Codex para archivos; hoja financiera como fuente viva | OpenAI equilibrado | Claude para reconstruir precedentes |
 | Hoy | Elegir una acción concreta | Codex/ChatGPT | OpenAI rápido/equilibrado | OpenAI de alta capacidad si hay conflicto |
 
