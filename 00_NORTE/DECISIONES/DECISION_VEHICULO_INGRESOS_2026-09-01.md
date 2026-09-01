@@ -44,5 +44,18 @@ negocios digitales.
 - Resultado medible que demostrará que la primera aplicación de IA funciona.
 - Fecha de la primera venta y escalera de ingresos hasta `10.000.000 COP/mes`.
 
+## Primer caso operativo aprobado
+
+Dermatinta será el primer caso principal de aplicación de IA. La fase inicial será posicionamiento y
+crecimiento con el objetivo de encontrar la oferta o producto ganador.
+
+Criterio candidato aprobado para 12 semanas:
+
+- 10 ventas pagadas.
+- 5 reseñas reales de compradores.
+- Identificación de la oferta con mayor tracción y margen suficiente para continuar.
+
+El criterio puede ajustarse con evidencia, pero no se reemplaza por actividad o número de publicaciones.
+
 Esta decisión sustituye la pregunta simplificada “soluciones IA o ecommerce” y no autoriza todavía
 gastos, publicaciones ni despliegues externos.

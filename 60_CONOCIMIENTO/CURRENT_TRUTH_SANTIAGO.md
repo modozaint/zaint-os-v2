@@ -27,6 +27,8 @@ privacy: private
 - House of Kaizen cambiará de fabricar alfombras por encargo hacia productos estandarizados,
   infoproductos y materiales para emprender en tufting.
 - MODOZAINT documentará y mostrará el proceso; Soluciones IA será la capacidad empaquetable.
+- Dermatinta es el primer caso operativo: en 12 semanas se busca validar una oferta con 10 ventas
+  pagadas, 5 reseñas reales y evidencia de margen.
 - Reporta que puede dedicar más tiempo del que reflejaban los cuadros de turnos históricos y que tiene
   una urgencia fuerte por avanzar; esto no equivale todavía a un número confirmado de horas semanales.
 
