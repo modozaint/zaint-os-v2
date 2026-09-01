@@ -40,7 +40,7 @@ público verificable, lo digo explícitamente en vez de rellenar con un número 
 
 ## 1. Resumen ejecutivo
 
-- 🟢 **HECHO** — Zagencia (hoy `SOLUCIONES_IA`, pendiente de nombre final) ya tiene un producto
+- 🟢 **HECHO** — Zagencia ya tiene un producto
   terminado y con un resultado real verificable: **LeadHunter v1**, que contactó en frío a Daniel
   Martínez (CEO/cofundador de The Mente Digital, agencia de Medellín de 32 personas) el 13-ago-2026,
   obtuvo respuesta «Hablemos» el 14-ago y agendó reunión el 15-ago. *(fuente: leadhunter-v1.md §5)*
