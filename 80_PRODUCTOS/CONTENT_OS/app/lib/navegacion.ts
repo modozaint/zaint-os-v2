@@ -1,4 +1,4 @@
-import { LayoutDashboard, Instagram, MessageSquare, Users, CalendarRange } from 'lucide-react'
+import { LayoutDashboard, Instagram, MessageSquare, Users, CalendarRange, Layers3 } from 'lucide-react'
 
 /**
  * La navegación, escrita UNA vez.
@@ -14,6 +14,7 @@ import { LayoutDashboard, Instagram, MessageSquare, Users, CalendarRange } from 
 export const NAV = [
   { href: '/dashboard',  label: 'Overview',    icon: LayoutDashboard },
   { href: '/instagram',  label: 'Analizar',    icon: Instagram },
+  { href: '/estrategia', label: 'Estrategia',  icon: Layers3 },
   { href: '/plan',       label: 'Plan',        icon: CalendarRange },
   { href: '/referentes', label: 'Referentes',  icon: Users },
   { href: '/chat',       label: 'AI Chat',     icon: MessageSquare },

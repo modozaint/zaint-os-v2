@@ -85,13 +85,13 @@ export interface Meta {
 // CONTENIDO/CURSO_CONVERZZO/ — no se inventan aquí.
 // ═══════════════════════════════════════════════════════════════════════════
 
-/** Para qué existe la pieza. La mezcla de arranque del curso es 50/25/25. */
+/** Para qué existe la pieza. MODOZAINT usa 50/33/17 durante la validación. */
 export type Funcion = 'adquisicion' | 'autoridad' | 'conversion'
 
 export const FUNCIONES: { id: Funcion; label: string; ayuda: string }[] = [
-  { id: 'adquisicion', label: 'Adquisición', ayuda: 'Trae gente nueva. Storytelling, proceso, aspiracional' },
-  { id: 'autoridad',   label: 'Autoridad',   ayuda: 'Demuestra que sabés. Tutorial, criterio, desmitificar' },
-  { id: 'conversion',  label: 'Conversión',  ayuda: 'Mueve a comprar. Producto, prueba, oferta' },
+  { id: 'adquisicion', label: 'Atracción', ayuda: 'Trae gente nueva. Tip, skill, storytelling o proceso.' },
+  { id: 'autoridad',   label: 'Nutrición', ayuda: 'Convierte curiosidad en confianza. Tutorial, caso, criterio o comparación.' },
+  { id: 'conversion',  label: 'Conversión', ayuda: 'Valida demanda o mueve a una acción real y medible.' },
 ]
 
 /**

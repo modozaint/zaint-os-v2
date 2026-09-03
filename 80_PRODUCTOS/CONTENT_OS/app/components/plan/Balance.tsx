@@ -23,7 +23,7 @@ import { marcaPorId, type MarcaId } from "@/lib/marcas"
  *
  * Mide las tres rejillas de Converzzo contra lo planeado:
  *   · frecuencia por formato (el curso la da por formato, no en bloque)
- *   · mezcla de funciones (arranque: 50 adquisición / 25 autoridad / 25 conversión)
+ *   · mezcla de funciones (MODOZAINT: 50 atracción / 33 nutrición / 17 conversión)
  *   · rotación 70 probado / 20 en prueba / 10 experimental
  *
  * Y avisa de la única regla dura del curso que se puede verificar sola:
@@ -94,7 +94,9 @@ export function Balance({
 
   const semanasDelMes = 4.3
   const frecuencias = meta?.frecuencias
-  const mezcla = meta?.mezcla ?? { adquisicion: 50, autoridad: 25, conversion: 25 }
+  const mezcla = meta?.mezcla ?? (marca === "modozaint"
+    ? { adquisicion: 50, autoridad: 33, conversion: 17 }
+    : { adquisicion: 50, autoridad: 25, conversion: 25 })
   const rotObjetivo = meta?.rotacion_objetivo ?? { probado: 70, prueba: 20, experimental: 10 }
 
   return (

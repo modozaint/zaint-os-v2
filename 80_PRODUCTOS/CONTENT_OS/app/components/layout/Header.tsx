@@ -12,6 +12,7 @@ import { UsuarioBadge } from "./UsuarioBadge"
 const pageTitles: Record<string, { title: string; description: string }> = {
   "/dashboard": { title: "Overview", description: "Cómo va la marca este mes" },
   "/instagram": { title: "Analizar", description: "Qué publicaste, qué funcionó y qué mejorar" },
+  "/estrategia": { title: "Estrategia", description: "Pilares, niveles e ideas que la comunidad está pidiendo" },
   "/plan": { title: "Plan", description: "Qué sigue, y dónde se está atascando" },
   "/referentes": { title: "Banco de referentes", description: "Perfiles que estudias, y qué tomar de cada uno" },
   "/chat": { title: "AI Chat", description: "Preguntale a tus propios datos" },
@@ -55,9 +56,9 @@ export function Header() {
     const lastSync = parseInt(localStorage.getItem("last_sync") ?? "0")
     const oneHour = 60 * 60 * 1000
     if (Date.now() - lastSync > oneHour) {
-      handleSync()
+      void Promise.resolve().then(handleSync)
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const iconBtn = cn(
     "flex h-8 w-8 items-center justify-center rounded-lg",
