@@ -36,6 +36,20 @@ comprometer inventario comercial.
   o INVIMA antes de una orden comercial.
 - Decision: descartar, prueba de muestra o negociacion de distribucion.
 
+## Verificaciones nacidas del audio del proveedor
+
+- Resolver por escrito quien es el importador de registro en Colombia. El audio
+  dice que Feel Ink podria fabricar, enviar e importar; la propuesta asigna
+  aduanas, impuestos y despacho local al distribuidor.
+- Documentar las promesas verbales antes de usarlas comercialmente: duracion
+  aproximada de hasta dos semanas, bestsellers, calidad y experiencia de casi
+  dos anos en el proyecto.
+- Aclarar si se puede usar marca propia, Feel Ink o co-branding; el proveedor
+  recomienda Feel Ink por su exposicion regional, pero no presenta licencia ni
+  condiciones de uso de marca.
+- Confirmar si el modelo ofrecido se limita a retail fisico o permite ecommerce
+  y los canales de venta que House of Kaizen/MODOZAINT requieran.
+
 ## Limites y presupuesto
 
 - La propuesta recibida corresponde a Peru; no presupone derechos en Colombia.
