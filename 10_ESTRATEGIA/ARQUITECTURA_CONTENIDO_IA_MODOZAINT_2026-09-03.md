@@ -49,6 +49,36 @@ Mientras no exista oferta validada, conversion significa **prueba de demanda**,
 no venta: no se promete implementacion, precio, resultado ni cupo que no
 exista.
 
+## Dos puertas de entrada, una comunidad
+
+La cuenta necesita contenido de descubrimiento para llegar a personas que aun
+no conocen a Santiago. Los tips de Claude, ChatGPT, Codex, skills, MCP o una
+herramienta concreta cumplen esa funcion cuando resuelven una tarea pequena y
+buscada. No son un pilar adicional: son un **formato de atraccion** para los
+subtemas existentes.
+
+| Puerta | Funcion | Regla |
+|---|---|---|
+| Descubrimiento masivo | Ganar alcance con una skill, tip, plantilla, error comun o demostracion corta que sirva incluso sin conocer MODOZAINT | Debe resolver una tarea concreta en menos de 40 segundos y mostrar su prueba en pantalla |
+| Comunidad y confianza | Hacer que quien llego por el tip entienda que hay una historia, proyectos y criterio detras | Cada tip conecta con el proyecto, decision o sistema real donde Santiago lo usa |
+
+El puente puede ser una sola frase final: "esto lo estoy usando para construir
+[proyecto real]". No se fuerza un CTA comercial. Asi, el video viral atrae;
+la serie y el trabajo documentado hacen que la persona se quede.
+
+### Distribucion dentro de cada bloque de 12 posts
+
+| Tipo de pieza | Cantidad | Nivel |
+|---|---:|---|
+| Descubrimiento: tips/skills/herramientas con alto interes general | 4 | Atraccion |
+| Documental: avance, error, decision o prueba de un proyecto | 2 | Atraccion |
+| Explicacion aplicada: mini caso, sistema o comparacion | 4 | Nutricion |
+| Prueba de demanda: problema, recurso o siguiente paso real | 2 | Conversion |
+
+No se persigue una tendencia si no hay uso propio que la conecte con los
+proyectos. Tampoco se publica una lista de herramientas sin mostrar para que
+sirven, que limite tienen y donde se usaron.
+
 ## Cadencia de 90 dias
 
 Base sostenible: **3 publicaciones por semana durante 90 dias**. El cuarto
@@ -57,9 +87,9 @@ no puede poner en riesgo los tres posts base.
 
 | Dia sugerido | Nivel | Funcion |
 |---|---|---|
-| Lunes | Atraccion | Abrir una tension real del proyecto o una escena de la historia |
-| Miercoles | Nutricion | Mostrar una herramienta o sistema aplicado a esa tension |
-| Viernes | Atraccion o conversion | Alternar: prueba/documental; cada segunda semana, prueba de demanda sobria |
+| Lunes | Atraccion | Tip o skill de descubrimiento conectado a un proyecto real |
+| Miercoles | Nutricion | Mostrar la herramienta o sistema aplicado a esa tension |
+| Viernes | Atraccion o conversion | Alternar documental/prueba y, cada segunda semana, prueba de demanda sobria |
 | Slot opcional | Respuesta | Responder comentario, actualizar un experimento o probar una apertura |
 
 Cada bloque de cuatro semanas apunta a 12 posts: 6 de atraccion, 4 de

@@ -33,7 +33,8 @@ persona final antes de medirlo.
 ## Entregable
 
 - Calendario movil de cuatro semanas con 12 piezas base clasificadas como
-  atraccion, nutricion o conversion.
+  atraccion, nutricion o conversion: cuatro de atraccion son piezas de
+  descubrimiento con tips, skills o herramientas conectadas a un uso propio.
 - Ficha de observacion con un patron propio por cada referente revisado.
 - Registro en ContentOS de cada pieza aprobada y sus metricas verificadas.
 - Revision al dia 30, 60 y 90: subtemas a sostener, probar o pausar.
