@@ -35,8 +35,8 @@ export const metadata: Metadata = {
   // Sin ellas, "Añadir a pantalla de inicio" abre con la barra de Safari.
   appleWebApp: { capable: true, title: "Content OS", statusBarStyle: "black-translucent" },
   manifest: "/manifest.webmanifest",
-  title: "Dermatinta — Content OS",
-  description: "Inteligencia de contenido para Dermatinta · cuidado de la piel tatuada",
+  title: "MODOZAINT — Content OS",
+  description: "Inteligencia de contenido para la marca personal MODOZAINT",
   // Verificacion de propiedad del sitio por meta tag. Va por variable de entorno
   // a proposito: la cadena la genera TikTok en el momento, y asi verificar
   // cuesta pegar una variable en Vercel en vez de un cambio de codigo y un

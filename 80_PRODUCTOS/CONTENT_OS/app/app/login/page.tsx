@@ -87,8 +87,8 @@ export default function LoginPage() {
     >
       <div className="flex w-full max-w-[380px] flex-col items-center">
         <Image
-          src="/logo.png"
-          alt="Dermatinta"
+          src="/marcas/modozaint.svg"
+          alt="MODOZAINT"
           width={96}
           height={96}
           priority
@@ -99,7 +99,7 @@ export default function LoginPage() {
           className="font-display text-[34px] font-semibold leading-none"
           style={{ color: "var(--text-primary)" }}
         >
-          Dermatinta
+          MODOZAINT
         </h1>
         <p className="section-label mt-3 mb-10">
           {paso === "quien" ? "Content OS · ¿Quién sos?" : "Content OS · Acceso del equipo"}

@@ -56,13 +56,25 @@ export const MARCAS = [
 export type MarcaId = (typeof MARCAS)[number]['id']
 export type Marca = (typeof MARCAS)[number]
 
-/** Dermatinta era la única cuenta conectada antes de que esto fuera multi-marca. */
-export const MARCA_DEFAULT: MarcaId = 'dermatinta'
+/**
+ * Marcas que el Content OS opera hoy. `MARCAS` conserva las identidades
+ * históricas para poder leer piezas y métricas antiguas sin borrar nada.
+ */
+export const MARCAS_OPERATIVAS = [MARCAS[2]] as const
+
+/** MODOZAINT es el único frente de contenido e integración activo. */
+export const MARCA_DEFAULT: MarcaId = 'modozaint'
 
 export const MARCA_IDS: readonly MarcaId[] = MARCAS.map((m) => m.id)
+export const MARCA_IDS_OPERATIVAS: readonly MarcaId[] = MARCAS_OPERATIVAS.map((m) => m.id)
 
 export function esMarca(valor: unknown): valor is MarcaId {
   return typeof valor === 'string' && (MARCA_IDS as readonly string[]).includes(valor)
+}
+
+/** Distingue una marca histórica de una que puede recibir trabajo nuevo. */
+export function esMarcaOperativa(valor: unknown): valor is MarcaId {
+  return typeof valor === 'string' && (MARCA_IDS_OPERATIVAS as readonly string[]).includes(valor)
 }
 
 /** Nunca devuelve undefined: si el id no existe, cae en la marca por defecto. */

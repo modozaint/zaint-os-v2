@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { tiktokConfigurado, redirectUri, urlDeAutorizacion, TIKTOK_SCOPES } from '@/lib/tiktokClient'
 import { getConexion } from '@/lib/db/conexiones'
-import { MARCA_IDS } from '@/lib/marcas'
+import { MARCA_IDS_OPERATIVAS } from '@/lib/marcas'
 
 /**
  * Estado de TikTok por marca: sirve para que la UI muestre "Conectar" o el @
@@ -13,7 +13,7 @@ export async function GET() {
   const configurado = tiktokConfigurado()
 
   const marcas = await Promise.all(
-    MARCA_IDS.map(async (marca) => {
+    MARCA_IDS_OPERATIVAS.map(async (marca) => {
       if (!configurado) return { marca, conectada: false }
       try {
         const c = await getConexion(marca, 'tiktok')

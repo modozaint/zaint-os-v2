@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { Music2, RefreshCw } from "lucide-react"
-import { MARCAS } from "@/lib/marcas"
+import { MARCAS_OPERATIVAS } from "@/lib/marcas"
 
 interface EstadoMarca {
   marca: string
@@ -138,7 +138,7 @@ export function ConexionTikTok() {
       )}
 
       <div className="flex flex-col gap-2">
-        {MARCAS.map((marca) => {
+        {MARCAS_OPERATIVAS.map((marca) => {
           const e = estado?.marcas.find((m) => m.marca === marca.id)
           return (
             <div key={marca.id} className="flex items-center justify-between rounded-xl p-4" style={tarjeta}>

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Lightbulb, Plus } from "lucide-react"
-import { MARCAS, marcaPorId, type MarcaId } from "@/lib/marcas"
+import { MARCAS_OPERATIVAS, marcaPorId, type MarcaId } from "@/lib/marcas"
 import type { Pieza, TipoPieza } from "@/lib/piezasTipos"
 import { NuevaPieza, type IdeaAAnalizar } from "./NuevaPieza"
 
@@ -96,7 +96,7 @@ export function CapturaIdeas({
             style={{ background: "var(--bg-surface)", color: "var(--text-secondary)" }}
             aria-label="Marca de la idea"
           >
-            {MARCAS.map((m) => (
+            {MARCAS_OPERATIVAS.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.nombre}
               </option>

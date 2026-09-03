@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Check, ChevronDown } from "lucide-react"
-import { MARCAS, MARCA_DEFAULT, esMarca, marcaPorId, type MarcaId } from "@/lib/marcas"
+import { MARCAS_OPERATIVAS, MARCA_DEFAULT, esMarca, marcaPorId, type MarcaId } from "@/lib/marcas"
 import { cn } from "@/lib/utils"
 
 const CLAVE = "marca-activa"
@@ -85,7 +85,7 @@ export function MarcaSelector() {
               boxShadow: "var(--glass-shadow)",
             }}
           >
-            {MARCAS.map((m) => {
+            {MARCAS_OPERATIVAS.map((m) => {
               // null = todavía no se sabe. No se marca nada hasta saberlo:
               // decir "sin conectar" antes de tiempo es un dato falso.
               const sinConectar = configuradas !== null && !configuradas.includes(m.id)

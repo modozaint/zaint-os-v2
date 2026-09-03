@@ -2,7 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import type { IGMediaItem, IGInsights, IGCacheEntry } from './instagramTypes'
-import { MARCA_IDS, MARCA_DEFAULT, esMarca, type MarcaId } from './marcas'
+import { MARCA_IDS_OPERATIVAS, MARCA_DEFAULT, esMarca, type MarcaId } from './marcas'
 
 // El único directorio escribible en serverless (Vercel) es el tmp del sistema
 const CACHE_DIR = path.join(os.tmpdir(), 'instagram-cache')
@@ -48,7 +48,7 @@ function saveCache<T>(key: string, payload: T): void {
 // La lista de marcas vive en `lib/marcas.ts` — ahí y en ningún otro lado.
 // Se re-exporta desde aquí porque hay código que ya la importaba de este
 // módulo, y romper esos imports no aporta nada.
-export { MARCA_DEFAULT, MARCA_IDS, esMarca }
+export { MARCA_DEFAULT, esMarca }
 export type { MarcaId }
 
 /**
@@ -93,7 +93,9 @@ export function marcaConfigurada(marca: MarcaId): boolean {
 // Qué marcas tienen credenciales de verdad. Sirve para no pintar en la UI
 // un selector con marcas que van a devolver vacío.
 export function marcasConfiguradas(): MarcaId[] {
-  return MARCA_IDS.filter((m) => getCredentials(m) !== null)
+  // Aunque queden variables antiguas en Vercel, no se sincronizan otras
+  // cuentas: el Content OS opera solamente MODOZAINT.
+  return MARCA_IDS_OPERATIVAS.filter((m) => getCredentials(m) !== null)
 }
 
 // Insights por video

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Gauge } from "lucide-react"
-import { MARCAS, type MarcaId } from "@/lib/marcas"
+import { MARCAS_OPERATIVAS, type MarcaId } from "@/lib/marcas"
 import { TIPOS, type Meta, type TipoPieza } from "@/lib/piezasTipos"
 
 /**
@@ -74,7 +74,7 @@ export function Cadencia() {
 
       {estado === "listo" && (
         <div className="flex flex-col gap-2">
-          {MARCAS.map((m) => {
+          {MARCAS_OPERATIVAS.map((m) => {
             const meta = metas.find((x) => x.marca_id === m.id)
             const porSemana = meta?.piezas_por_semana ?? 0
             return (
