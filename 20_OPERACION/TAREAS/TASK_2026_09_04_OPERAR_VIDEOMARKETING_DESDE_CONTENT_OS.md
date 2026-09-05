@@ -59,6 +59,19 @@ repita el contexto de la marca ni se creen archivos paralelos.
 - Guia operativa y texto de entrada usados.
 - Confirmacion de que no hubo publicacion, contacto ni cambio de datos de red.
 
+## Ejecucion 2026-09-05
+
+- Prueba realizada en produccion: pieza
+  `fae13d79-a6b5-43d9-a70f-549a5eb729d4`, de MODOZAINT y firmada por Santiago,
+  guardada como Reel en estado `idea`.
+- Idea usada: `Estoy construyendo ContentOS para convertir una idea real en un
+  video sin depender de la inspiración.`
+- La app confirmo la pieza en la columna IDEA y habilito la accion `Analizar`.
+  No se genero guion, no se publico, no se programo ni se sincronizo una red.
+- Bloqueo parcial: `/estrategia?marca=modozaint` responde `404` en produccion;
+  por eso pilar y nivel no se declararon como guardados. El SOP operativo vive
+  en `50_SOP/SOP_OPERAR_VIDEOMARKETING_EN_CONTENTOS.md`.
+
 ## Siguiente responsable
 
 Contenido ejecuta la prueba; ORQUESTADOR revisa trazabilidad y decide si se
