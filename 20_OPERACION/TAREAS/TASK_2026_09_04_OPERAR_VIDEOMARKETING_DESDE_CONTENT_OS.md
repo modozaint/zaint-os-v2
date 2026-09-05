@@ -2,7 +2,7 @@
 id: TASK_2026_09_04_OPERAR_VIDEOMARKETING_DESDE_CONTENT_OS
 owner: Contenido
 reviewer: ORQUESTADOR
-status: pending
+status: in_progress
 class: S1
 created: 2026-09-04
 updated: 2026-09-04
