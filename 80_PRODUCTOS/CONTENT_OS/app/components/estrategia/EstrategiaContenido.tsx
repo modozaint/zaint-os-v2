@@ -109,16 +109,60 @@ export function EstrategiaContenido() {
       >
         <div className="flex max-w-3xl flex-col gap-3">
           <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] opacity-70">
-            <Sparkles size={13} /> Estrategia vigente
+            <Sparkles size={13} /> Brújula de contenido
           </span>
           <h2 className="font-display text-[25px] font-semibold leading-tight md:text-[32px]">
             IA para construir proyectos propios, no herramientas sueltas.
           </h2>
           <p className="max-w-2xl text-[13px] leading-relaxed opacity-80">
             Los tips atraen; los proyectos, decisiones y pruebas hacen que la audiencia se quede.
-            Cada pregunta de referentes entra abajo como una idea trazable.
+            Esta es la base operativa del vibe marketing de MODOZAINT: cada señal se convierte en una decisión trazable.
           </p>
         </div>
+      </section>
+
+      <section className="rounded-xl p-4 md:p-5" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)" }}>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <span className="section-label">Ciclo de trabajo</span>
+            <p className="mt-1 text-[12px]" style={{ color: "var(--text-faint)" }}>
+              La Brújula no reemplaza el criterio: evita que una observación se pierda antes de convertirse en aprendizaje.
+            </p>
+          </div>
+          <Link href="/referentes?marca=modozaint" className="text-[12px] font-medium" style={{ color: "var(--marca-acento)" }}>
+            Abrir referentes
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+          {[
+            { label: "Referentes", href: "/referentes?marca=modozaint", ayuda: "Qué se estudia" },
+            { label: "Preguntas", href: "#radar-preguntas", ayuda: "Se anota abajo" },
+            { label: "Ideas", href: "#ideas-pendientes", ayuda: "Pilar + nivel" },
+            { label: "Plan", href: "/plan?marca=modozaint&vista=pipeline", ayuda: "Ficha y rodaje" },
+            { label: "Piezas", href: "/plan?marca=modozaint&vista=calendario", ayuda: "Agenda y grabación" },
+            { label: "Métricas", href: "/instagram", ayuda: "IG automático, TikTok manual" },
+          ].map((paso, index) => (
+            <Link
+              key={paso.label}
+              href={paso.href}
+              className="rounded-lg px-3 py-3 transition-colors hover:brightness-110"
+              style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}
+            >
+              <span className="font-mono text-[10px]" style={{ color: "var(--marca-acento)" }}>0{index + 1}</span>
+              <p className="mt-1 text-[12px] font-medium" style={{ color: "var(--text-primary)" }}>{paso.label}</p>
+              <p className="mt-0.5 text-[10.5px]" style={{ color: "var(--text-faint)" }}>{paso.ayuda}</p>
+            </Link>
+          ))}
+        </div>
+        <p className="mt-4 text-[11px] leading-relaxed" style={{ color: "var(--text-faint)" }}>
+          Medición y aprendizaje: el reach y las métricas de Instagram se traen automático en{" "}
+          <Link href="/instagram" className="underline underline-offset-2">Analizar</Link> y{" "}
+          <Link href="/dashboard" className="underline underline-offset-2">Overview</Link>. TikTok se carga manual
+          (sin API conectada) hasta que la cuenta se enlace en{" "}
+          <Link href="/settings" className="underline underline-offset-2">Settings</Link>. El aprendizaje de cada pieza: qué
+          funcionó y por qué— se consulta con datos reales en{" "}
+          <Link href="/chat" className="underline underline-offset-2">AI Chat</Link>, nunca inventado.
+        </p>
       </section>
 
       <section className="grid gap-3 md:grid-cols-3">
@@ -168,7 +212,7 @@ export function EstrategiaContenido() {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+      <section id="radar-preguntas" className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
         <form onSubmit={guardarPregunta} className="rounded-xl p-4 md:p-5" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)" }}>
           <div className="flex items-center gap-2">
             <MessageCircleQuestion size={16} style={{ color: "var(--marca-acento)" }} />
@@ -204,7 +248,7 @@ export function EstrategiaContenido() {
         </aside>
       </section>
 
-      <section className="rounded-xl p-4 md:p-5" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)" }}>
+      <section id="ideas-pendientes" className="rounded-xl p-4 md:p-5" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)" }}>
         <div className="flex items-center justify-between gap-3">
           <div>
             <span className="section-label">Ideas pendientes</span>

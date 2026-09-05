@@ -14,7 +14,7 @@ import { LayoutDashboard, Instagram, MessageSquare, Users, CalendarRange, Layers
 export const NAV = [
   { href: '/dashboard',  label: 'Overview',    icon: LayoutDashboard },
   { href: '/instagram',  label: 'Analizar',    icon: Instagram },
-  { href: '/estrategia', label: 'Estrategia',  icon: Layers3 },
+  { href: '/estrategia', label: 'Brújula',     icon: Layers3 },
   { href: '/plan',       label: 'Plan',        icon: CalendarRange },
   { href: '/referentes', label: 'Referentes',  icon: Users },
   { href: '/chat',       label: 'AI Chat',     icon: MessageSquare },

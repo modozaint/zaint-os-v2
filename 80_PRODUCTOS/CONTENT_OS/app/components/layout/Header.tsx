@@ -12,7 +12,7 @@ import { UsuarioBadge } from "./UsuarioBadge"
 const pageTitles: Record<string, { title: string; description: string }> = {
   "/dashboard": { title: "Overview", description: "Cómo va la marca este mes" },
   "/instagram": { title: "Analizar", description: "Qué publicaste, qué funcionó y qué mejorar" },
-  "/estrategia": { title: "Estrategia", description: "Pilares, niveles e ideas que la comunidad está pidiendo" },
+  "/estrategia": { title: "Brújula", description: "Pilares, referentes, ideas y medición para mover la marca" },
   "/plan": { title: "Plan", description: "Qué sigue, y dónde se está atascando" },
   "/referentes": { title: "Banco de referentes", description: "Perfiles que estudias, y qué tomar de cada uno" },
   "/chat": { title: "AI Chat", description: "Preguntale a tus propios datos" },
