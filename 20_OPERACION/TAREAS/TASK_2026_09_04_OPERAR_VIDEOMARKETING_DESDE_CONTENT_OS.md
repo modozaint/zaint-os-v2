@@ -5,7 +5,7 @@ reviewer: ORQUESTADOR
 status: in_progress
 class: S1
 created: 2026-09-04
-updated: 2026-09-04
+updated: 2026-09-05
 ---
 
 # Resultado esperado
@@ -68,11 +68,17 @@ repita el contexto de la marca ni se creen archivos paralelos.
   video sin depender de la inspiración.`
 - La app confirmo la pieza en la columna IDEA y habilito la accion `Analizar`.
   No se genero guion, no se publico, no se programo ni se sincronizo una red.
-- Bloqueo parcial: `/estrategia?marca=modozaint` responde `404` en produccion;
-  por eso pilar y nivel no se declararon como guardados. El SOP operativo vive
-  en `50_SOP/SOP_OPERAR_VIDEOMARKETING_EN_CONTENTOS.md`.
+- La Brújula ya está disponible en producción:
+  `https://dermatinta-content-os.vercel.app/estrategia?marca=modozaint`.
+  Se añadió una segunda idea real, con pilar `Sistemas de contenido` y nivel
+  `Nutrición (33%)`: `¿Cómo paso de una idea real a un guion sin que la IA
+  invente mi historia?`.
+- Bloqueo parcial: no se pulsó `Analizar`, porque el endpoint puede usar la API
+  de Claude configurada y consumir API. No hubo generación, publicación,
+  programación ni sincronización de redes. El SOP operativo vive en
+  `50_SOP/SOP_OPERAR_VIDEOMARKETING_EN_CONTENTOS.md`.
 
 ## Siguiente responsable
 
-Contenido ejecuta la prueba; ORQUESTADOR revisa trazabilidad y decide si se
-necesita un cambio de software en ContentOS.
+Santiago autoriza o rechaza el uso de la API para analizar la idea; Contenido
+continúa el ciclo solo si hay autorización. ORQUESTADOR revisa la evidencia.

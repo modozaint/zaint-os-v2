@@ -2,10 +2,10 @@
 id: TASK_2026_09_04_IMPLEMENTAR_CONTENT_OS_VIDEOMARKETING
 owner: Claude Contenido
 reviewer: ORQUESTADOR
-status: blocked
+status: completed
 class: S1
 created: 2026-09-04
-updated: 2026-09-04
+updated: 2026-09-05
 ---
 
 # Objetivo
@@ -67,18 +67,13 @@ flujo Brújula -> ficha -> rodaje -> plan/calendario -> medición.
   de marcador, pero no se verificó con credenciales reales porque no existe
   `.env.local` disponible en este checkout.
 - Migraciones: ninguna necesaria; el cambio es de interfaz y rutas existentes.
-- Producción bloqueada: no existe `.vercel/`, `vercel.json` ni Vercel CLI, y la
-  documentación apunta a un repositorio/carpeta productivos distintos. No se
-  creó proyecto, dominio ni despliegue sin un vínculo inequívoco.
-
-## Desbloqueo mínimo
-
-Santiago confirma el proyecto Vercel de ContentOS o proporciona el contenido de
-`.vercel/project.json` desde el checkout productivo. Luego ORQUESTADOR puede
-desplegar `80_PRODUCTOS/CONTENT_OS/app` y verificar la URL antes de cargar la
-primera idea real.
+- Producción: se localizó el repositorio productivo existente
+  `modozaint/dermatinta-content-os`, se integró la Brújula y se desplegó sin
+  crear proyectos ni dominios nuevos. Commit productivo `673ffa2`; despliegue
+  Vercel `56k8j6vgnHodhRc5ZY3NPaDTDUf5` en estado `Ready`; URL verificada:
+  `https://dermatinta-content-os.vercel.app/estrategia?marca=modozaint`.
 
 ## Siguiente responsable
 
-Santiago aporta el vínculo de Vercel; ORQUESTADOR ejecuta el deploy y su
-verificación. Después Contenido registra la primera idea real.
+Contenido opera la Brújula con el SOP; ORQUESTADOR mantiene la integración y
+revisa evidencia antes de declarar una pieza terminada.

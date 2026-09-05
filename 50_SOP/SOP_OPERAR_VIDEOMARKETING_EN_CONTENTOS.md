@@ -30,9 +30,9 @@ Tengo para mostrar: [pantalla / grabación / producto / proceso / nada].
    `MODOZAINT`.
 3. Anotar la frase en el Banco de ideas. Eso crea una fila `pieza` en estado
    `idea`; no se crea un archivo ni una tabla paralela.
-4. Tras desplegar la Brújula, clasificar la idea con pilar y nivel antes de
-   analizarla. Mientras `/estrategia` responda `404` en producción, esta
-   clasificación es un bloqueo visible, no un dato que se inventa.
+4. Clasificar la idea en Brújula con pilar y nivel antes de analizarla. La
+   Brújula productiva vive en
+   `https://dermatinta-content-os.vercel.app/estrategia?marca=modozaint`.
 5. Antes de generar ficha o guion, Contenido valida el hecho propio y el
    material disponible. Si falta evidencia, escribe `[VERIFICAR: ...]` o se
    detiene.
@@ -65,9 +65,16 @@ Tengo para mostrar: [pantalla / grabación / producto / proceso / nada].
 - Evidencia: aparece en el Pipeline de producción como IDEA, con acción
   `Analizar`; no se publicó ni se sincronizó ninguna red.
 
-## Pendiente técnico
+## Ejecución verificable
 
-La producción actual no incluye `/estrategia`: responde `404`. El cambio local
-que integra la Brújula está en el commit `cba2981`; falta vincular el checkout
-al proyecto Vercel existente y desplegarlo antes de cerrar la clasificación por
-pilar/nivel y el SOP como completamente operativo.
+- La Brújula se desplegó en producción con el commit `673ffa2` del repositorio
+  productivo y el despliegue Vercel `56k8j6vgnHodhRc5ZY3NPaDTDUf5` en estado
+  `Ready`.
+- Se registró una segunda idea, firmada por Santiago, sin publicar ni
+  sincronizar redes: `¿Cómo paso de una idea real a un guion sin que la IA
+  invente mi historia?`.
+- Clasificación confirmada en interfaz: pilar `Sistemas de contenido`, nivel
+  `Nutrición (33%)`, tipo `Reel`, estado `idea`.
+- La acción `Analizar` no se ejecutó: el endpoint puede invocar Claude con la
+  clave configurada y consumir API. Requiere autorización expresa antes de
+  generar brief, hooks y guion.
